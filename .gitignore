@@ -21,3 +21,10 @@ $RECYCLE.BIN/
 # =========================
 # Operating System Files
 # =========================
+
+# PyCache files
+**/__pycache__/
+**.py[cod]
+
+# Semantic DB Console command history
+sa-console-command-history.txt
