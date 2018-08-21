@@ -28,10 +28,10 @@ except ImportError:
 
 import logging
 
-import code
-import semantic_db.functions
-import semantic_db.sigmoids
-import semantic_db.usage_tables
+import semantic_db.code as code
+import semantic_db.functions as func
+import semantic_db.sigmoids as sig
+import semantic_db.usage_tables as usage_tabs
 
 logger = logging.Logger('Console Logger')
 logger.setLevel(logging.WARNING)  # switch off debug and info by default
@@ -56,7 +56,7 @@ dot_file_dir = 'graph-examples'
 print("Welcome to version 2 of the Semantic DB!\nLast updated 31 July, 2018")
 
 # C = ContextList("sw console")
-C = context
+C = code.context
 
 help_string = """
   q, quit, exit                quit the agent.
@@ -104,8 +104,8 @@ help_string = """
   if none of the above         process_input_line(C,line,x)
 """
 
-x = ket()
-result = ket()
+x = code.ket()
+result = code.ket()
 stored_line = ""
 command_history = []
 command_history_file = "sa-console-command-history.txt"  # file where we save the command history. Might be interesting.
