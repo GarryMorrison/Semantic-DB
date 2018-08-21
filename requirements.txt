@@ -1,3 +1,0 @@
-parsley
-numpy
-matplotlib
