@@ -26,11 +26,14 @@ try:
 except ImportError:
     have_graphviz = False
 
-# import logging
+import logging
 
-from semantic_db import *
-from semantic_db.usage_tables import usage
+import code
+import semantic_db.functions
+import semantic_db.sigmoids
+import semantic_db.usage_tables
 
+logger = logging.Logger('Console Logger')
 logger.setLevel(logging.WARNING)  # switch off debug and info by default
 if len(sys.argv) == 2:
     if sys.argv[1] == "--debug":
@@ -446,11 +449,11 @@ while True:
         logger.setLevel(logging.WARNING)
 
     elif line == 'usage':
-        usage()
+        semantic_db.usage_tables.usage()
 
     elif line.startswith('usage '):
         op_names = line[6:].split(', ')
-        usage(op_names)
+        semantic_db.usage_tables.usage(op_names)
 
     else:
         if line == ".":

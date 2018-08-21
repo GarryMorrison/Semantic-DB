@@ -2,7 +2,8 @@
 
 from distutils.core import setup
 
-setup(name='Semantic-DB',
+setup(
+    name='Semantic-DB',
     version='2.0',
     description='',
     author='Garry Morrison',
