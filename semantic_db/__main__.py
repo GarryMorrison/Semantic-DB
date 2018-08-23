@@ -26,14 +26,11 @@ try:
 except ImportError:
     have_graphviz = False
 
-import logging
+# import logging
 
-import semantic_db.code as code
-import semantic_db.functions as func
-import semantic_db.sigmoids as sig
-import semantic_db.usage_tables as usage_tabs
+from semantic_db import *
+from semantic_db.usage_tables import usage
 
-logger = logging.Logger('Console Logger')
 logger.setLevel(logging.WARNING)  # switch off debug and info by default
 if len(sys.argv) == 2:
     if sys.argv[1] == "--debug":
@@ -56,7 +53,7 @@ dot_file_dir = 'graph-examples'
 print("Welcome to version 2 of the Semantic DB!\nLast updated 31 July, 2018")
 
 # C = ContextList("sw console")
-C = code.context
+C = context
 
 help_string = """
   q, quit, exit                quit the agent.
@@ -104,8 +101,8 @@ help_string = """
   if none of the above         process_input_line(C,line,x)
 """
 
-x = code.ket()
-result = code.ket()
+x = ket()
+result = ket()
 stored_line = ""
 command_history = []
 command_history_file = "sa-console-command-history.txt"  # file where we save the command history. Might be interesting.
@@ -449,11 +446,11 @@ while True:
         logger.setLevel(logging.WARNING)
 
     elif line == 'usage':
-        semantic_db.usage_tables.usage()
+        usage()
 
     elif line.startswith('usage '):
         op_names = line[6:].split(', ')
-        semantic_db.usage_tables.usage(op_names)
+        usage(op_names)
 
     else:
         if line == ".":
