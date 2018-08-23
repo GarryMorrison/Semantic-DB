@@ -15,7 +15,10 @@ setup(
         'numpy',
         'matplotlib',
     ],
+    extras_require={
+        'Graph':  ["graphviz"],
+    },
     classifiers=[
         'Development Status :: 3 - Alpha',
-    ]
+    ],
 )

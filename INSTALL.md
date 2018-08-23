@@ -14,7 +14,13 @@ The Semanic DB needs to be cloned from github to be used as of now:
 ```bash
 git clone https://github.com/GarryMorrison/Semantic-DB.git
 cd Semantic-DB
-pip3 install -r requirements.txt
+pip3 install .
 ```
+
+Graphviz can be used to plot sw files as dot graphs. If you need this feature run:
+```bash
+pip3 install .[Graph]
+```
+(Do note the dot before [Graph])
 
 The sdb-console should now be usable
