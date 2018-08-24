@@ -6,10 +6,10 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 31/7/2018
+# Update: 24/8/2018
 # Copyright: GPLv3
 #
-# Usage: ./sdb-console.py [--debug]
+# Usage: ./sdb-console.py [--debug | --info] [file1.sw ... filen.sw]
 #
 #######################################################################
 
@@ -31,14 +31,19 @@ except ImportError:
 from semantic_db import *
 from semantic_db.usage_tables import usage
 
+files_to_run = sys.argv[1:]
 logger.setLevel(logging.WARNING)  # switch off debug and info by default
-if len(sys.argv) == 2:
+if len(sys.argv) >= 2:
     if sys.argv[1] == "--debug":
         logger.setLevel(logging.DEBUG)
         logger.debug('debug enabled')
+        files_to_run = sys.argv[2:]
     elif sys.argv[1] == "--info":
         logger.setLevel(logging.INFO)
         logger.info('info enabled')
+        files_to_run = sys.argv[2:]
+
+# print('files to run: %s' % files_to_run)
 
 
 # starting .sw directory:
@@ -50,7 +55,7 @@ if not os.path.exists(sw_file_dir):
 
 dot_file_dir = 'graph-examples'
 
-print("Welcome to version 2 of the Semantic DB!\nLast updated 31 July, 2018")
+print("Welcome to version 2 of the Semantic DB!\nLast updated 24 August, 2018")
 
 # C = ContextList("sw console")
 C = context
@@ -122,6 +127,20 @@ def save_history(history, history_file):
         print("Done.")
     except:
         print("failed!")
+
+
+# run our command line files:
+for sw_file in files_to_run:
+    path, file = os.path.split(sw_file)
+    if path == "":
+        path = sw_file_dir
+    # print('path: %s' % path)
+    # print('file: %s' % file)
+    full_name = path + '/' + file
+    command_history.append('load ' + file)
+    context.load(full_name)
+
+# sys.exit(0)
 
 # the interactive semantic agent:
 while True:
