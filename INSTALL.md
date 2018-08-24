@@ -17,7 +17,10 @@ cd Semantic-DB
 pip3 install .
 ```
 
-Graphviz can be used to plot sw files as dot graphs. If you need this feature run:
+Graphviz can be used to plot sw files as dot graphs.
+If you need this feature, graphviz can be installed using [this guide](https://enterprise-architecture.org/downloads?id=208),
+(The guide is from another project, but is still applicable to our case),
+and the python binding can be installed by running:
 ```bash
 pip3 install .[Graph]
 ```
