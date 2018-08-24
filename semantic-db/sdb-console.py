@@ -42,13 +42,15 @@ if len(sys.argv) == 2:
 
 
 # starting .sw directory:
-sw_file_dir = "sw-examples"
+this_dir, this_filename = os.path.split(__file__)
+sw_file_dir = os.path.join(this_dir, "examples/sw")
+print(os.listdir(sw_file_dir))
 # check it exists, if not create it:
 if not os.path.exists(sw_file_dir):
     print("Creating " + sw_file_dir + " directory.")
-    os.makedirs(sw_file_dir)
+#    os.makedirs(sw_file_dir)
 
-dot_file_dir = 'graph-examples'
+dot_file_dir = 'examples/graph'
 
 print("Welcome to version 2 of the Semantic DB!\nLast updated 31 July, 2018")
 
