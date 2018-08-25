@@ -6,10 +6,10 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 24/8/2018
+# Update: 25/8/2018
 # Copyright: GPLv3
 #
-# Usage: ./sdb-console.py [--debug | --info] [file1.sw ... filen.sw]
+# Usage: ./sdb-console.py [--debug | --info] [-q] [-i] [file1.sw ... filen.sw]
 #
 #######################################################################
 
@@ -19,6 +19,7 @@ import os
 import datetime
 import time
 import urllib.request
+import getopt
 
 try:
     from graphviz import Digraph
@@ -31,19 +32,40 @@ except ImportError:
 from semantic_db import *
 from semantic_db.usage_tables import usage
 
-files_to_run = sys.argv[1:]
-logger.setLevel(logging.WARNING)  # switch off debug and info by default
-if len(sys.argv) >= 2:
-    if sys.argv[1] == "--debug":
-        logger.setLevel(logging.DEBUG)
-        logger.debug('debug enabled')
-        files_to_run = sys.argv[2:]
-    elif sys.argv[1] == "--info":
+# parse our command line parameters:
+try:
+    optlist, args = getopt.getopt(sys.argv[1:], 'qi', ['debug', 'info', 'quiet', 'interactive'])
+except getopt.GetoptError as err:
+    print(err)
+    sys.exit(2)
+
+# switch on/off display of command execution times:
+quiet = False
+
+# interactive mode:
+interactive = False
+
+# switch off debug and info by default:
+logger.setLevel(logging.WARNING)
+
+# process our option list:
+for o, a in optlist:
+    if o == "--info":
         logger.setLevel(logging.INFO)
         logger.info('info enabled')
-        files_to_run = sys.argv[2:]
+    elif o == "--debug":
+        logger.setLevel(logging.DEBUG)
+        logger.debug('debug enabled')
+    elif o in ("-q", "--quiet"):
+        quiet = True
+    elif o in ("-i", "--interactive"):
+        interactive = True
 
+files_to_run = args
+if len(files_to_run) == 0:
+    interactive = True
 # print('files to run: %s' % files_to_run)
+# sys.exit(0)
 
 
 # starting .sw directory:
@@ -55,7 +77,8 @@ if not os.path.exists(sw_file_dir):
 
 dot_file_dir = 'graph-examples'
 
-print("Welcome to version 2 of the Semantic DB!\nLast updated 24 August, 2018")
+if interactive:
+    print("Welcome to version 2 of the Semantic DB!\nLast updated 25 August, 2018")
 
 # C = ContextList("sw console")
 C = context
@@ -140,7 +163,9 @@ for sw_file in files_to_run:
     command_history.append('load ' + file)
     context.load(full_name)
 
-# sys.exit(0)
+
+if not interactive:
+    sys.exit(0)
 
 # the interactive semantic agent:
 while True:
@@ -248,7 +273,8 @@ while True:
 
     elif line.startswith("web-load "):  # where put it? in sw_file_dir? What if file with that name already exists?
         url = line[9:]  # how about timing the download and load? Cheat, and merge with "load file.sw"?
-        start_time = time.time()
+        if not quiet:
+            start_time = time.time()
         try:
             # download url
             print("downloading sw file:", url)  # code to time the download? Probably, eventually.
@@ -297,9 +323,10 @@ while True:
         print("loading:", dest, "\n")
         # load_sw(C,dest)
         C.load(dest)
-        end_time = time.time()
-        delta_time = end_time - start_time
-        print("\n  Time taken:", display_time(delta_time))
+        if not quiet:
+            end_time = time.time()
+            delta_time = end_time - start_time
+            print("\n  Time taken:", display_time(delta_time))
 
 
     elif line.startswith("load "):
@@ -307,26 +334,30 @@ while True:
         name = sw_file_dir + "/" + name  # load and save files to the sw_file_dir.
         print("loading sw file:", name)
 
-        # time it!
-        start_time = time.time()
+        if not quiet:
+            # time it!
+            start_time = time.time()
         # load_sw(C,name)
         C.load(name)
-        end_time = time.time()
-        delta_time = end_time - start_time
-        print("\n  Time taken:", display_time(delta_time))
+        if not quiet:
+            end_time = time.time()
+            delta_time = end_time - start_time
+            print("\n  Time taken:", display_time(delta_time))
 
     elif line.startswith("line-load "):
         name = line[10:]
         name = sw_file_dir + "/" + name  # load and save files to the sw_file_dir.
         print("loading sw file:", name)
 
-        # time it!
-        start_time = time.time()
+        if not quiet:
+            # time it!
+            start_time = time.time()
         # load_sw(C,name)
         C.line_load(name)
-        end_time = time.time()
-        delta_time = end_time - start_time
-        print("\n  Time taken:", display_time(delta_time))
+        if not quiet:
+            end_time = time.time()
+            delta_time = end_time - start_time
+            print("\n  Time taken:", display_time(delta_time))
 
     elif line == "save history":
         # save history:
@@ -485,7 +516,8 @@ while True:
             line = s + '\n'
 
         stored_line = line
-        start_time = time.time()
+        if not quiet:
+            start_time = time.time()
 
         try:
             result = process_input_line(C, line, x)
@@ -493,7 +525,8 @@ while True:
         except KeyboardInterrupt:  # doesn't seem to work.
             print('caught keyboard interrupt')
 
-        end_time = time.time()
-        delta_time = end_time - start_time
-        print("\n  Time taken:", display_time(delta_time))  # display_time() is in the functions.py file
-        # maybe shift it here.
+        if not quiet:
+            end_time = time.time()
+            delta_time = end_time - start_time
+            print("\n  Time taken:", display_time(delta_time))  # display_time() is in the functions.py file
+            # maybe shift it here.
