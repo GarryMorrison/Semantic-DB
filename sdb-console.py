@@ -34,7 +34,7 @@ from semantic_db.usage_tables import usage
 
 # parse our command line parameters:
 try:
-    optlist, args = getopt.getopt(sys.argv[1:], 'qid', ['debug', 'info', 'quiet', 'interactive', 'dump'])
+    optlist, args = getopt.getopt(sys.argv[1:], 'qidV', ['debug', 'info', 'quiet', 'interactive', 'dump', 'version'])
 except getopt.GetoptError as err:
     print(err)
     sys.exit(2)
@@ -65,6 +65,9 @@ for o, a in optlist:
         interactive = True
     elif o in ('-d', '--dump'):
         dump = True
+    elif o in ('-V', '--version'):
+        print('Semantic DB 2.0')
+        sys.exit(0)
 
 # arguments become files to run:
 files_to_run = args
