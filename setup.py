@@ -9,7 +9,7 @@ setup(
     author='Garry Morrison',
     author_email='garry@semantic-db.org',
     url='http://semantic-db.org/documentation/usage/index.html',
-    packages=['semantic-db'],
+    packages=['semantic_db'],
     install_requires=[
         'parsley',
         'numpy',

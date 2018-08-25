@@ -44,7 +44,6 @@ if len(sys.argv) == 2:
 # starting .sw directory:
 this_dir, this_filename = os.path.split(__file__)
 sw_file_dir = os.path.join(this_dir, "examples/sw")
-print(os.listdir(sw_file_dir))
 # check it exists, if not create it:
 if not os.path.exists(sw_file_dir):
     print("Creating " + sw_file_dir + " directory.")
