@@ -71,10 +71,10 @@ for o, a in optlist:
 
 # arguments become files to run:
 files_to_run = args
+
+# not sure we want this:
 if len(files_to_run) == 0:
     interactive = True
-# print('files to run: %s' % files_to_run)
-# sys.exit(0)
 
 
 # starting .sw directory:
@@ -87,7 +87,7 @@ if not os.path.exists(sw_file_dir):
 dot_file_dir = 'graph-examples'
 
 if interactive:
-    print("Welcome to version 2 of the Semantic DB!\nLast updated 25 August, 2018")
+    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 25 August, 2018")
 
 # C = ContextList("sw console")
 C = context
@@ -166,8 +166,6 @@ for sw_file in files_to_run:
     path, file = os.path.split(sw_file)
     if path == "":
         path = sw_file_dir
-    # print('path: %s' % path)
-    # print('file: %s' % file)
     full_name = path + '/' + file
     command_history.append('load ' + file)
     context.load(full_name)
