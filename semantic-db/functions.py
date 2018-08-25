@@ -19,8 +19,8 @@ import copy
 import string
 import re
 import os
-from semantic-db.code import *
-from semantic-db.sigmoids import *
+from semantic_db.code import *
+from semantic_db.sigmoids import *
 import math
 from math import factorial
 from pprint import pprint

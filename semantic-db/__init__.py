@@ -13,7 +13,7 @@
 
 
 # import our classes:
-from semantic-db.code import *
-from semantic-db.sigmoids import *
-from semantic-db.functions import *
+from semantic_db.code import *
+from semantic_db.sigmoids import *
+from semantic_db.functions import *
 # from semantic_db.misc import *
