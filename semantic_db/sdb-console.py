@@ -49,7 +49,7 @@ if not os.path.exists(sw_file_dir):
     print("Creating " + sw_file_dir + " directory.")
 #    os.makedirs(sw_file_dir)
 
-dot_file_dir = 'examples/graph'
+dot_file_dir = os.path.join(this_dir, "examples/graph")
 
 print("Welcome to version 2 of the Semantic DB!\nLast updated 31 July, 2018")
 
