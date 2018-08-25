@@ -34,7 +34,7 @@ from semantic_db.usage_tables import usage
 
 # parse our command line parameters:
 try:
-    optlist, args = getopt.getopt(sys.argv[1:], 'qi', ['debug', 'info', 'quiet', 'interactive'])
+    optlist, args = getopt.getopt(sys.argv[1:], 'qid', ['debug', 'info', 'quiet', 'interactive', 'dump'])
 except getopt.GetoptError as err:
     print(err)
     sys.exit(2)
@@ -48,19 +48,25 @@ interactive = False
 # switch off debug and info by default:
 logger.setLevel(logging.WARNING)
 
+# dump loaded files:
+dump = False
+
 # process our option list:
 for o, a in optlist:
-    if o == "--info":
+    if o == '--info':
         logger.setLevel(logging.INFO)
         logger.info('info enabled')
-    elif o == "--debug":
+    elif o == '--debug':
         logger.setLevel(logging.DEBUG)
         logger.debug('debug enabled')
-    elif o in ("-q", "--quiet"):
+    elif o in ('-q', '--quiet'):
         quiet = True
-    elif o in ("-i", "--interactive"):
+    elif o in ('-i', '--interactive'):
         interactive = True
+    elif o in ('-d', '--dump'):
+        dump = True
 
+# arguments become files to run:
 files_to_run = args
 if len(files_to_run) == 0:
     interactive = True
@@ -164,6 +170,10 @@ for sw_file in files_to_run:
     context.load(full_name)
 
 
+# dump our ContextList:
+if dump and len(files_to_run) > 0:
+    C.print_multiverse()
+
 if not interactive:
     sys.exit(0)
 
@@ -235,7 +245,7 @@ while True:
         print(C.dump_universe())
 
     elif line == "dump exact":
-        print(C.dump_universe(True))
+        print(C.dump_universe(exact=True))
 
     elif line == "dump multi":
         print(C.dump_multiverse())
