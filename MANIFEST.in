@@ -1,0 +1,3 @@
+include LICENSE
+include INSTALL.md
+graft semantic_db/examples
