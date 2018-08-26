@@ -509,7 +509,7 @@ while True:
     elif line.startswith("x = "):
         var = line[4:]
         try:
-            x = extract_compound_superposition(C, var)[0]  # needs updating. Fix!
+            x = extract_compound_sequence(C, var)
         except:
             x = ket(var)
 
