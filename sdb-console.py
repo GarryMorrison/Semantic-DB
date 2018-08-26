@@ -77,14 +77,11 @@ if len(files_to_run) == 0:
     interactive = True
 
 
-# starting .sw directory:
+# starting .sw and .dot directories:
+# later, load these from a config file
 sw_file_dir = "sw-examples"
-# check it exists, if not create it:
-if not os.path.exists(sw_file_dir):
-    print("Creating " + sw_file_dir + " directory.")
-    os.makedirs(sw_file_dir)
-
 dot_file_dir = 'graph-examples'
+
 
 if interactive:
     print("Welcome to version 2.0 of the Semantic DB!\nLast updated 26 August, 2018")
@@ -325,6 +322,12 @@ while True:
         print(C.multiverse_to_freq_list())
 
     elif line.startswith("web-load "):  # where put it? in sw_file_dir? What if file with that name already exists?
+
+        # check sw_file_dir exists, if not create it:
+        if not os.path.exists(sw_file_dir):
+            print("Creating %s directory." % sw_file_dir)
+            os.makedirs(sw_file_dir)
+            
         url = line[9:]  # how about timing the download and load? Cheat, and merge with "load file.sw"?
         if not quiet:
             start_time = time.time()
@@ -417,12 +420,24 @@ while True:
         save_history(command_history, command_history_file)
 
     elif line.startswith("save multi "):
+
+        # check sw_file_dir exists, if not create it:
+        if not os.path.exists(sw_file_dir):
+            print("Creating %s directory." % sw_file_dir)
+            os.makedirs(sw_file_dir)
+
         name = line[11:]
         name = sw_file_dir + "/" + name  # load and save files to the sw_file_dir.
         print("saving context list to:", name)
         save_sw_multi(C, name)
 
-    elif line.startswith("save "):  # check for file existance first? Or just blow away what is already there?
+    elif line.startswith("save "):  # check for file existence first? Or just blow away what is already there?
+
+        # check sw_file_dir exists, if not create it:
+        if not os.path.exists(sw_file_dir):
+            print("Creating %s directory." % sw_file_dir)
+            os.makedirs(sw_file_dir)
+
         name = line[5:]
         name = sw_file_dir + "/" + name  # load and save files to the sw_file_dir.
         print("saving current context to:", name)
