@@ -6,10 +6,10 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 31/7/2018
+# Update: 26/8/2018
 # Copyright: GPLv3
 #
-# Usage: ./sdb-console.py [--debug]
+# Usage: ./sdb-console.py [--debug | --info] [-q] [-i] [--version] [file1.sw ... filen.sw]
 #
 #######################################################################
 
@@ -19,6 +19,7 @@ import os
 import datetime
 import time
 import urllib.request
+import getopt
 
 try:
     from graphviz import Digraph
@@ -31,14 +32,49 @@ except ImportError:
 from semantic_db import *
 from semantic_db.usage_tables import usage
 
-logger.setLevel(logging.WARNING)  # switch off debug and info by default
-if len(sys.argv) == 2:
-    if sys.argv[1] == "--debug":
-        logger.setLevel(logging.DEBUG)
-        logger.debug('debug enabled')
-    elif sys.argv[1] == "--info":
+# parse our command line parameters:
+try:
+    optlist, args = getopt.getopt(sys.argv[1:], 'qidV', ['debug', 'info', 'quiet', 'interactive', 'dump', 'version'])
+except getopt.GetoptError as err:
+    print(err)
+    sys.exit(2)
+
+# switch on/off display of command execution times:
+quiet = False
+
+# interactive mode:
+interactive = False
+
+# switch off debug and info by default:
+logger.setLevel(logging.WARNING)
+
+# dump loaded files:
+dump = False
+
+# process our option list:
+for o, a in optlist:
+    if o == '--info':
         logger.setLevel(logging.INFO)
         logger.info('info enabled')
+    elif o == '--debug':
+        logger.setLevel(logging.DEBUG)
+        logger.debug('debug enabled')
+    elif o in ('-q', '--quiet'):
+        quiet = True
+    elif o in ('-i', '--interactive'):
+        interactive = True
+    elif o in ('-d', '--dump'):
+        dump = True
+    elif o in ('-V', '--version'):
+        print('Semantic DB 2.0')
+        sys.exit(0)
+
+# arguments become files to run:
+files_to_run = args
+
+# not sure we want this:
+if len(files_to_run) == 0:
+    interactive = True
 
 
 # starting .sw directory:
@@ -51,10 +87,11 @@ if not os.path.exists(sw_file_dir):
 
 dot_file_dir = os.path.join(this_dir, "examples/graph")
 
-print("Welcome to version 2 of the Semantic DB!\nLast updated 31 July, 2018")
+if interactive:
+    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 26 August, 2018")
 
-# C = ContextList("sw console")
-C = context
+# context = ContextList("sw console")  # currently broken, due to parsley binding dict issue.
+# C = context
 
 help_string = """
   q, quit, exit                quit the agent.
@@ -99,14 +136,43 @@ help_string = """
   -- comment                   ignore, this is just a comment line.
   usage                        show list of usage information
   usage op1, op2, op3          show usage of listed operators
-  if none of the above         process_input_line(C,line,x)
+  if none of the above         process_input_line(context, line, x)
 """
 
 x = ket()
 result = ket()
 stored_line = ""
 command_history = []
+command_history_len = 1000
 command_history_file = "sa-console-command-history.txt"  # file where we save the command history. Might be interesting.
+
+
+# our display time intervals:
+intervals = (
+    ('weeks', 604800000),  # 1000 * 60 * 60 * 24 * 7
+    ('days', 86400000),  # 1000 * 60 * 60 * 24
+    ('hours', 3600000),  # 1000 * 60 * 60
+    ('minutes', 60000),  # 1000 * 60
+    ('seconds', 1000),  # 1000
+    ('milliseconds', 1),
+)
+
+
+# our display time function:
+def display_time(seconds):
+    ms = int(1000 * seconds)
+    result = []
+
+    for name, count in intervals:
+        value = ms // count
+        if value:
+            ms -= value * count
+            if value == 1:
+                name = name.rstrip('s')
+            result.append("%s %s" % (value, name))
+    if len(result) == 0:
+        return "0"
+    return ', '.join(result)
 
 
 # save history function:
@@ -117,12 +183,43 @@ def save_history(history, history_file):
         today = str(datetime.date.today())
         f.write(today + "\n")
         for line in history:
-            f.write("  " + line + "\n")
+            f.write("  %s\n" % line)
         f.write("\n")
         f.close()
         print("Done.")
     except:
         print("failed!")
+
+
+# load history from file:
+try:
+    tmp_history = []
+    with open(command_history_file, 'r') as f:
+        for line in f:
+            if line.startswith('  '):  # filter out date-lines, which don't start with two spaces.
+                line = line.strip()
+                tmp_history.append(line)
+    command_history = tmp_history[-command_history_len:]
+except FileNotFoundError:
+    pass
+
+
+# run our command line files:
+for sw_file in files_to_run:
+    path, file = os.path.split(sw_file)
+    if path == "":
+        path = sw_file_dir
+    full_name = path + '/' + file
+    command_history.append('load ' + file)
+    context.load(full_name)
+
+
+# dump our ContextList:
+if dump and len(files_to_run) > 0:
+    context.print_multiverse()
+
+if not interactive:
+    sys.exit(0)
 
 # the interactive semantic agent:
 while True:
@@ -135,12 +232,12 @@ while True:
             count = min(len(command_history), n)
             history = command_history[-count:]
             for k, line in enumerate(history):
-                print(" " + str(k) + ")  " + line)
+                print(" %s)  %s" % (str(k), line))
             selection = input("\nEnter your selection: ")
             try:
                 selection = int(selection)
                 line = history[selection]
-                print("Your selection:", line, "\n")
+                print("Your selection: %s\n" % line)
             except:
                 continue
         else:
@@ -163,86 +260,73 @@ while True:
         continue
 
     elif line == "context":
-        print(C.show_context_list())
+        print(context.show_context_list())
 
     elif line == "icontext":
-        print(C.show_context_list_index())
+        print(context.show_context_list_index())
         selection = input("Enter your selection: ")
         try:
             selection = int(selection)
-            if C.set_index(selection):
-                print(C.dump_universe())
+            if context.set_index(selection):
+                print(context.dump_universe())
         except:
             continue
 
     # switch context:
     elif line.startswith("context "):
         name = line[8:]
-        C.set(name)
-        print(C.dump_universe())
+        context.set(name)
+        print(context.dump_universe())
 
     elif line == "reset":
         check = input("\n  Warning! This will erase all unsaved work! Are you sure? (y/n): ")
         if len(check) > 0 and check[0] == 'y':
-            # C = ContextList("sw console") # this is correct approach, but broken due to parser!
-            C.reset('sw console')           # this seems to work.
+            # context = ContextList("sw console") # this is correct approach, but broken due to parser!
+            context.reset('sw console')           # this seems to work.
             print("\n  Gone ... ")
 
     elif line == "dump":
-        print(C.dump_universe())
+        print(context.dump_universe())
 
     elif line == "dump exact":
-        print(C.dump_universe(True))
+        print(context.dump_universe(exact=True))
 
     elif line == "dump multi":
-        print(C.dump_multiverse())
+        print(context.dump_multiverse())
 
     elif line == "dump self":
-        print(C.dump_multiple_ket_rules(x))
+        print(context.dump_multiple_ket_rules(x))
 
     elif line.startswith("dump "):
         var = line[5:]
-        print("var:", var, "\n")
+        print("var: %s\n" % var)
         try:
-            seq = extract_compound_sequence(C, var)
-            print(C.dump_multiple_ket_rules(seq))
+            seq = extract_compound_sequence(context, var)
+            print(context.dump_multiple_ket_rules(seq))
         except:
             continue
 
     elif line == "display":
-        print(C.display_all())
+        print(context.display_all())
 
     elif line.startswith("display "):
         var = line[8:]
-        print("var:", var, "\n")
+        print("var: %s\n" % var)
         try:
-            seq = extract_compound_sequence(C, var)
-            print(C.display_seq(seq))
+            seq = extract_compound_sequence(context, var)
+            print(context.display_seq(seq))
         except:
             continue
 
     elif line == "freq":
-        result = C.to_freq_list()
+        result = context.to_freq_list()
         print(result)
 
     elif line == "mfreq":
-        print(C.multiverse_to_freq_list())
+        print(context.multiverse_to_freq_list())
 
     elif line.startswith("web-load "):  # where put it? in sw_file_dir? What if file with that name already exists?
         url = line[9:]  # how about timing the download and load? Cheat, and merge with "load file.sw"?
-        start_time = time.time()
-        try:
-            # download url
-            print("downloading sw file:", url)  # code to time the download? Probably, eventually.
-            headers = {'User-Agent': 'semantic-agent/0.1'}
-            req = urllib.request.Request(url, None, headers)  # does it handle https?
-            f = urllib.request.urlopen(req)
-            html = f.read()
-            f.close()
-        except:
-            print("failed to download:", url)
-            continue
-
         # find the sw file name:
         name = url.split("/")[-1]
         dest = sw_file_dir + "/" + name
@@ -251,8 +335,7 @@ while True:
         # check if it exists:
         while os.path.exists(dest):
             # either rename or overwrite
-            check = input(
-                "\n  File \"" + name + "\" already exists.\n  [O]verwrite, [R]ename or [D]on't save? (O,R,D): ")
+            check = input("\n  File \"%s\" already exists.\n  [O]verwrite, [R]ename or [D]on't save? (O,R,D): " % name)
             if len(check) > 0:
                 if check[0] in ["o", "O"]:  # we are allowed to overwrite it
                     break
@@ -269,6 +352,20 @@ while True:
         if dont_save:
             continue
 
+        if not quiet:
+            start_time = time.time()
+        try:
+            # download url
+            print("downloading sw file:", url)  # code to time the download? Probably, eventually.
+            headers = {'User-Agent': 'semantic-agent/2.0'}
+            req = urllib.request.Request(url, None, headers)  # does it handle https?
+            f = urllib.request.urlopen(req)
+            html = f.read()
+            f.close()
+        except:
+            print("failed to download:", url)
+            continue
+
         # let's save it:
         print("\nsaving to:", name)  # do we need a try/except here?
         f = open(dest, 'wb')
@@ -276,12 +373,12 @@ while True:
         f.close()
 
         # now let's load it into memory:
-        print("loading:", dest, "\n")
-        # load_sw(C,dest)
-        C.load(dest)
-        end_time = time.time()
-        delta_time = end_time - start_time
-        print("\n  Time taken:", display_time(delta_time))
+        print("loading: %s\n" % dest)
+        context.load(dest)
+        if not quiet:
+            end_time = time.time()
+            delta_time = end_time - start_time
+            print("\n  Time taken:", display_time(delta_time))
 
 
     elif line.startswith("load "):
@@ -289,26 +386,28 @@ while True:
         name = sw_file_dir + "/" + name  # load and save files to the sw_file_dir.
         print("loading sw file:", name)
 
-        # time it!
-        start_time = time.time()
-        # load_sw(C,name)
-        C.load(name)
-        end_time = time.time()
-        delta_time = end_time - start_time
-        print("\n  Time taken:", display_time(delta_time))
+        if not quiet:
+            # time it!
+            start_time = time.time()
+        context.load(name)
+        if not quiet:
+            end_time = time.time()
+            delta_time = end_time - start_time
+            print("\n  Time taken:", display_time(delta_time))
 
     elif line.startswith("line-load "):
         name = line[10:]
         name = sw_file_dir + "/" + name  # load and save files to the sw_file_dir.
         print("loading sw file:", name)
 
-        # time it!
-        start_time = time.time()
-        # load_sw(C,name)
-        C.line_load(name)
-        end_time = time.time()
-        delta_time = end_time - start_time
-        print("\n  Time taken:", display_time(delta_time))
+        if not quiet:
+            # time it!
+            start_time = time.time()
+        context.line_load(name)
+        if not quiet:
+            end_time = time.time()
+            delta_time = end_time - start_time
+            print("\n  Time taken:", display_time(delta_time))
 
     elif line == "save history":
         # save history:
@@ -318,13 +417,13 @@ while True:
         name = line[11:]
         name = sw_file_dir + "/" + name  # load and save files to the sw_file_dir.
         print("saving context list to:", name)
-        save_sw_multi(C, name)
+        save_sw_multi(context, name)
 
-    elif line.startswith("save "):  # check for file existance first? Or just blow away what is already there?
+    elif line.startswith("save "):  # check for file existence first? Or just blow away what is already there?
         name = line[5:]
         name = sw_file_dir + "/" + name  # load and save files to the sw_file_dir.
         print("saving current context to:", name)
-        C.save(name)
+        context.save(name)
 
     elif line.startswith('save-as-dot '):
         if not have_graphviz:
@@ -339,17 +438,17 @@ while True:
         name = dot_file_dir + '/' + name
         print('saving dot file: %s' % name)
 
-        dot = Digraph(comment=C.context_name(), format='png')
+        dot = Digraph(comment=context.context_name(), format='png')
 
         # walk the sw file:
-        for x in C.relevant_kets("*"):  # find all kets in the sw file
+        for x in context.relevant_kets("*"):  # find all kets in the sw file
             x_node = x.label.replace('"', '\\"').replace(':', ';')  # escape quote characters, and rename colon
 
-            for op in C.recall("supported-ops", x):  # find the supported operators for a given ket
+            for op in context.recall("supported-ops", x):  # find the supported operators for a given ket
                 op_label = op.label[4:]
                 arrow_type = "normal"
 
-                sp = C.recall(op, x)  # find the superposition for a given operator applied to the given ket
+                sp = context.recall(op, x)  # find the superposition for a given operator applied to the given ket
                 if type(sp) is stored_rule:
                     sp = ket(sp.rule)
                     arrow_type = "box"
@@ -374,7 +473,7 @@ while True:
         sep = "   "
         max_len = 0
         data = []
-        for file in glob.glob(sw_file_dir + "/*.swc") + glob.glob(sw_file_dir + "/*.sw"):
+        for file in sorted(glob.glob(sw_file_dir + "/*.swc") + glob.glob(sw_file_dir + "/*.sw")):
             base = os.path.basename(file)
             max_len = max(max_len, len(base))
             data.append([base, extract_sw_stats(file)])
@@ -386,30 +485,30 @@ while True:
         sw_file_dir = line[3:]
         # check it exists, if not create it:
         if not os.path.exists(sw_file_dir):
-            print("Creating " + sw_file_dir + " directory.")
+            print("Creating %s directory." % sw_file_dir)
             os.makedirs(sw_file_dir)
 
     elif line in ['ls', 'dir', 'dirs']:
         print("directory list:")
-        for dir in [d for d in os.listdir('.') if os.path.isdir(d) and not d.startswith("__")]:
+        for dir in [d for d in os.listdir('.') if os.path.isdir(d) and not d.startswith("__") and not d.startswith('.')]:
             prefix = "  "
             if dir == sw_file_dir:
                 prefix = "* "
             sw_count = len(glob.glob(dir + "/*.sw"))
-            print(prefix + dir + " (" + str(sw_count) + ")")
+            print('%s%s (%s)' % (prefix, dir, str(sw_count)))
 
 
     elif line == "create inverse":
-        C.create_universe_inverse()
+        context.create_universe_inverse()
 
     elif line == "create multi inverse":
-        C.create_multiverse_inverse()
+        context.create_multiverse_inverse()
 
 
     elif line.startswith("x = "):
         var = line[4:]
         try:
-            x = extract_compound_superposition(C, var)[0]  # needs updating. Fix!
+            x = extract_compound_sequence(context, var)
         except:
             x = ket(var)
 
@@ -467,15 +566,17 @@ while True:
             line = s + '\n'
 
         stored_line = line
-        start_time = time.time()
+        if not quiet:
+            start_time = time.time()
 
         try:
-            result = process_input_line(C, line, x)
+            result = process_input_line(context, line, x)
             print(result)
         except KeyboardInterrupt:  # doesn't seem to work.
             print('caught keyboard interrupt')
 
-        end_time = time.time()
-        delta_time = end_time - start_time
-        print("\n  Time taken:", display_time(delta_time))  # display_time() is in the functions.py file
-        # maybe shift it here.
+        if not quiet:
+            end_time = time.time()
+            delta_time = end_time - start_time
+            print("\n  Time taken:", display_time(delta_time))
+
