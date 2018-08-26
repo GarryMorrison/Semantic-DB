@@ -81,7 +81,7 @@ if len(files_to_run) == 0:
 sw_file_dir = "sw-examples"
 # check it exists, if not create it:
 if not os.path.exists(sw_file_dir):
-    print("Creating " + sw_file_dir + " directory.")
+    print("Creating %s directory." % sw_file_dir)
     os.makedirs(sw_file_dir)
 
 dot_file_dir = 'graph-examples'
@@ -168,7 +168,7 @@ def display_time(seconds):
             ms -= value * count
             if value == 1:
                 name = name.rstrip('s')
-            result.append("{} {}".format(value, name))
+            result.append("%s %s" % (value, name))
     if len(result) == 0:
         return "0"
     return ', '.join(result)
@@ -182,7 +182,7 @@ def save_history(history, history_file):
         today = str(datetime.date.today())
         f.write(today + "\n")
         for line in history:
-            f.write("  " + line + "\n")
+            f.write("  %s\n" % line)
         f.write("\n")
         f.close()
         print("Done.")
@@ -231,12 +231,12 @@ while True:
             count = min(len(command_history), n)
             history = command_history[-count:]
             for k, line in enumerate(history):
-                print(" " + str(k) + ")  " + line)
+                print(" %s)  %s" % (str(k), line))
             selection = input("\nEnter your selection: ")
             try:
                 selection = int(selection)
                 line = history[selection]
-                print("Your selection:", line, "\n")
+                print("Your selection: %s\n" % line)
             except:
                 continue
         else:
@@ -298,7 +298,7 @@ while True:
 
     elif line.startswith("dump "):
         var = line[5:]
-        print("var:", var, "\n")
+        print("var: %s\n" % var)
         try:
             seq = extract_compound_sequence(context, var)
             print(context.dump_multiple_ket_rules(seq))
@@ -310,7 +310,7 @@ while True:
 
     elif line.startswith("display "):
         var = line[8:]
-        print("var:", var, "\n")
+        print("var: %s\n" % var)
         try:
             seq = extract_compound_sequence(context, var)
             print(context.display_seq(seq))
@@ -356,7 +356,7 @@ while True:
         try:
             # download url
             print("downloading sw file:", url)  # code to time the download? Probably, eventually.
-            headers = {'User-Agent': 'semantic-agent/0.1'}
+            headers = {'User-Agent': 'semantic-agent/2.0'}
             req = urllib.request.Request(url, None, headers)  # does it handle https?
             f = urllib.request.urlopen(req)
             html = f.read()
@@ -372,7 +372,7 @@ while True:
         f.close()
 
         # now let's load it into memory:
-        print("loading:", dest, "\n")
+        print("loading: %s\n" % dest)
         context.load(dest)
         if not quiet:
             end_time = time.time()
@@ -489,12 +489,12 @@ while True:
 
     elif line in ['ls', 'dir', 'dirs']:
         print("directory list:")
-        for dir in [d for d in os.listdir('.') if os.path.isdir(d) and not d.startswith("__")]:
+        for dir in [d for d in os.listdir('.') if os.path.isdir(d) and not d.startswith("__") and not d.startswith('.')]:
             prefix = "  "
             if dir == sw_file_dir:
                 prefix = "* "
             sw_count = len(glob.glob(dir + "/*.sw"))
-            print(prefix + dir + " (" + str(sw_count) + ")")
+            print('%s%s (%s)' % (prefix, dir, str(sw_count)))
 
 
     elif line == "create inverse":
