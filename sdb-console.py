@@ -9,7 +9,7 @@
 # Update: 26/8/2018
 # Copyright: GPLv3
 #
-# Usage: ./sdb-console.py [--debug | --info] [-q] [-i] [file1.sw ... filen.sw]
+# Usage: ./sdb-console.py [--debug | --info] [-q] [-i] [--version] [file1.sw ... filen.sw]
 #
 #######################################################################
 
@@ -89,8 +89,8 @@ dot_file_dir = 'graph-examples'
 if interactive:
     print("Welcome to version 2.0 of the Semantic DB!\nLast updated 26 August, 2018")
 
-# C = ContextList("sw console")
-C = context
+# context = ContextList("sw console")  # currently broken, due to parsley binding dict issue.
+# C = context
 
 help_string = """
   q, quit, exit                quit the agent.
@@ -135,7 +135,7 @@ help_string = """
   -- comment                   ignore, this is just a comment line.
   usage                        show list of usage information
   usage op1, op2, op3          show usage of listed operators
-  if none of the above         process_input_line(C,line,x)
+  if none of the above         process_input_line(context, line, x)
 """
 
 x = ket()
@@ -215,7 +215,7 @@ for sw_file in files_to_run:
 
 # dump our ContextList:
 if dump and len(files_to_run) > 0:
-    C.print_multiverse()
+    context.print_multiverse()
 
 if not interactive:
     sys.exit(0)
@@ -259,70 +259,70 @@ while True:
         continue
 
     elif line == "context":
-        print(C.show_context_list())
+        print(context.show_context_list())
 
     elif line == "icontext":
-        print(C.show_context_list_index())
+        print(context.show_context_list_index())
         selection = input("Enter your selection: ")
         try:
             selection = int(selection)
-            if C.set_index(selection):
-                print(C.dump_universe())
+            if context.set_index(selection):
+                print(context.dump_universe())
         except:
             continue
 
     # switch context:
     elif line.startswith("context "):
         name = line[8:]
-        C.set(name)
-        print(C.dump_universe())
+        context.set(name)
+        print(context.dump_universe())
 
     elif line == "reset":
         check = input("\n  Warning! This will erase all unsaved work! Are you sure? (y/n): ")
         if len(check) > 0 and check[0] == 'y':
-            # C = ContextList("sw console") # this is correct approach, but broken due to parser!
-            C.reset('sw console')           # this seems to work.
+            # context = ContextList("sw console") # this is correct approach, but broken due to parser!
+            context.reset('sw console')           # this seems to work.
             print("\n  Gone ... ")
 
     elif line == "dump":
-        print(C.dump_universe())
+        print(context.dump_universe())
 
     elif line == "dump exact":
-        print(C.dump_universe(exact=True))
+        print(context.dump_universe(exact=True))
 
     elif line == "dump multi":
-        print(C.dump_multiverse())
+        print(context.dump_multiverse())
 
     elif line == "dump self":
-        print(C.dump_multiple_ket_rules(x))
+        print(context.dump_multiple_ket_rules(x))
 
     elif line.startswith("dump "):
         var = line[5:]
         print("var:", var, "\n")
         try:
-            seq = extract_compound_sequence(C, var)
-            print(C.dump_multiple_ket_rules(seq))
+            seq = extract_compound_sequence(context, var)
+            print(context.dump_multiple_ket_rules(seq))
         except:
             continue
 
     elif line == "display":
-        print(C.display_all())
+        print(context.display_all())
 
     elif line.startswith("display "):
         var = line[8:]
         print("var:", var, "\n")
         try:
-            seq = extract_compound_sequence(C, var)
-            print(C.display_seq(seq))
+            seq = extract_compound_sequence(context, var)
+            print(context.display_seq(seq))
         except:
             continue
 
     elif line == "freq":
-        result = C.to_freq_list()
+        result = context.to_freq_list()
         print(result)
 
     elif line == "mfreq":
-        print(C.multiverse_to_freq_list())
+        print(context.multiverse_to_freq_list())
 
     elif line.startswith("web-load "):  # where put it? in sw_file_dir? What if file with that name already exists?
         url = line[9:]  # how about timing the download and load? Cheat, and merge with "load file.sw"?
@@ -373,7 +373,7 @@ while True:
 
         # now let's load it into memory:
         print("loading:", dest, "\n")
-        C.load(dest)
+        context.load(dest)
         if not quiet:
             end_time = time.time()
             delta_time = end_time - start_time
@@ -388,8 +388,7 @@ while True:
         if not quiet:
             # time it!
             start_time = time.time()
-        # load_sw(C,name)
-        C.load(name)
+        context.load(name)
         if not quiet:
             end_time = time.time()
             delta_time = end_time - start_time
@@ -403,8 +402,7 @@ while True:
         if not quiet:
             # time it!
             start_time = time.time()
-        # load_sw(C,name)
-        C.line_load(name)
+        context.line_load(name)
         if not quiet:
             end_time = time.time()
             delta_time = end_time - start_time
@@ -418,13 +416,13 @@ while True:
         name = line[11:]
         name = sw_file_dir + "/" + name  # load and save files to the sw_file_dir.
         print("saving context list to:", name)
-        save_sw_multi(C, name)
+        save_sw_multi(context, name)
 
-    elif line.startswith("save "):  # check for file existance first? Or just blow away what is already there?
+    elif line.startswith("save "):  # check for file existence first? Or just blow away what is already there?
         name = line[5:]
         name = sw_file_dir + "/" + name  # load and save files to the sw_file_dir.
         print("saving current context to:", name)
-        C.save(name)
+        context.save(name)
 
     elif line.startswith('save-as-dot '):
         if not have_graphviz:
@@ -439,17 +437,17 @@ while True:
         name = dot_file_dir + '/' + name
         print('saving dot file: %s' % name)
 
-        dot = Digraph(comment=C.context_name(), format='png')
+        dot = Digraph(comment=context.context_name(), format='png')
 
         # walk the sw file:
-        for x in C.relevant_kets("*"):  # find all kets in the sw file
+        for x in context.relevant_kets("*"):  # find all kets in the sw file
             x_node = x.label.replace('"', '\\"').replace(':', ';')  # escape quote characters, and rename colon
 
-            for op in C.recall("supported-ops", x):  # find the supported operators for a given ket
+            for op in context.recall("supported-ops", x):  # find the supported operators for a given ket
                 op_label = op.label[4:]
                 arrow_type = "normal"
 
-                sp = C.recall(op, x)  # find the superposition for a given operator applied to the given ket
+                sp = context.recall(op, x)  # find the superposition for a given operator applied to the given ket
                 if type(sp) is stored_rule:
                     sp = ket(sp.rule)
                     arrow_type = "box"
@@ -486,7 +484,7 @@ while True:
         sw_file_dir = line[3:]
         # check it exists, if not create it:
         if not os.path.exists(sw_file_dir):
-            print("Creating " + sw_file_dir + " directory.")
+            print("Creating %s directory." % sw_file_dir)
             os.makedirs(sw_file_dir)
 
     elif line in ['ls', 'dir', 'dirs']:
@@ -500,16 +498,16 @@ while True:
 
 
     elif line == "create inverse":
-        C.create_universe_inverse()
+        context.create_universe_inverse()
 
     elif line == "create multi inverse":
-        C.create_multiverse_inverse()
+        context.create_multiverse_inverse()
 
 
     elif line.startswith("x = "):
         var = line[4:]
         try:
-            x = extract_compound_sequence(C, var)
+            x = extract_compound_sequence(context, var)
         except:
             x = ket(var)
 
@@ -571,7 +569,7 @@ while True:
             start_time = time.time()
 
         try:
-            result = process_input_line(C, line, x)
+            result = process_input_line(context, line, x)
             print(result)
         except KeyboardInterrupt:  # doesn't seem to work.
             print('caught keyboard interrupt')
