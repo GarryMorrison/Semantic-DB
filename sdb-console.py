@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 25/8/2018
+# Update: 26/8/2018
 # Copyright: GPLv3
 #
 # Usage: ./sdb-console.py [--debug | --info] [-q] [-i] [file1.sw ... filen.sw]
@@ -87,7 +87,7 @@ if not os.path.exists(sw_file_dir):
 dot_file_dir = 'graph-examples'
 
 if interactive:
-    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 25 August, 2018")
+    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 26 August, 2018")
 
 # C = ContextList("sw console")
 C = context
@@ -142,6 +142,7 @@ x = ket()
 result = ket()
 stored_line = ""
 command_history = []
+command_history_len = 1000
 command_history_file = "sa-console-command-history.txt"  # file where we save the command history. Might be interesting.
 
 
@@ -159,6 +160,16 @@ def save_history(history, history_file):
         print("Done.")
     except:
         print("failed!")
+
+
+# load history from file:
+tmp_history = []
+with open(command_history_file, 'r') as f:
+    for line in f:
+        if line.startswith('  '):  # filter out date-lines, which don't start with two spaces.
+            line = line.strip()
+            tmp_history.append(line)
+command_history = tmp_history[-command_history_len:]
 
 
 # run our command line files:
