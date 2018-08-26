@@ -326,20 +326,6 @@ while True:
 
     elif line.startswith("web-load "):  # where put it? in sw_file_dir? What if file with that name already exists?
         url = line[9:]  # how about timing the download and load? Cheat, and merge with "load file.sw"?
-        if not quiet:
-            start_time = time.time()
-        try:
-            # download url
-            print("downloading sw file:", url)  # code to time the download? Probably, eventually.
-            headers = {'User-Agent': 'semantic-agent/0.1'}
-            req = urllib.request.Request(url, None, headers)  # does it handle https?
-            f = urllib.request.urlopen(req)
-            html = f.read()
-            f.close()
-        except:
-            print("failed to download:", url)
-            continue
-
         # find the sw file name:
         name = url.split("/")[-1]
         dest = sw_file_dir + "/" + name
@@ -348,8 +334,7 @@ while True:
         # check if it exists:
         while os.path.exists(dest):
             # either rename or overwrite
-            check = input(
-                "\n  File \"" + name + "\" already exists.\n  [O]verwrite, [R]ename or [D]on't save? (O,R,D): ")
+            check = input("\n  File \"%s\" already exists.\n  [O]verwrite, [R]ename or [D]on't save? (O,R,D): " % name)
             if len(check) > 0:
                 if check[0] in ["o", "O"]:  # we are allowed to overwrite it
                     break
@@ -366,6 +351,20 @@ while True:
         if dont_save:
             continue
 
+        if not quiet:
+            start_time = time.time()
+        try:
+            # download url
+            print("downloading sw file:", url)  # code to time the download? Probably, eventually.
+            headers = {'User-Agent': 'semantic-agent/0.1'}
+            req = urllib.request.Request(url, None, headers)  # does it handle https?
+            f = urllib.request.urlopen(req)
+            html = f.read()
+            f.close()
+        except:
+            print("failed to download:", url)
+            continue
+
         # let's save it:
         print("\nsaving to:", name)  # do we need a try/except here?
         f = open(dest, 'wb')
@@ -374,7 +373,6 @@ while True:
 
         # now let's load it into memory:
         print("loading:", dest, "\n")
-        # load_sw(C,dest)
         C.load(dest)
         if not quiet:
             end_time = time.time()
