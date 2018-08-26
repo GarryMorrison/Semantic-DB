@@ -1,4 +1,4 @@
-#!c:/Python34/python.exe 
+#!/usr/bin/env python3
 
 #######################################################################
 # convert console usage information into html

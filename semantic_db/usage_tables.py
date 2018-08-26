@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 #######################################################################
 # the semantic-db usage tables
 # contains documentation for our built in operators, our sigmoids, and our worked examples
