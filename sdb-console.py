@@ -146,6 +146,34 @@ command_history_len = 1000
 command_history_file = "sa-console-command-history.txt"  # file where we save the command history. Might be interesting.
 
 
+# our display time intervals:
+intervals = (
+    ('weeks', 604800000),  # 1000 * 60 * 60 * 24 * 7
+    ('days', 86400000),  # 1000 * 60 * 60 * 24
+    ('hours', 3600000),  # 1000 * 60 * 60
+    ('minutes', 60000),  # 1000 * 60
+    ('seconds', 1000),  # 1000
+    ('milliseconds', 1),
+)
+
+
+# our display time function:
+def display_time(seconds):
+    ms = int(1000 * seconds)
+    result = []
+
+    for name, count in intervals:
+        value = ms // count
+        if value:
+            ms -= value * count
+            if value == 1:
+                name = name.rstrip('s')
+            result.append("{} {}".format(value, name))
+    if len(result) == 0:
+        return "0"
+    return ', '.join(result)
+
+
 # save history function:
 def save_history(history, history_file):
     print("saving history ... ")
@@ -163,13 +191,16 @@ def save_history(history, history_file):
 
 
 # load history from file:
-tmp_history = []
-with open(command_history_file, 'r') as f:
-    for line in f:
-        if line.startswith('  '):  # filter out date-lines, which don't start with two spaces.
-            line = line.strip()
-            tmp_history.append(line)
-command_history = tmp_history[-command_history_len:]
+try:
+    tmp_history = []
+    with open(command_history_file, 'r') as f:
+        for line in f:
+            if line.startswith('  '):  # filter out date-lines, which don't start with two spaces.
+                line = line.strip()
+                tmp_history.append(line)
+    command_history = tmp_history[-command_history_len:]
+except FileNotFoundError:
+    pass
 
 
 # run our command line files:
@@ -550,5 +581,5 @@ while True:
         if not quiet:
             end_time = time.time()
             delta_time = end_time - start_time
-            print("\n  Time taken:", display_time(delta_time))  # display_time() is in the functions.py file
-            # maybe shift it here.
+            print("\n  Time taken:", display_time(delta_time))
+
