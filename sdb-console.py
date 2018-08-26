@@ -474,7 +474,7 @@ while True:
         sep = "   "
         max_len = 0
         data = []
-        for file in glob.glob(sw_file_dir + "/*.swc") + glob.glob(sw_file_dir + "/*.sw"):
+        for file in sorted(glob.glob(sw_file_dir + "/*.swc") + glob.glob(sw_file_dir + "/*.sw")):
             base = os.path.basename(file)
             max_len = max(max_len, len(base))
             data.append([base, extract_sw_stats(file)])
