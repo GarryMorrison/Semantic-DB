@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 31/7/2018
+# Update: 27/8/2018
 # Copyright: GPLv3
 #
 # A collection of functions that apply to kets, superpositions and sequences.
@@ -24,7 +24,7 @@ from semantic_db.sigmoids import *
 import math
 from math import factorial
 from pprint import pprint
-import numpy as np
+# import numpy as np
 from matplotlib import pyplot as plt
 import datetime
 from time import gmtime, strftime, ctime, sleep
@@ -909,9 +909,13 @@ def plot(one):
 
     fig = plt.figure()
     width = 0.1
-    ind = np.arange(len(values))
+    # ind = np.arange(len(values))
+    ind = list(range(len(values)))
+    xticks_ind = [x + width / 2 for x in ind]
+    # print('ind: %s' % ind)
     plt.bar(ind, values, width=width)
-    plt.xticks(ind + width / 2, labels)
+    # plt.xticks(ind + width / 2, labels)
+    plt.xticks(xticks_ind, labels)
     fig.autofmt_xdate()
     plt.show()
     return ket('plot')
