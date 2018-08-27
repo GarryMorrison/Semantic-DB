@@ -4,7 +4,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2018
-# Update: 31/7/2018
+# Update: 27/8/2018
 # Copyright: GPLv3
 #
 # Usage: 
@@ -1249,15 +1249,15 @@ class sequence(object):
             seq.add(sp)
         return seq
 
-    def noise(self, t):  # do we use this anywhere?
-        seq = sequence(self.name, [])
-        for x in self.data:
-            try:
-                value = x + np.random.normal(0, t)  # enable adding noise to superpositions??
-            except:
-                value = x
-            seq.add(value)
-        return seq
+    # def noise(self, t):  # do we use this anywhere?
+    #     seq = sequence(self.name, [])
+    #     for x in self.data:
+    #         try:
+    #             value = x + np.random.normal(0, t)  # enable adding noise to superpositions??
+    #         except:
+    #             value = x
+    #         seq.add(value)
+    #     return seq
 
     def smooth(self, k):  # hrmm... maybe if type superposition, apply coeff_sort()?
         try:
