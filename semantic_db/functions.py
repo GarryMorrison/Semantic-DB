@@ -908,13 +908,10 @@ def plot(one):
         values.append(value)
 
     fig = plt.figure()
-    width = 0.1
-    # ind = np.arange(len(values))
+    width = 0.2
     ind = list(range(len(values)))
-    xticks_ind = [x + width / 2 for x in ind]
-    # print('ind: %s' % ind)
+    xticks_ind = [x + width /10 for x in ind]
     plt.bar(ind, values, width=width)
-    # plt.xticks(ind + width / 2, labels)
     plt.xticks(xticks_ind, labels)
     fig.autofmt_xdate()
     plt.show()
