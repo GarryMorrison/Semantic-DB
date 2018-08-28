@@ -13,6 +13,9 @@
 # it will dump two files in current directory:
 # sw-index.txt and index.html
 # then you need to upload these to your web host, along with your sw files
+# Now you can run this command from the semantic-db shell:
+#
+#   web-files http://your-host.org/path-to-sw-files/
 #
 #######################################################################
 

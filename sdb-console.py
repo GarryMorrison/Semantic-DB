@@ -88,7 +88,8 @@ dot_file_dir = 'graph-examples'
 
 if interactive:
     print("Welcome to version 2.0 of the Semantic DB!\nLast updated 28 August, 2018")
-    print("To see remote sw files, run:\n\n  web-files http://semantic-db.org/sw/")
+    print("\nTo load remote sw files, run:\n\n  web-files http://semantic-db.org/sw/\n")
+    print("To see usage docs, see:\n\n  http://semantic-db.org/docs/usage/")
 
 # context = ContextList("sw console")  # currently broken, due to parsley binding dict issue.
 # C = context
@@ -110,7 +111,6 @@ help_string = """
   display ket/sp                        (relatively) readable display about what we know for the ket/sp
   freq                                  convert current context to frequency list
   mfreq                                 convert context list to frequency list
-  web-load http://file.sw               load a sw file from the web
   load file.sw                          load file.sw
   line-load file.sw                     load file.sw one line at a time, useful for large files, breaks for swc files.
   save file.sw                          save current context to file.sw
@@ -118,6 +118,7 @@ help_string = """
   save-as-dot file.dot                  save current context in dot format to file.dot
   files                                 show the available .sw files
   web-files http://semantic-db.org/sw/  show the available .sw files on remote site
+  web-load http://file.sw               load a sw file from the web
   cd                                    change and create if necessary the .sw directory
   ls, dir, dirs                         show the available directories
   create inverse                        create inverse for current context
@@ -491,7 +492,7 @@ while True:
     elif line.startswith("web-files "):
         url_prefix = line[10:].rstrip('/')
         url = url_prefix + '/sw-index.txt'
-        print('List remote sw files.\nFor example:\n\n  web-files http://semantic-db.org/sw/\n')
+        print('List and load remote sw files.\nFor example:\n\n  web-files http://semantic-db.org/sw/\n')
 
         # download url
         try:
