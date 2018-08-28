@@ -266,7 +266,8 @@ def web_load(url):
             return
 
         # let's save it:
-        print("saving to:", name)  # do we need a try/except here?
+        # print("saving to:", name)  # do we need a try/except here?
+        print('saving to: %s' % dest)
         f = open(dest, 'wb')
         f.write(html)
         f.close()
@@ -490,9 +491,10 @@ while True:
             print("  " + file.ljust(max_len) + sep + stats)
 
     elif line.startswith("web-files "):
+        print('List and load remote sw files.\nFor example:\n\n  web-files http://semantic-db.org/sw/\n')
+
         url_prefix = line[10:].rstrip('/')
         url = url_prefix + '/sw-index.txt'
-        print('List and load remote sw files.\nFor example:\n\n  web-files http://semantic-db.org/sw/\n')
 
         # download url
         try:
@@ -530,9 +532,10 @@ while True:
             continue
 
     elif line.startswith("web-files2 "):
+        print('List and load remote sw files.\nFor example:\n\n  web-files http://semantic-db.org/sw/\n')
+
         url_prefix = line[11:].rstrip('/')
         url = url_prefix + '/index.html'
-        print('List and load remote sw files.\nFor example:\n\n  web-files http://semantic-db.org/sw/\n')
 
         # download url
         try:
@@ -551,11 +554,80 @@ while True:
         urls = []
         k = 1
         for file in re.findall('href="(.*sw|.*swc)"', html.decode('ascii')):  # do we want to sort the list?
-            # print('line: %s' % line)
             file_url = url_prefix + '/' + file
             urls.append((file_url, file))
             print(' %s)  %s' % (k, file))
             k += 1
+
+        # now choose which file we want:
+        selection = input("\nEnter your selection: ")
+        try:
+            selection = int(selection)
+            file_url, file = urls[selection-1]
+            print("Your selection: %s\n" % file)
+            web_load(file_url)
+        except:
+            continue
+
+    elif line.startswith("web-files3 "):
+        print('List and load remote sw files.\nFor example:\n\n  web-files http://semantic-db.org/sw/\n')
+        url_prefix, url_base = os.path.split(line[11:])
+        # print('url_prefix: %s' % url_prefix)
+        # print('url_base: %s' % url_base)
+
+        # try sw-index.txt first
+        url = url_prefix + '/sw-index.txt'
+        have_sw_index = False
+
+        # download sw-index.txt:
+        try:
+            print("downloading sw index file:", url)
+            headers = {'User-Agent': 'semantic-agent/2.0'}
+            req = urllib.request.Request(url, None, headers)  # does it handle https?
+            f = urllib.request.urlopen(req)
+            html = f.read()
+            f.close()
+            have_sw_index = True
+        except:
+            # try index.html next:
+            if url_base == '':
+                url = url_prefix
+            else:
+                url = url_prefix + '/' + url_base
+
+            # download index.html:
+            try:
+                print("downloading sw index file:", url)  # code to time the download? Probably, eventually.
+                headers = {'User-Agent': 'semantic-agent/2.0'}
+                req = urllib.request.Request(url, None, headers)  # does it handle https?
+                f = urllib.request.urlopen(req)
+                html = f.read()
+                f.close()
+            except:
+                print("failed to download:", url)
+                continue
+
+        print()
+        urls = []
+        k = 1
+        # process sw-index.txt file if we have it:
+        if have_sw_index:
+            for line in html.decode('ascii').split('\n'):
+                line = line.strip()
+                if line != '':
+                    file = line.split(' ')[0]
+                    file_url = url_prefix + '/' + file
+                    urls.append((file_url, file))
+                    print(' %s)  %s' % (k, line))
+                    k += 1
+        else:
+            for file in re.findall('href="(.*sw|.*swc)"', html.decode('utf-8')):  # do we want to sort the list?
+                base = os.path.basename(file)
+                file_url = url_prefix + '/' + file
+                # print('file_url: %s' % file_url)
+                urls.append((file_url, base))
+                print(' %s)  %s' % (k, base))
+                k += 1
 
         # now choose which file we want:
         selection = input("\nEnter your selection: ")
