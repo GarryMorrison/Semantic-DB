@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 26/8/2018
+# Update: 28/8/2018
 # Copyright: GPLv3
 #
 # Usage: ./sdb-console.py [--debug | --info] [-q] [-i] [--version] [file1.sw ... filen.sw]
@@ -87,55 +87,56 @@ if not os.path.exists(sw_file_dir):
 dot_file_dir = 'graph-examples'
 
 if interactive:
-    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 26 August, 2018")
+    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 28 August, 2018")
 
 # context = ContextList("sw console")  # currently broken, due to parsley binding dict issue.
 # C = context
 
 help_string = """
-  q, quit, exit                quit the agent.
-  h, help                      print this message
-  context                      print list of context's
-  context string               set current context to string
-  icontext                     interactive context
-  reset                        reset back to completely empty console
-                               Warning! you will lose all unsaved work!
-  dump                         print current context
-  dump exact                   print current context in exact mode
-  dump multi                   print context list
-  dump self                    print what we know about the default ket/sp
-  dump ket/sp                  print what we know about the given ket/sp
-  display                      (relatively) readable display of current context
-  display ket/sp               (relatively) readable display about what we know for the ket/sp
-  freq                         convert current context to frequency list
-  mfreq                        convert context list to frequency list
-  web-load http://file.sw      load a sw file from the web
-  load file.sw                 load file.sw
-  line-load file.sw            load file.sw one line at a time, useful for large files, breaks for swc files.
-  save file.sw                 save current context to file.sw
-  save multi file.sw           save context list to file.sw
-  save-as-dot file.dot         save current context in dot format to file.dot
-  files                        show the available .sw files
-  cd                           change and create if necessary the .sw directory
-  ls, dir, dirs                show the available directories
-  create inverse               create inverse for current context
-  create multi inverse         create inverse for all context in context list
-  x = foo: bah                 set x (the default ket) to |foo: bah>
-  id                           display the default ket/superposition
-  s, store                     set x to the result of the last computation
-  .                            repeat last computation
-  i                            interactive history
-  history                      show last 30 commands
-  history n                    show last n commands
-  save history                 save console history to file
-  debug on                     switch verbose debug messages on
-  debug off                    switch debug messages off
-  info on                      switch info messages on
-  info off                     switch info messages off
-  -- comment                   ignore, this is just a comment line.
-  usage                        show list of usage information
-  usage op1, op2, op3          show usage of listed operators
-  if none of the above         process_input_line(context, line, x)
+  q, quit, exit                         quit the agent.
+  h, help                               print this message
+  context                               print list of context's
+  context string                        set current context to string
+  icontext                              interactive context
+  reset                                 reset back to completely empty console
+                                        Warning! you will lose all unsaved work!
+  dump                                  print current context
+  dump exact                            print current context in exact mode
+  dump multi                            print context list
+  dump self                             print what we know about the default ket/sp
+  dump ket/sp                           print what we know about the given ket/sp
+  display                               (relatively) readable display of current context
+  display ket/sp                        (relatively) readable display about what we know for the ket/sp
+  freq                                  convert current context to frequency list
+  mfreq                                 convert context list to frequency list
+  web-load http://file.sw               load a sw file from the web
+  load file.sw                          load file.sw
+  line-load file.sw                     load file.sw one line at a time, useful for large files, breaks for swc files.
+  save file.sw                          save current context to file.sw
+  save multi file.sw                    save context list to file.sw
+  save-as-dot file.dot                  save current context in dot format to file.dot
+  files                                 show the available .sw files
+  web-files http://semantic-db.org/sw/  show the available .sw files on remote site
+  cd                                    change and create if necessary the .sw directory
+  ls, dir, dirs                         show the available directories
+  create inverse                        create inverse for current context
+  create multi inverse                  create inverse for all context in context list
+  x = foo: bah                          set x (the default ket) to |foo: bah>
+  id                                    display the default ket/superposition
+  s, store                              set x to the result of the last computation
+  .                                     repeat last computation
+  i                                     interactive history
+  history                               show last 30 commands
+  history n                             show last n commands
+  save history                          save console history to file
+  debug on                              switch verbose debug messages on
+  debug off                             switch debug messages off
+  info on                               switch info messages on
+  info off                              switch info messages off
+  -- comment                            ignore, this is just a comment line.
+  usage                                 show list of usage information
+  usage op1, op2, op3                   show usage of listed operators
+  if none of the above                  process_input_line(context, line, x)
 """
 
 x = ket()
@@ -479,6 +480,10 @@ while True:
         print()
         for file, stats in data:
             print("  " + file.ljust(max_len) + sep + stats)
+
+    elif line.startswith("web-files "):
+        url = line[10:]
+        print('List remote sw files.\nFor example:\n\n  web-files http://semantic-db.org/sw/\n')
 
     elif line.startswith("cd "):
         sw_file_dir = line[3:]
