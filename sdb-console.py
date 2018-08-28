@@ -88,6 +88,7 @@ dot_file_dir = 'graph-examples'
 
 if interactive:
     print("Welcome to version 2.0 of the Semantic DB!\nLast updated 28 August, 2018")
+    print("To see remote sw files, run:\n\n  web-files http://semantic-db.org/sw/")
 
 # context = ContextList("sw console")  # currently broken, due to parsley binding dict issue.
 # C = context
@@ -221,6 +222,63 @@ if dump and len(files_to_run) > 0:
 if not interactive:
     sys.exit(0)
 
+
+# define our web-load() function:
+def web_load(url):
+    # find the sw file name:
+    name = url.split("/")[-1]
+    dest = sw_file_dir + "/" + name  # if sw_file_dir is '', then it puts it in root directory! Fix!
+
+    dont_save = False
+    # check if it exists:
+    while os.path.exists(dest):
+        # either rename or overwrite
+        check = input("\n  File \"%s\" already exists.\n  [O]verwrite, [R]ename or [D]on't save? (O,R,D): " % name)
+        if len(check) > 0:
+            if check[0] in ["o", "O"]:  # we are allowed to overwrite it
+                break
+            if check[0] in ["d", "D"]:  # don't save the file
+                dont_save = True
+                break
+            elif check[0] in ["r", "R"]:  # we have to choose a new name
+                check = input("\n  New name: ")
+                if len(check) > 0:
+                    name = check
+                    dest = sw_file_dir + "/" + name
+    print()
+
+    if not quiet:
+        start_time = time.time()
+
+    # check if we don't want to save:
+    if not dont_save:
+        try:
+            # download url
+            print("downloading sw file:", url)  # code to time the download? Probably, eventually.
+            headers = {'User-Agent': 'semantic-agent/2.0'}
+            req = urllib.request.Request(url, None, headers)  # does it handle https?
+            f = urllib.request.urlopen(req)
+            html = f.read()
+            f.close()
+        except:
+            print("failed to download:", url)
+            return
+
+        # let's save it:
+        print("saving to:", name)  # do we need a try/except here?
+        f = open(dest, 'wb')
+        f.write(html)
+        f.close()
+
+    # now let's load it into memory:
+    print("loading: %s\n" % dest)
+    context.load(dest)
+    if not quiet:
+        end_time = time.time()
+        delta_time = end_time - start_time
+        print("\n  Time taken:", display_time(delta_time))
+
+
 # the interactive semantic agent:
 while True:
     line = input("\nsa: ")
@@ -325,60 +383,9 @@ while True:
     elif line == "mfreq":
         print(context.multiverse_to_freq_list())
 
-    elif line.startswith("web-load "):  # where put it? in sw_file_dir? What if file with that name already exists?
-        url = line[9:]  # how about timing the download and load? Cheat, and merge with "load file.sw"?
-        # find the sw file name:
-        name = url.split("/")[-1]
-        dest = sw_file_dir + "/" + name
-
-        dont_save = False
-        # check if it exists:
-        while os.path.exists(dest):
-            # either rename or overwrite
-            check = input("\n  File \"%s\" already exists.\n  [O]verwrite, [R]ename or [D]on't save? (O,R,D): " % name)
-            if len(check) > 0:
-                if check[0] in ["o", "O"]:  # we are allowed to overwrite it
-                    break
-                if check[0] in ["d", "D"]:  # don't save the file we just downloaded (yeah, waste if it was big)
-                    dont_save = True
-                    break
-                elif check[0] in ["r", "R"]:  # we have to choose a new name
-                    check = input("\n  New name: ")
-                    if len(check) > 0:
-                        name = check
-                        dest = sw_file_dir + "/" + name
-
-        # check if we don't want to save:
-        if dont_save:
-            continue
-
-        if not quiet:
-            start_time = time.time()
-        try:
-            # download url
-            print("downloading sw file:", url)  # code to time the download? Probably, eventually.
-            headers = {'User-Agent': 'semantic-agent/2.0'}
-            req = urllib.request.Request(url, None, headers)  # does it handle https?
-            f = urllib.request.urlopen(req)
-            html = f.read()
-            f.close()
-        except:
-            print("failed to download:", url)
-            continue
-
-        # let's save it:
-        print("\nsaving to:", name)  # do we need a try/except here?
-        f = open(dest, 'wb')
-        f.write(html)
-        f.close()
-
-        # now let's load it into memory:
-        print("loading: %s\n" % dest)
-        context.load(dest)
-        if not quiet:
-            end_time = time.time()
-            delta_time = end_time - start_time
-            print("\n  Time taken:", display_time(delta_time))
+    elif line.startswith("web-load "):
+        url = line[9:]
+        web_load(url)
 
 
     elif line.startswith("load "):
@@ -482,8 +489,44 @@ while True:
             print("  " + file.ljust(max_len) + sep + stats)
 
     elif line.startswith("web-files "):
-        url = line[10:]
+        url_prefix = line[10:].rstrip('/')
+        url = url_prefix + '/sw-index.txt'
         print('List remote sw files.\nFor example:\n\n  web-files http://semantic-db.org/sw/\n')
+
+        # download url
+        try:
+            print("downloading sw index file:", url)  # code to time the download? Probably, eventually.
+            headers = {'User-Agent': 'semantic-agent/2.0'}
+            req = urllib.request.Request(url, None, headers)  # does it handle https?
+            f = urllib.request.urlopen(req)
+            html = f.read()
+            f.close()
+        except:
+            print("failed to download:", url)
+            continue
+
+        # process sw-index.txt file:
+        print()
+        urls = []
+        k = 1
+        for line in html.decode('ascii').split('\n'):
+            line = line.strip()
+            if line != '':
+                file = line.split(' ')[0]
+                file_url = url_prefix + '/' + file
+                urls.append((file_url, file))
+                print(' %s)  %s' % (k, line))
+                k += 1
+
+        # now choose which file we want:
+        selection = input("\nEnter your selection: ")
+        try:
+            selection = int(selection)
+            file_url, file = urls[selection-1]
+            print("Your selection: %s\n" % file)
+            web_load(file_url)
+        except:
+            continue
 
     elif line.startswith("cd "):
         sw_file_dir = line[3:]
