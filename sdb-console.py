@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 26/8/2018
+# Update: 28/8/2018
 # Copyright: GPLv3
 #
 # Usage: ./sdb-console.py [--debug | --info] [-q] [-i] [--version] [file1.sw ... filen.sw]
@@ -87,55 +87,58 @@ if not os.path.exists(sw_file_dir):
 dot_file_dir = 'graph-examples'
 
 if interactive:
-    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 26 August, 2018")
+    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 28 August, 2018")
+    print("\nTo load remote sw files, run:\n\n  web-files http://semantic-db.org/sw/\n")
+    print("To see usage docs, see:\n\n  http://semantic-db.org/docs/usage/")
 
 # context = ContextList("sw console")  # currently broken, due to parsley binding dict issue.
 # C = context
 
 help_string = """
-  q, quit, exit                quit the agent.
-  h, help                      print this message
-  context                      print list of context's
-  context string               set current context to string
-  icontext                     interactive context
-  reset                        reset back to completely empty console
-                               Warning! you will lose all unsaved work!
-  dump                         print current context
-  dump exact                   print current context in exact mode
-  dump multi                   print context list
-  dump self                    print what we know about the default ket/sp
-  dump ket/sp                  print what we know about the given ket/sp
-  display                      (relatively) readable display of current context
-  display ket/sp               (relatively) readable display about what we know for the ket/sp
-  freq                         convert current context to frequency list
-  mfreq                        convert context list to frequency list
-  web-load http://file.sw      load a sw file from the web
-  load file.sw                 load file.sw
-  line-load file.sw            load file.sw one line at a time, useful for large files, breaks for swc files.
-  save file.sw                 save current context to file.sw
-  save multi file.sw           save context list to file.sw
-  save-as-dot file.dot         save current context in dot format to file.dot
-  files                        show the available .sw files
-  cd                           change and create if necessary the .sw directory
-  ls, dir, dirs                show the available directories
-  create inverse               create inverse for current context
-  create multi inverse         create inverse for all context in context list
-  x = foo: bah                 set x (the default ket) to |foo: bah>
-  id                           display the default ket/superposition
-  s, store                     set x to the result of the last computation
-  .                            repeat last computation
-  i                            interactive history
-  history                      show last 30 commands
-  history n                    show last n commands
-  save history                 save console history to file
-  debug on                     switch verbose debug messages on
-  debug off                    switch debug messages off
-  info on                      switch info messages on
-  info off                     switch info messages off
-  -- comment                   ignore, this is just a comment line.
-  usage                        show list of usage information
-  usage op1, op2, op3          show usage of listed operators
-  if none of the above         process_input_line(context, line, x)
+  q, quit, exit                         quit the agent.
+  h, help                               print this message
+  context                               print list of context's
+  context string                        set current context to string
+  icontext                              interactive context
+  reset                                 reset back to completely empty console
+                                        Warning! you will lose all unsaved work!
+  dump                                  print current context
+  dump exact                            print current context in exact mode
+  dump multi                            print context list
+  dump self                             print what we know about the default ket/sp
+  dump ket/sp                           print what we know about the given ket/sp
+  display                               (relatively) readable display of current context
+  display ket/sp                        (relatively) readable display about what we know for the ket/sp
+  freq                                  convert current context to frequency list
+  mfreq                                 convert context list to frequency list
+  load file.sw                          load file.sw
+  line-load file.sw                     load file.sw one line at a time, useful for large files, breaks for swc files.
+  save file.sw                          save current context to file.sw
+  save multi file.sw                    save context list to file.sw
+  save-as-dot file.dot                  save current context in dot format to file.dot
+  files                                 show the available .sw files
+  web-files http://semantic-db.org/sw/  show the available .sw files on remote site
+  web-load http://file.sw               load a sw file from the web
+  cd                                    change and create if necessary the .sw directory
+  ls, dir, dirs                         show the available directories
+  create inverse                        create inverse for current context
+  create multi inverse                  create inverse for all context in context list
+  x = foo: bah                          set x (the default ket) to |foo: bah>
+  id                                    display the default ket/superposition
+  s, store                              set x to the result of the last computation
+  .                                     repeat last computation
+  i                                     interactive history
+  history                               show last 30 commands
+  history n                             show last n commands
+  save history                          save console history to file
+  debug on                              switch verbose debug messages on
+  debug off                             switch debug messages off
+  info on                               switch info messages on
+  info off                              switch info messages off
+  -- comment                            ignore, this is just a comment line.
+  usage                                 show list of usage information
+  usage op1, op2, op3                   show usage of listed operators
+  if none of the above                  process_input_line(context, line, x)
 """
 
 x = ket()
@@ -219,6 +222,64 @@ if dump and len(files_to_run) > 0:
 
 if not interactive:
     sys.exit(0)
+
+
+# define our web-load() function:
+def web_load(url):
+    # find the sw file name:
+    name = url.split("/")[-1]
+    dest = sw_file_dir + "/" + name  # if sw_file_dir is '', then it puts it in root directory! Fix!
+
+    dont_save = False
+    # check if it exists:
+    while os.path.exists(dest):
+        # either rename or overwrite
+        check = input("\n  File \"%s\" already exists.\n  [O]verwrite, [R]ename or [D]on't save? (O,R,D): " % name)
+        if len(check) > 0:
+            if check[0] in ["o", "O"]:  # we are allowed to overwrite it
+                break
+            if check[0] in ["d", "D"]:  # don't save the file
+                dont_save = True
+                break
+            elif check[0] in ["r", "R"]:  # we have to choose a new name
+                check = input("\n  New name: ")
+                if len(check) > 0:
+                    name = check
+                    dest = sw_file_dir + "/" + name
+    print()
+
+    if not quiet:
+        start_time = time.time()
+
+    # check if we don't want to save:
+    if not dont_save:
+        try:
+            # download url
+            print("downloading sw file:", url)  # code to time the download? Probably, eventually.
+            headers = {'User-Agent': 'semantic-agent/2.0'}
+            req = urllib.request.Request(url, None, headers)  # does it handle https?
+            f = urllib.request.urlopen(req)
+            html = f.read()
+            f.close()
+        except:
+            print("failed to download:", url)
+            return
+
+        # let's save it:
+        # print("saving to:", name)  # do we need a try/except here?
+        print('saving to: %s' % dest)
+        f = open(dest, 'wb')
+        f.write(html)
+        f.close()
+
+    # now let's load it into memory:
+    print("loading: %s\n" % dest)
+    context.load(dest)
+    if not quiet:
+        end_time = time.time()
+        delta_time = end_time - start_time
+        print("\n  Time taken:", display_time(delta_time))
+
 
 # the interactive semantic agent:
 while True:
@@ -324,60 +385,9 @@ while True:
     elif line == "mfreq":
         print(context.multiverse_to_freq_list())
 
-    elif line.startswith("web-load "):  # where put it? in sw_file_dir? What if file with that name already exists?
-        url = line[9:]  # how about timing the download and load? Cheat, and merge with "load file.sw"?
-        # find the sw file name:
-        name = url.split("/")[-1]
-        dest = sw_file_dir + "/" + name
-
-        dont_save = False
-        # check if it exists:
-        while os.path.exists(dest):
-            # either rename or overwrite
-            check = input("\n  File \"%s\" already exists.\n  [O]verwrite, [R]ename or [D]on't save? (O,R,D): " % name)
-            if len(check) > 0:
-                if check[0] in ["o", "O"]:  # we are allowed to overwrite it
-                    break
-                if check[0] in ["d", "D"]:  # don't save the file we just downloaded (yeah, waste if it was big)
-                    dont_save = True
-                    break
-                elif check[0] in ["r", "R"]:  # we have to choose a new name
-                    check = input("\n  New name: ")
-                    if len(check) > 0:
-                        name = check
-                        dest = sw_file_dir + "/" + name
-
-        # check if we don't want to save:
-        if dont_save:
-            continue
-
-        if not quiet:
-            start_time = time.time()
-        try:
-            # download url
-            print("downloading sw file:", url)  # code to time the download? Probably, eventually.
-            headers = {'User-Agent': 'semantic-agent/2.0'}
-            req = urllib.request.Request(url, None, headers)  # does it handle https?
-            f = urllib.request.urlopen(req)
-            html = f.read()
-            f.close()
-        except:
-            print("failed to download:", url)
-            continue
-
-        # let's save it:
-        print("\nsaving to:", name)  # do we need a try/except here?
-        f = open(dest, 'wb')
-        f.write(html)
-        f.close()
-
-        # now let's load it into memory:
-        print("loading: %s\n" % dest)
-        context.load(dest)
-        if not quiet:
-            end_time = time.time()
-            delta_time = end_time - start_time
-            print("\n  Time taken:", display_time(delta_time))
+    elif line.startswith("web-load "):
+        url = line[9:]
+        web_load(url)
 
 
     elif line.startswith("load "):
@@ -479,6 +489,76 @@ while True:
         print()
         for file, stats in data:
             print("  " + file.ljust(max_len) + sep + stats)
+
+    elif line.startswith("web-files "):
+        print('List and load remote sw files.\nFor example:\n\n  web-files http://semantic-db.org/sw/\n')
+        url_prefix, url_base = os.path.split(line[10:])
+        # print('url_prefix: %s' % url_prefix)
+        # print('url_base: %s' % url_base)
+
+        # try sw-index.txt first
+        url = url_prefix + '/sw-index.txt'
+        have_sw_index = False
+
+        # download sw-index.txt:
+        try:
+            print("downloading sw index file:", url)
+            headers = {'User-Agent': 'semantic-agent/2.0'}
+            req = urllib.request.Request(url, None, headers)  # does it handle https?
+            f = urllib.request.urlopen(req)
+            html = f.read()
+            f.close()
+            have_sw_index = True
+        except:
+            # try index.html next:
+            if url_base == '':
+                url = url_prefix
+            else:
+                url = url_prefix + '/' + url_base
+
+            # download index.html:
+            try:
+                print("downloading sw index file:", url)
+                headers = {'User-Agent': 'semantic-agent/2.0'}
+                req = urllib.request.Request(url, None, headers)  # does it handle https?
+                f = urllib.request.urlopen(req)
+                html = f.read()
+                f.close()
+            except:
+                print("failed to download:", url)
+                continue
+
+        print()
+        urls = []
+        k = 1
+        # process sw-index.txt file if we have it:
+        if have_sw_index:
+            for line in html.decode('ascii').split('\n'):
+                line = line.strip()
+                if line != '':
+                    file = line.split(' ')[0]
+                    file_url = url_prefix + '/' + file
+                    urls.append((file_url, file))
+                    print(' %s)  %s' % (k, line))
+                    k += 1
+        else:
+            for file in re.findall('href="(.*sw|.*swc)"', html.decode('utf-8')):  # do we want to sort the list?
+                base = os.path.basename(file)
+                file_url = url_prefix + '/' + file
+                # print('file_url: %s' % file_url)
+                urls.append((file_url, base))
+                print(' %s)  %s' % (k, base))
+                k += 1
+
+        # now choose which file we want:
+        selection = input("\nEnter your selection: ")
+        try:
+            selection = int(selection)
+            file_url, file = urls[selection-1]
+            print("Your selection: %s\n" % file)
+            web_load(file_url)  # is it possible to feed a bad file_url that is a security risk?
+        except:
+            continue
 
     elif line.startswith("cd "):
         sw_file_dir = line[3:]
