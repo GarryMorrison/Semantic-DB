@@ -492,86 +492,7 @@ while True:
 
     elif line.startswith("web-files "):
         print('List and load remote sw files.\nFor example:\n\n  web-files http://semantic-db.org/sw/\n')
-
-        url_prefix = line[10:].rstrip('/')
-        url = url_prefix + '/sw-index.txt'
-
-        # download url
-        try:
-            print("downloading sw index file:", url)  # code to time the download? Probably, eventually.
-            headers = {'User-Agent': 'semantic-agent/2.0'}
-            req = urllib.request.Request(url, None, headers)  # does it handle https?
-            f = urllib.request.urlopen(req)
-            html = f.read()
-            f.close()
-        except:
-            print("failed to download:", url)
-            continue
-
-        # process sw-index.txt file:
-        print()
-        urls = []
-        k = 1
-        for line in html.decode('ascii').split('\n'):
-            line = line.strip()
-            if line != '':
-                file = line.split(' ')[0]
-                file_url = url_prefix + '/' + file
-                urls.append((file_url, file))
-                print(' %s)  %s' % (k, line))
-                k += 1
-
-        # now choose which file we want:
-        selection = input("\nEnter your selection: ")
-        try:
-            selection = int(selection)
-            file_url, file = urls[selection-1]
-            print("Your selection: %s\n" % file)
-            web_load(file_url)
-        except:
-            continue
-
-    elif line.startswith("web-files2 "):
-        print('List and load remote sw files.\nFor example:\n\n  web-files http://semantic-db.org/sw/\n')
-
-        url_prefix = line[11:].rstrip('/')
-        url = url_prefix + '/index.html'
-
-        # download url
-        try:
-            print("downloading sw index file:", url)  # code to time the download? Probably, eventually.
-            headers = {'User-Agent': 'semantic-agent/2.0'}
-            req = urllib.request.Request(url, None, headers)  # does it handle https?
-            f = urllib.request.urlopen(req)
-            html = f.read()
-            f.close()
-        except:
-            print("failed to download:", url)
-            continue
-
-        # process index.html file:
-        print()
-        urls = []
-        k = 1
-        for file in re.findall('href="(.*sw|.*swc)"', html.decode('ascii')):  # do we want to sort the list?
-            file_url = url_prefix + '/' + file
-            urls.append((file_url, file))
-            print(' %s)  %s' % (k, file))
-            k += 1
-
-        # now choose which file we want:
-        selection = input("\nEnter your selection: ")
-        try:
-            selection = int(selection)
-            file_url, file = urls[selection-1]
-            print("Your selection: %s\n" % file)
-            web_load(file_url)
-        except:
-            continue
-
-    elif line.startswith("web-files3 "):
-        print('List and load remote sw files.\nFor example:\n\n  web-files http://semantic-db.org/sw/\n')
-        url_prefix, url_base = os.path.split(line[11:])
+        url_prefix, url_base = os.path.split(line[10:])
         # print('url_prefix: %s' % url_prefix)
         # print('url_base: %s' % url_base)
 
@@ -597,7 +518,7 @@ while True:
 
             # download index.html:
             try:
-                print("downloading sw index file:", url)  # code to time the download? Probably, eventually.
+                print("downloading sw index file:", url)
                 headers = {'User-Agent': 'semantic-agent/2.0'}
                 req = urllib.request.Request(url, None, headers)  # does it handle https?
                 f = urllib.request.urlopen(req)
@@ -635,7 +556,7 @@ while True:
             selection = int(selection)
             file_url, file = urls[selection-1]
             print("Your selection: %s\n" % file)
-            web_load(file_url)
+            web_load(file_url)  # is it possible to feed a bad file_url that is a security risk?
         except:
             continue
 
