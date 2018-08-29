@@ -87,9 +87,9 @@ if not os.path.exists(sw_file_dir):
 dot_file_dir = 'graph-examples'
 
 if interactive:
-    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 28 August, 2018")
+    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 29 August, 2018")
     print("\nTo load remote sw files, run:\n\n  web-files http://semantic-db.org/sw/\n")
-    print("To see usage docs, see:\n\n  http://semantic-db.org/docs/usage/")
+    print("To see usage docs, visit:\n\n  http://semantic-db.org/docs/usage/")
 
 # context = ContextList("sw console")  # currently broken, due to parsley binding dict issue.
 # C = context
@@ -292,11 +292,11 @@ while True:
             count = min(len(command_history), n)
             history = command_history[-count:]
             for k, line in enumerate(history):
-                print(" %s)  %s" % (str(k), line))
+                print(" %s)  %s" % (str(k+1), line))
             selection = input("\nEnter your selection: ")
             try:
                 selection = int(selection)
-                line = history[selection]
+                line = history[selection-1]
                 print("Your selection: %s\n" % line)
             except:
                 continue

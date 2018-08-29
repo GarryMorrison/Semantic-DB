@@ -2257,6 +2257,7 @@ class ContextList(object):
     # new 12/2/2015:
     # assumes k is an integer:
     def set_index(self, k):
+        k -= 1  # index starts at 1, not 0.
         previous_context_name = self.context_name()
         if k < 0 or k >= len(self.data):
             return False
@@ -2268,7 +2269,7 @@ class ContextList(object):
         text = "context list:\n"
         for k, context in enumerate(self.data):
             pre = "* " if k == self.index else "  "
-            text += " " + str(k) + ") " + pre + context.name + " (" + str(len(context.ket_rules_dict)) + ")\n"
+            text += " " + str(k+1) + ") " + pre + context.name + " (" + str(len(context.ket_rules_dict)) + ")\n"
         return text
 
     def context_name(self):
