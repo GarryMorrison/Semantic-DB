@@ -37,3 +37,28 @@ swap-context |*> #=>
     |context> => previous |context>
     learn |rule 2> => |value 2>
 
+random-walk |*> #=>
+    if-find-scent-change-heading |__self>
+    
+    -- blur heading:
+    heading |ops> => normalize ( 0.1 turn-left^2 + 0.25 turn-left + 15 + 0.25 turn-right + 0.1 turn-right^2 ) heading |ops>
+    
+    -- try a direction:
+    try |direction> => clean weighted-pick-elt heading |ops>
+    
+    -- if valid direction, step, else turn right:
+    process-if if(do-you-know apply( try |direction>, |__self>), |valid step>, |not valid step>)
+
+
+random-walk-2 |*> #=>
+    if-find-scent-change-heading |__self>
+    --
+    -- blur heading:
+    heading |ops> => normalize ( 0.1 turn-left^2 + 0.25 turn-left + 15 + 0.25 turn-right + 0.1 turn-right^2 ) heading |ops>
+    --
+    -- try a direction:
+    try |direction> => clean weighted-pick-elt heading |ops>
+    --
+    -- if valid direction, step, else turn right:
+    process-if if(do-you-know apply( try |direction>, |__self>), |valid step>, |not valid step>)
+
