@@ -2412,12 +2412,18 @@ class ContextList(object):
                         # print('s: %s' % s)
                         # print('inside line: %s' % line)
                         # if not line.startswith(' ') or line == '':
-                        if not line.startswith(' '):
+                        # if not line.startswith(' '):
+                        if not line.startswith('  '):
                         # if line != '' and line[0].isalpha():
                             inside_multi_line = False
-                            line_tmp = s + '\n' + line
-                            line = line_tmp
-                            s = ''
+                            # line_tmp = s + '\n' + line  # this breaks if line is the start of a new multi-line rule.
+                            # line = line_tmp
+                            # s = ''
+                            process_sw_file(self, s + '\n')
+                            if line.strip().endswith(('#=>', '!=>')):
+                                inside_multi_line = True
+                                s = line
+                                line = ''
                         else:
                             s += '\n ' + line
                             line = ''

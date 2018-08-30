@@ -62,3 +62,12 @@ random-walk-2 |*> #=>
     -- if valid direction, step, else turn right:
     process-if if(do-you-know apply( try |direction>, |__self>), |valid step>, |not valid step>)
 
+
+bah2 |*> #=> 
+    |line 1>
+    |line 2>
+    |line 3>
+bah3 |*> #=>
+    |line 4>
+    |line 5>
+
