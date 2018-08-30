@@ -2205,12 +2205,33 @@ class NewContext(object):
 
     def load(self, filename):
         try:
+            inside_multi_line = False
+            s = ''
             with open(filename, 'r') as f:
-                text = f.read()
-                # logger.info('load text: %s' % text)
-                process_sw_file(self, text)
+                for line in f:
+                    line = line.rstrip('\n')
+                    if line.startswith('exit sw'):  # stop processing a .sw file
+                        return
+                    elif inside_multi_line:
+                        if not line.startswith('  '):
+                            inside_multi_line = False
+                            process_sw_file(self, s + '\n')
+                            if line.strip().endswith(('#=>', '!=>')):
+                                inside_multi_line = True
+                                s = line
+                                line = ''
+                        else:
+                            s += '\n ' + line
+                            line = ''
+                    elif line.strip().endswith(('#=>', '!=>')):
+                        inside_multi_line = True
+                        s = line
+                        line = ''
+                    if line != '' and not inside_multi_line:
+                        process_sw_file(self, line)
         except Exception as e:
-            logger.info("failed to load: %s\nReason: %s" % (filename, e))
+            logger.info("NewContext failed to load: " + filename)
+            logger.info('reason: %s' % e)
 
     # 3/12/2015: new feature context.print_universe() and context.print_multiverse()
     def print_universe(self, exact_dump=False):
@@ -2409,16 +2430,8 @@ class ContextList(object):
                     if line.startswith('exit sw'):  # stop processing a .sw file
                         return
                     elif inside_multi_line:
-                        # print('s: %s' % s)
-                        # print('inside line: %s' % line)
-                        # if not line.startswith(' ') or line == '':
-                        # if not line.startswith(' '):
                         if not line.startswith('  '):
-                        # if line != '' and line[0].isalpha():
                             inside_multi_line = False
-                            # line_tmp = s + '\n' + line  # this breaks if line is the start of a new multi-line rule.
-                            # line = line_tmp
-                            # s = ''
                             process_sw_file(self, s + '\n')
                             if line.strip().endswith(('#=>', '!=>')):
                                 inside_multi_line = True
@@ -2427,13 +2440,11 @@ class ContextList(object):
                         else:
                             s += '\n ' + line
                             line = ''
-                            # print('new s: %s' % s)
                     elif line.strip().endswith(('#=>', '!=>')):
                         inside_multi_line = True
                         s = line
                         line = ''
                     if line != '' and not inside_multi_line:
-                        # print('line: %s' % line)
                         process_sw_file(self, line)
         except Exception as e:
             logger.info("ContextList failed to load: " + filename)
