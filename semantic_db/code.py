@@ -49,7 +49,7 @@ def float_to_int(x, t=3):
 
 def my_print(name, value=''):
     return
-    if value is '':
+    if value == '':
         print(name)
     else:
         print(name + ': ', end='')

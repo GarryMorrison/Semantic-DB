@@ -6,10 +6,10 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 28/8/2018
-# Update: 28/8/2018
+# Update: 30/8/2018
 # Copyright: GPLv3
 #
-# Usage: ./create-sw-index.py dir-to-sw-files
+# Usage: ./create_index.py dir-to-sw-files
 # it will dump two files in current directory:
 # sw-index.txt and index.html
 # then you need to upload these to your web host, along with your sw files
@@ -22,10 +22,15 @@
 import os
 import sys
 import glob
-# tighten this up so we only import extract_sw_stats() from code.py:
-from semantic_db import *
+import datetime
+from semantic_db.code import extract_sw_stats
 
-sw_file_dir = sys.argv[1]
+if len(sys.argv) >= 2:
+    sw_file_dir = sys.argv[1]
+else:
+    sw_file_dir = '.'
+print('Using source directory: %s' % sw_file_dir)
+
 
 if __name__ == "__main__":
     sep = "   "
