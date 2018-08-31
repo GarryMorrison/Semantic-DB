@@ -95,7 +95,7 @@ if os.path.exists(sdb_config_file):
     except Exception as e:
         print('failed to load config file.\nReason: %s' % e)
 
-# set default config values:
+# set default config values in case config file doesn't have them:
 config = ''
 save_table = True
 save_matrix = False

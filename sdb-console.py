@@ -47,6 +47,7 @@ dump = False
 
 # set default config file:
 default_config = """
+shell-history-display-length = 40
 shell-history-length = 1000
 save-shell-history = False
 load-shell-history = True
@@ -74,7 +75,7 @@ if not os.path.exists(sdb_config_dir):
 
 # save default config, else load current config:
 if not os.path.exists(sdb_config_file):
-    print('Creating config file')
+    print('Creating config file')  # do we want a "if interactive" switch here?
     try:
         with open(sdb_config_file, 'w') as f:
             f.write(default_config)
@@ -90,6 +91,7 @@ else:
 # print(config)
 
 # set needed defaults just in case they are not in our config file:
+shell_history_display_length = 40
 shell_history_length = 1000
 save_shell_history = False
 load_shell_history = True
@@ -111,7 +113,9 @@ for line in config.split('\n'):
     value = value.strip("'")
     # print('option: %s' % option)
     try:
-        if option == 'shell-history-length':
+        if option == 'shell-history-display-length':
+            shell_history_display_length = int(value)
+        elif option == 'shell-history-length':
             shell_history_length = int(value)
         elif option == 'save-shell-history':
             if value == 'True':
@@ -344,7 +348,8 @@ if load_shell_history:
                     tmp_history.append(line)
         command_history = tmp_history[-shell_history_length:]
     except FileNotFoundError:
-        print('history file not found')
+        if interactive:
+            print('history file not found')
         pass
 
 # mark the beginning of this sessions history:
@@ -372,7 +377,7 @@ if not interactive:
 # define our web-load() function:
 def web_load(url):
     # find the sw file name:
-    name = url.split("/")[-1]
+    name = url.split("/")[-1]  # use os.path.basename() instead?
     dest = sw_file_dir + "/" + name  # if sw_file_dir is '', then it puts it in root directory! Fix!
 
     dont_save = False
@@ -441,7 +446,8 @@ while True:
     line = line.strip()
 
     if line == "i":
-        n = 30  # increase this? Make it into a defined variable, somewhere above? A config option too?
+        # n = 30  # increase this? Make it into a defined variable, somewhere above? A config option too?
+        n = shell_history_display_length
         if len(command_history) > 0:
             count = min(len(command_history), n)
             history = command_history[-count:]
@@ -742,7 +748,7 @@ while True:
         sw_file_dir = line[3:]
         # check it exists, if not create it:
         if not os.path.exists(sw_file_dir):
-            print("Creating %s directory." % sw_file_dir)
+            print('Creating "%s" directory.' % sw_file_dir)
             os.makedirs(sw_file_dir)
 
     elif line in ['ls', 'dir', 'dirs']:
@@ -781,7 +787,8 @@ while True:
         try:
             n = int(line[8:])
         except:
-            n = 30  # like 'i' command, we probably shouldn't hard code it in down here. 
+            # n = 30  # like 'i' command, we probably shouldn't hard code it in down here.
+            n = shell_history_display_length
 
         if len(command_history) > 0:
             count = min(len(command_history), n)
