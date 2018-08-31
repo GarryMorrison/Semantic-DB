@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 #######################################################################
 # let's do a comprehensive test of version 2
 #
