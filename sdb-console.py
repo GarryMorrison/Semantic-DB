@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 28/8/2018
+# Update: 31/8/2018
 # Copyright: GPLv3
 #
 # Usage: ./sdb-console.py [--debug | --info] [-q] [-i] [--version] [file1.sw ... filen.sw]
@@ -32,13 +32,6 @@ except ImportError:
 from semantic_db import *
 from semantic_db.usage_tables import usage
 
-# parse our command line parameters:
-try:
-    optlist, args = getopt.getopt(sys.argv[1:], 'qidV', ['debug', 'info', 'quiet', 'interactive', 'dump', 'version'])
-except getopt.GetoptError as err:
-    print(err)
-    sys.exit(2)
-
 # switch on/off display of command execution times:
 quiet = False
 
@@ -50,6 +43,158 @@ logger.setLevel(logging.WARNING)
 
 # dump loaded files:
 dump = False
+
+
+# set default config file:
+default_config = """
+shell-history-length = 1000
+save-shell-history = False
+load-shell-history = True
+shell-history-location = '.'
+shell-history-filename = 'sdb-history.txt'
+create-sw-directory-on-startup = False
+create-dot-directory-on-startup = False
+sw-directory = '.'
+dot-directory = '.'
+quiet-mode = False
+logging-level = 'warning'
+save-table = True
+save-matrix = False
+save-table-filename = 'saved-table.txt'
+save-matrix-filename = 'saved-matrix.txt'
+"""
+
+home_dir = os.environ['HOME']
+sdb_config_dir = home_dir + '/.sdb'
+sdb_config_file = sdb_config_dir + '/config'
+# check it exists, if not create it:
+if not os.path.exists(sdb_config_dir):
+    print('Creating "%s" directory.' % sdb_config_dir)
+    os.makedirs(sdb_config_dir)
+
+# save default config, else load current config:
+if not os.path.exists(sdb_config_file):
+    print('Creating config file')
+    try:
+        with open(sdb_config_file, 'w') as f:
+            f.write(default_config)
+        config = default_config
+    except Exception as e:
+        print('failed to create config file.\nReason: %s' % e)
+else:
+    try:
+        with open(sdb_config_file, 'r') as f:
+            config = f.read()
+    except Exception as e:
+        print('failed to load config file.\nReason: %s' % e)
+# print(config)
+
+# set needed defaults just in case they are not in our config file:
+shell_history_length = 1000
+save_shell_history = False
+load_shell_history = True
+shell_history_location = '.'
+shell_history_filename = 'sdb-history.txt'
+create_sw_directory_on_startup = False
+create_dot_directory_on_startup = False
+sw_file_dir = '.'
+dot_file_dir = '.'
+quiet = False
+
+
+# now process config file:
+for line in config.split('\n'):
+    line = line.strip()
+    if line == '':
+        continue
+    option, value = line.split(' = ')[:2]
+    value = value.strip("'")
+    # print('option: %s' % option)
+    try:
+        if option == 'shell-history-length':
+            shell_history_length = int(value)
+        elif option == 'save-shell-history':
+            if value == 'True':
+                save_shell_history = True
+            else:
+                save_shell_history = False
+        elif option == 'load-shell-history':
+            if value == 'True':
+                load_shell_history = True
+            else:
+                load_shell_history = False
+        elif option == 'shell-history-location':
+            shell_history_location = value
+        elif option == 'shell-history-filename':
+            shell_history_filename = value
+        elif option == 'create-sw-directory-on-startup':
+            if value == 'True':
+                create_sw_directory_on_startup = True
+            else:
+                create_sw_directory_on_startup = False
+        elif option == 'create-dot-directory-on-startup':
+            if value == 'True':
+                create_dot_directory_on_startup = True
+            else:
+                create_dot_directory_on_startup = False
+        elif option == 'sw-directory':
+            sw_file_dir = value
+        elif option == 'dot-directory':
+            dot_file_dir = value
+        elif option == 'quiet-mode':
+            if value == 'True':
+                quiet = True
+            else:
+                quiet = False
+        elif option == 'logging-level':
+            if value == 'warning':
+                # print('logging set to warning')
+                logger.setLevel(logging.WARNING)
+            elif value == 'info':
+                logger.setLevel(logging.INFO)
+                logger.info('info enabled')
+            elif value == 'debug':
+                logger.setLevel(logging.DEBUG)
+                logger.debug('debug enabled')
+    except Exception as e:
+        print('failed to process:\n  option: %s\n  value: %s\nReason: %s\n' % (option, value, e))
+
+    # print(line)
+# in testing, print out options:
+# print('shell_history_length: %s' % shell_history_length)
+# print('save_shell_history: %s' % save_shell_history)
+# print('load_shell_history: %s' % load_shell_history)
+# print('shell_history_location: %s' % shell_history_location)
+# print('shell_history_filename: %s' % shell_history_filename)
+# print('create_sw_directory_on_startup: %s' % create_sw_directory_on_startup)
+# print('create_dot_directory_on_startup: %s' % create_dot_directory_on_startup)
+# print('sw_file_dir: %s' % sw_file_dir)
+# print('dot_file_dir: %s' % dot_file_dir)
+# print('quiet: %s' % quiet)
+# sys.exit(0)
+
+
+if create_sw_directory_on_startup:
+    # check sw_file_dir exists, if not create it:
+    if not os.path.exists(sw_file_dir):
+        print('Creating "%s" directory.' % sw_file_dir)
+        os.makedirs(sw_file_dir)
+
+if create_dot_directory_on_startup:
+    # check dot_file_dir exists, if not create it:
+    if not os.path.exists(dot_file_dir):
+        print('Creating "%s" directory.' % dot_file_dir)
+        os.makedirs(dot_file_dir)
+
+# sys.exit(0)
+
+# parse our command line parameters:
+try:
+    optlist, args = getopt.getopt(sys.argv[1:], 'qidV', ['debug', 'info', 'quiet', 'interactive', 'dump', 'version'])
+except getopt.GetoptError as err:
+    print(err)
+    sys.exit(2)
+
 
 # process our option list:
 for o, a in optlist:
@@ -77,19 +222,10 @@ if len(files_to_run) == 0:
     interactive = True
 
 
-# starting .sw directory:
-sw_file_dir = "sw-examples"
-# check it exists, if not create it:
-if not os.path.exists(sw_file_dir):
-    print("Creating %s directory." % sw_file_dir)
-    os.makedirs(sw_file_dir)
-
-dot_file_dir = 'graph-examples'
-
 if interactive:
-    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 29 August, 2018")
+    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 31 August, 2018")
     print("\nTo load remote sw files, run:\n\n  web-files http://semantic-db.org/sw/\n")
-    print("To see usage docs, visit:\n\n  http://semantic-db.org/docs/usage/")
+    print("To see usage docs, visit:\n\n  http://semantic-db.org/docs/usage/\n")
 
 # context = ContextList("sw console")  # currently broken, due to parsley binding dict issue.
 # C = context
@@ -145,8 +281,7 @@ x = ket()
 result = ket()
 stored_line = ""
 command_history = []
-command_history_len = 1000
-command_history_file = "sa-console-command-history.txt"  # file where we save the command history. Might be interesting.
+
 
 
 # our display time intervals:
@@ -178,33 +313,42 @@ def display_time(seconds):
 
 
 # save history function:
-def save_history(history, history_file):
+def save_history(history, history_file):  # finish! Currently appends without limit, and ignores shell_history_length.
     print("saving history ... ")
     try:
         f = open(history_file, 'a')
-        today = str(datetime.date.today())
+        today = str(datetime.date.today())  # time too? Rather than just date?
         f.write(today + "\n")
+        found_start = False
         for line in history:
-            f.write("  %s\n" % line)
+            if line == '-- start here --':  # only append new history, not previous history.
+                found_start = True
+            elif found_start:
+                f.write("  %s\n" % line)
         f.write("\n")
         f.close()
         print("Done.")
-    except:
-        print("failed!")
+    except Exception as e:
+        print("failed!\nReason: %s" % e)
 
 
 # load history from file:
-try:
-    tmp_history = []
-    with open(command_history_file, 'r') as f:
-        for line in f:
-            if line.startswith('  '):  # filter out date-lines, which don't start with two spaces.
-                line = line.strip()
-                tmp_history.append(line)
-    command_history = tmp_history[-command_history_len:]
-except FileNotFoundError:
-    pass
+if load_shell_history:
+    try:
+        tmp_history = []
+        source = shell_history_location + '/' + shell_history_filename
+        with open(source, 'r') as f:
+            for line in f:
+                if line.startswith('  '):  # filter out date-lines, which don't start with two spaces.
+                    line = line.strip()
+                    tmp_history.append(line)
+        command_history = tmp_history[-shell_history_length:]
+    except FileNotFoundError:
+        print('history file not found')
+        pass
 
+# mark the beginning of this sessions history:
+command_history.append('-- start here --')
 
 # run our command line files:
 for sw_file in files_to_run:
@@ -212,7 +356,8 @@ for sw_file in files_to_run:
     if path == "":
         path = sw_file_dir
     full_name = path + '/' + file
-    command_history.append('load ' + file)
+    # command_history.append('load ' + file)
+    command_history.append('load ' + full_name)
     context.load(full_name)
 
 
@@ -266,11 +411,20 @@ def web_load(url):
             return
 
         # let's save it:
-        # print("saving to:", name)  # do we need a try/except here?
-        print('saving to: %s' % dest)
-        f = open(dest, 'wb')
-        f.write(html)
-        f.close()
+        # print("saving to:", name)  # we need to check for sw_file_dir existence.
+        try:
+            # check sw_file_dir exists, if not create it:
+            if not os.path.exists(sw_file_dir):
+                print('Creating "%s" directory.' % sw_file_dir)
+                os.makedirs(sw_file_dir)
+
+            print('saving to: %s' % dest)
+            f = open(dest, 'wb')
+            f.write(html)
+            f.close()
+        except Exception as e:
+            print('failed to save: %s\nReason: %s' % (dest, e))
+            return
 
     # now let's load it into memory:
     print("loading: %s\n" % dest)
@@ -287,7 +441,7 @@ while True:
     line = line.strip()
 
     if line == "i":
-        n = 30
+        n = 30  # increase this? Make it into a defined variable, somewhere above? A config option too?
         if len(command_history) > 0:
             count = min(len(command_history), n)
             history = command_history[-count:]
@@ -307,8 +461,15 @@ while True:
 
     # exit the agent:
     if line in ['q', 'quit', 'exit']:
-        # save history before we go:
-        save_history(command_history, command_history_file)
+        if save_shell_history:
+            # save history before we go:
+            # check shell_history_location exists, if not create it:
+            if not os.path.exists(shell_history_location):
+                print('Creating "%s" directory.' % shell_history_location)
+                os.makedirs(shell_history_location)
+
+            dest = shell_history_location + '/' + shell_history_filename
+            save_history(command_history, dest)
 
         print("\nBye!")
         break
@@ -407,7 +568,7 @@ while True:
     elif line.startswith("line-load "):
         name = line[10:]
         name = sw_file_dir + "/" + name  # load and save files to the sw_file_dir.
-        print("loading sw file:", name)
+        print("line loading sw file:", name)
 
         if not quiet:
             # time it!
@@ -420,17 +581,34 @@ while True:
 
     elif line == "save history":
         # save history:
-        save_history(command_history, command_history_file)
+        # check shell_history_location exists, if not create it:
+        if not os.path.exists(shell_history_location):
+            print('Creating "%s" directory.' % shell_history_location)
+            os.makedirs(shell_history_location)
+
+        dest = shell_history_location + '/' + shell_history_filename
+        save_history(command_history, dest)
 
     elif line.startswith("save multi "):
         name = line[11:]
         name = sw_file_dir + "/" + name  # load and save files to the sw_file_dir.
+        # check sw_file_dir exists, if not create it:
+        if not os.path.exists(sw_file_dir):  # prompt before creating it?
+            print('Creating "%s" directory.' % sw_file_dir)
+            os.makedirs(sw_file_dir)
+
         print("saving context list to:", name)
-        save_sw_multi(context, name)
+        # save_sw_multi(context, name)  # update!
+        context.multi_save(name)
 
     elif line.startswith("save "):  # check for file existence first? Or just blow away what is already there?
         name = line[5:]
         name = sw_file_dir + "/" + name  # load and save files to the sw_file_dir.
+        # check sw_file_dir exists, if not create it:
+        if not os.path.exists(sw_file_dir):
+            print('Creating "%s" directory.' % sw_file_dir)
+            os.makedirs(sw_file_dir)
+
         print("saving current context to:", name)
         context.save(name)
 
@@ -442,7 +620,7 @@ while True:
         name = line[12:]
         # check it exists, if not create it:
         if not os.path.exists(dot_file_dir):
-            print("Creating %s directory." % dot_file_dir)
+            print('Creating "%s" directory.' % dot_file_dir)
             os.makedirs(dot_file_dir)
         name = dot_file_dir + '/' + name
         print('saving dot file: %s' % name)
@@ -576,13 +754,11 @@ while True:
             sw_count = len(glob.glob(dir + "/*.sw"))
             print('%s%s (%s)' % (prefix, dir, str(sw_count)))
 
-
     elif line == "create inverse":
         context.create_universe_inverse()
 
     elif line == "create multi inverse":
         context.create_multiverse_inverse()
-
 
     elif line.startswith("x = "):
         var = line[4:]
@@ -605,7 +781,7 @@ while True:
         try:
             n = int(line[8:])
         except:
-            n = 30
+            n = 30  # like 'i' command, we probably shouldn't hard code it in down here. 
 
         if len(command_history) > 0:
             count = min(len(command_history), n)
