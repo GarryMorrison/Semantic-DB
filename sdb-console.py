@@ -46,7 +46,7 @@ dump = False
 
 
 # set default config file:
-default_config = """
+config = """
 shell-history-display-length = 40
 shell-history-length = 1000
 save-shell-history = False
@@ -78,8 +78,7 @@ if not os.path.exists(sdb_config_file):
     print('Creating config file')  # do we want a "if interactive" switch here?
     try:
         with open(sdb_config_file, 'w') as f:
-            f.write(default_config)
-        config = default_config
+            f.write(config)
     except Exception as e:
         print('failed to create config file.\nReason: %s' % e)
 else:
