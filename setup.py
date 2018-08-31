@@ -94,7 +94,7 @@ setup(
     description='',
     author='Garry Morrison',
     author_email='garry@semantic-db.org',
-    url='http://semantic-db.org/documentation/usage/index.html',
+    url='http://semantic-db.org/docs/usage/index.html',
     packages=['semantic_db'],
     install_requires=[
         'parsley',
