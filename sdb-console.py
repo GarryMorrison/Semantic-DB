@@ -1,4 +1,4 @@
-#!c:/Python34/python.exe 
+#!/usr/bin/env python3 
 
 #######################################################################
 # the semantic-db console
