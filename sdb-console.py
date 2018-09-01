@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 31/8/2018
+# Update: 1/9/2018
 # Copyright: GPLv3
 #
 # Usage: ./sdb-console.py [--debug | --info] [-q] [-i] [--version] [file1.sw ... filen.sw]
@@ -226,7 +226,7 @@ if len(files_to_run) == 0:
 
 
 if interactive:
-    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 31 August, 2018")
+    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 1 September, 2018")
     print("\nTo load remote sw files, run:\n\n  web-files http://semantic-db.org/sw/\n")
     print("To see usage docs, visit:\n\n  http://semantic-db.org/docs/usage/\n")
 
@@ -316,7 +316,14 @@ def display_time(seconds):
 
 
 # save history function:
-def save_history(history, history_file):  # finish! Currently appends without limit, and ignores shell_history_length.
+def old_save_history(history):  # finish! Currently appends without limit, and ignores shell_history_length.
+    # check shell_history_location exists, if not create it:
+    if not os.path.exists(shell_history_location):
+        print('Creating "%s" directory.' % shell_history_location)
+        os.makedirs(shell_history_location)
+
+    history_file = shell_history_location + '/' + shell_history_filename
+
     print("saving history ... ")
     try:
         f = open(history_file, 'a')
@@ -335,21 +342,58 @@ def save_history(history, history_file):  # finish! Currently appends without li
         print("failed!\nReason: %s" % e)
 
 
-# load history from file:
-if load_shell_history:
+# save history function:
+def save_history(history):  # finish! Currently appends without limit, and ignores shell_history_length.
+    # check shell_history_location exists, if not create it:
+    if not os.path.exists(shell_history_location):
+        print('Creating "%s" directory.' % shell_history_location)
+        os.makedirs(shell_history_location)
+
+    history_file = shell_history_location + '/' + shell_history_filename
+
+    print("saving history ... ")
     try:
-        tmp_history = []
+        on_disk_history = []
+        with open(history_file, 'r') as f:
+            for line in f:
+                on_disk_history.append(line.strip('\n'))
+        on_disk_history.append(str(datetime.date.today()))
+        found_start = False
+        for line in history:
+            if line == '-- start here --':
+                found_start = True
+            elif found_start:
+                on_disk_history.append('  ' + line)
+        on_disk_history = on_disk_history[-shell_history_length:]
+        with open(history_file, 'w') as f:
+            for line in on_disk_history:
+                f.write(line + '\n')
+            f.write('\n')
+        print("Done.")
+    except Exception as e:
+        print("failed!\nReason: %s" % e)
+
+
+# load history from file:
+def load_history():
+    command_history = []
+    try:
+        on_disk_history = []
         source = shell_history_location + '/' + shell_history_filename
         with open(source, 'r') as f:
             for line in f:
                 if line.startswith('  '):  # filter out date-lines, which don't start with two spaces.
                     line = line.strip()
-                    tmp_history.append(line)
-        command_history = tmp_history[-shell_history_length:]
+                    on_disk_history.append(line)
+        command_history = on_disk_history[-shell_history_length:]
     except FileNotFoundError:
         if interactive:
             print('history file not found')
-        pass
+    return command_history
+
+
+if load_shell_history:
+    command_history = load_history()
 
 # mark the beginning of this sessions history:
 command_history.append('-- start here --')
@@ -463,18 +507,12 @@ while True:
             print("history is empty")
             continue
     command_history.append(line)
+    command_history = command_history[-shell_history_length:]
 
     # exit the agent:
     if line in ['q', 'quit', 'exit']:
         if save_shell_history:
-            # save history before we go:
-            # check shell_history_location exists, if not create it:
-            if not os.path.exists(shell_history_location):
-                print('Creating "%s" directory.' % shell_history_location)
-                os.makedirs(shell_history_location)
-
-            dest = shell_history_location + '/' + shell_history_filename
-            save_history(command_history, dest)
+            save_history(command_history)
 
         print("\nBye!")
         break
@@ -585,14 +623,7 @@ while True:
             print("\n  Time taken:", display_time(delta_time))
 
     elif line == "save history":
-        # save history:
-        # check shell_history_location exists, if not create it:
-        if not os.path.exists(shell_history_location):
-            print('Creating "%s" directory.' % shell_history_location)
-            os.makedirs(shell_history_location)
-
-        dest = shell_history_location + '/' + shell_history_filename
-        save_history(command_history, dest)
+        save_history(command_history)
 
     elif line.startswith("save multi "):
         name = line[11:]
