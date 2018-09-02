@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 1/9/2018
+# Update: 2/9/2018
 # Copyright: GPLv3
 #
 # Usage: ./sdb-console.py [--debug | --info] [-q] [-i] [--version] [file1.sw ... filen.sw]
@@ -226,7 +226,7 @@ if len(files_to_run) == 0:
 
 
 if interactive:
-    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 1 September, 2018")
+    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 2 September, 2018")
     print("\nTo load remote sw files, run:\n\n  web-files http://semantic-db.org/sw/\n")
     print("To see usage docs, visit:\n\n  http://semantic-db.org/docs/usage/\n")
 
@@ -286,7 +286,6 @@ stored_line = ""
 command_history = []
 
 
-
 # our display time intervals:
 intervals = (
     ('weeks', 604800000),  # 1000 * 60 * 60 * 24 * 7
@@ -316,34 +315,7 @@ def display_time(seconds):
 
 
 # save history function:
-def old_save_history(history):  # finish! Currently appends without limit, and ignores shell_history_length.
-    # check shell_history_location exists, if not create it:
-    if not os.path.exists(shell_history_location):
-        print('Creating "%s" directory.' % shell_history_location)
-        os.makedirs(shell_history_location)
-
-    history_file = shell_history_location + '/' + shell_history_filename
-
-    print("saving history ... ")
-    try:
-        f = open(history_file, 'a')
-        today = str(datetime.date.today())  # time too? Rather than just date?
-        f.write(today + "\n")
-        found_start = False
-        for line in history:
-            if line == '-- start here --':  # only append new history, not previous history.
-                found_start = True
-            elif found_start:
-                f.write("  %s\n" % line)
-        f.write("\n")
-        f.close()
-        print("Done.")
-    except Exception as e:
-        print("failed!\nReason: %s" % e)
-
-
-# save history function:
-def save_history(history):  # finish! Currently appends without limit, and ignores shell_history_length.
+def save_history(history):
     # check shell_history_location exists, if not create it:
     if not os.path.exists(shell_history_location):
         print('Creating "%s" directory.' % shell_history_location)
