@@ -14,8 +14,6 @@
 #######################################################################
 
 import sys
-import glob
-import os
 import datetime
 import time
 import urllib.request
@@ -69,16 +67,14 @@ save-table-filename = 'saved-table.txt'
 save-matrix-filename = 'saved-matrix.txt'
 """
 
-home_dir = os.environ['HOME']
-sdb_config_dir = home_dir + '/.sdb'
-sdb_config_file = sdb_config_dir + '/config'
-# check it exists, if not create it:
-if not os.path.exists(sdb_config_dir):
-    print('Creating "%s" directory.' % sdb_config_dir)
-    os.makedirs(sdb_config_dir)
+home_dir = Path.home()
+sdb_config_dir = home_dir / '.sdb'
+sdb_config_file = sdb_config_dir / 'config'
+# create it if it doesn't exist:
+sdb_config_dir.mkdir(parents=True, exist_ok=True)
 
 # save default config, else load current config:
-if not os.path.exists(sdb_config_file):
+if not sdb_config_file.exists():
     print('Creating config file')  # do we want a "if interactive" switch here?
     try:
         with open(sdb_config_file, 'w') as f:
@@ -98,7 +94,7 @@ shell_history_display_length = 40
 shell_history_length = 1000
 save_shell_history = False
 load_shell_history = True
-shell_history_location = '.'
+shell_history_location = Path(".")
 shell_history_filename = 'sdb-history.txt'
 create_sw_directory_on_startup = False
 create_dot_directory_on_startup = False
@@ -131,7 +127,7 @@ for line in config.split('\n'):
             else:
                 load_shell_history = False
         elif option == 'shell-history-location':
-            shell_history_location = value
+            shell_history_location = Path(value)
         elif option == 'shell-history-filename':
             shell_history_filename = value
         elif option == 'create-sw-directory-on-startup':
@@ -145,9 +141,9 @@ for line in config.split('\n'):
             else:
                 create_dot_directory_on_startup = False
         elif option == 'sw-directory':
-            sw_file_dir = value
+            sw_file_dir = Path(value)
         elif option == 'dot-directory':
-            dot_file_dir = value
+            dot_file_dir = Path(value)
         elif option == 'quiet-mode':
             if value == 'True':
                 quiet = True
@@ -168,16 +164,10 @@ for line in config.split('\n'):
 
 
 if create_sw_directory_on_startup:
-    # check sw_file_dir exists, if not create it:
-    if not os.path.exists(sw_file_dir):
-        print('Creating "%s" directory.' % sw_file_dir)
-        os.makedirs(sw_file_dir)
+    sw_file_dir.mkdir(parents=True, exist_ok=True)
 
 if create_dot_directory_on_startup:
-    # check dot_file_dir exists, if not create it:
-    if not os.path.exists(dot_file_dir):
-        print('Creating "%s" directory.' % dot_file_dir)
-        os.makedirs(dot_file_dir)
+    dot_file_dir.mkdir(parents=True, exist_ok=True)
 
 # sys.exit(0)
 
@@ -305,9 +295,8 @@ def display_time(seconds):
 
 # save history function:
 def save_history():
-    # check shell_history_location exists, if not create it:
-    Path(shell_history_location).mkdir(parents=True, exist_ok=True)
-    history_file = shell_history_location + '/' + shell_history_filename
+    shell_history_location.mkdir(parents=True, exist_ok=True)
+    history_file = shell_history_location / shell_history_filename
     print("saving history ... ")
     readline.write_history_file(history_file)
 
@@ -315,7 +304,7 @@ def save_history():
 # load history from file:
 if load_shell_history:
     readline.set_history_length(shell_history_length)
-    history_file = shell_history_location + '/' + shell_history_filename
+    history_file = shell_history_location / shell_history_filename
     try:
         # Silently catch an error if there's no history file, no cause for alarm
         readline.read_history_file(history_file)
@@ -325,10 +314,8 @@ if load_shell_history:
 
 # run our command line files:
 for sw_file in files_to_run:
-    path, file = os.path.split(sw_file)
-    if path == "":
-        path = sw_file_dir
-    full_name = path + '/' + file
+    if Path(sw_file).is_file() and len(Path(sw_file).parts) == 1:
+        full_name = sw_file_dir / sw_file 
     readline.add_history('load ' + full_name)
     context.load(full_name)
 
@@ -344,12 +331,12 @@ if not interactive:
 # define our web-load() function:
 def web_load(url):
     # find the sw file name:
-    name = url.split("/")[-1]  # use os.path.basename() instead?
-    dest = sw_file_dir + "/" + name  # if sw_file_dir is '', then it puts it in root directory! Fix!
+    name = url.split("/")[-1]
+    dest = sw_file_dir / name  # if sw_file_dir is '', then it puts it in root directory! Fix!
 
     dont_save = False
     # check if it exists:
-    while os.path.exists(dest):
+    while dest.exists():
         # either rename or overwrite
         check = input("\n  File \"%s\" already exists.\n  [O]verwrite, [R]ename or [D]on't save? (O,R,D): " % name)
         if len(check) > 0:
@@ -362,7 +349,7 @@ def web_load(url):
                 check = input("\n  New name: ")
                 if len(check) > 0:
                     name = check
-                    dest = sw_file_dir + "/" + name
+                    dest = sw_file_dir / name
     print()
 
     if not quiet:
@@ -383,13 +370,9 @@ def web_load(url):
             return
 
         # let's save it:
-        # print("saving to:", name)  # we need to check for sw_file_dir existence.
+        # we need to sw_file_dir exists.
+        sw_file_dir.mkdir(parents=True, exist_ok=True)
         try:
-            # check sw_file_dir exists, if not create it:
-            if not os.path.exists(sw_file_dir):
-                print('Creating "%s" directory.' % sw_file_dir)
-                os.makedirs(sw_file_dir)
-
             print('saving to: %s' % dest)
             f = open(dest, 'wb')
             f.write(html)
@@ -531,10 +514,8 @@ while True:
     elif line.startswith("save multi "):
         name = line[11:]
         name = sw_file_dir + "/" + name  # load and save files to the sw_file_dir.
-        # check sw_file_dir exists, if not create it:
-        if not os.path.exists(sw_file_dir):  # prompt before creating it?
-            print('Creating "%s" directory.' % sw_file_dir)
-            os.makedirs(sw_file_dir)
+        # create sw_file_dir if it does not exist:
+        sw_file_dir.mkdir(parents=True, exist_ok=True)
 
         print("saving context list to:", name)
         # save_sw_multi(context, name)  # update!
@@ -543,10 +524,8 @@ while True:
     elif line.startswith("save "):  # check for file existence first? Or just blow away what is already there?
         name = line[5:]
         name = sw_file_dir + "/" + name  # load and save files to the sw_file_dir.
-        # check sw_file_dir exists, if not create it:
-        if not os.path.exists(sw_file_dir):
-            print('Creating "%s" directory.' % sw_file_dir)
-            os.makedirs(sw_file_dir)
+        # create sw_file_dir if it does not exist:
+        sw_file_dir.mkdir(parents=True, exist_ok=True)
 
         print("saving current context to:", name)
         context.save(name)
@@ -558,10 +537,8 @@ while True:
 
         name = line[12:]
         # check it exists, if not create it:
-        if not os.path.exists(dot_file_dir):
-            print('Creating "%s" directory.' % dot_file_dir)
-            os.makedirs(dot_file_dir)
-        name = dot_file_dir + '/' + name
+        dot_file_dir.mkdir(parents=True, exist_ok=True)
+        name = dot_file_dir / name
         print('saving dot file: %s' % name)
 
         dot = Digraph(comment=context.context_name(), format='png')
@@ -599,8 +576,8 @@ while True:
         sep = "   "
         max_len = 0
         data = []
-        for file in sorted(glob.glob(sw_file_dir + "/*.swc") + glob.glob(sw_file_dir + "/*.sw")):
-            base = os.path.basename(file)
+        for file in sorted(list(sw_file_dir.glob("*.swc")) + list(sw_file_dir.glob("*.sw"))):
+            base = PurePath(file).name
             max_len = max(max_len, len(base))
             data.append([base, extract_sw_stats(file)])
         print()
@@ -609,12 +586,14 @@ while True:
 
     elif line.startswith("web-files "):
         print('List and load remote sw files.\nFor example:\n\n  web-files http://semantic-db.org/sw/\n')
-        url_prefix, url_base = os.path.split(line[10:])
+        # Check if the web can handle both unix and windows paths
+        url_prefix = PurePath(line[10:]).parent
+        url_base = PurePath(line[10:]).name
         # print('url_prefix: %s' % url_prefix)
         # print('url_base: %s' % url_base)
 
         # try sw-index.txt first
-        url = url_prefix + '/sw-index.txt'
+        url = url_prefix / 'sw-index.txt'
         have_sw_index = False
 
         # download sw-index.txt:
@@ -631,7 +610,7 @@ while True:
             if url_base == '':
                 url = url_prefix
             else:
-                url = url_prefix + '/' + url_base
+                url = url_prefix / url_base
 
             # download index.html:
             try:
@@ -654,14 +633,14 @@ while True:
                 line = line.strip()
                 if line != '':
                     file = line.split(' ')[0]
-                    file_url = url_prefix + '/' + file
+                    file_url = url_prefix / file
                     urls.append((file_url, file))
                     print(' %s)  %s' % (k, line))
                     k += 1
         else:
             for file in re.findall('href="(.*sw|.*swc)"', html.decode('utf-8')):  # do we want to sort the list?
-                base = os.path.basename(file)
-                file_url = url_prefix + '/' + file
+                base = PurePath(file).name
+                file_url = url_prefix / file
                 # print('file_url: %s' % file_url)
                 urls.append((file_url, base))
                 print(' %s)  %s' % (k, base))
@@ -679,18 +658,16 @@ while True:
 
     elif line.startswith("cd "):
         sw_file_dir = line[3:]
-        # check it exists, if not create it:
-        if not os.path.exists(sw_file_dir):
-            print('Creating "%s" directory.' % sw_file_dir)
-            os.makedirs(sw_file_dir)
+        # if sw_file_dir does not exist, create it:
+        sw_file_dir.mkdir(parents=True, exist_ok=True)
 
     elif line in ['ls', 'dir', 'dirs']:
         print("directory list:")
-        for dir in [d for d in os.listdir('.') if os.path.isdir(d) and not d.startswith("__") and not d.startswith('.')]:
+        for dir in [d for d in Path('.').iterdir() if d.is_dir() and not str(d).startswith("__") and not str(d).startswith('.')]:
             prefix = "  "
             if dir == sw_file_dir:
                 prefix = "* "
-            sw_count = len(glob.glob(dir + "/*.sw"))
+            sw_count = len(list(dir.glob("*.sw")))
             print('%s%s (%s)' % (prefix, dir, str(sw_count)))
 
     elif line == "create inverse":
