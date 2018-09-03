@@ -60,7 +60,6 @@ class OurHTTPServer_RequestHandler(BaseHTTPRequestHandler):
 
                 filename = dot_file_dir + '/' + name
                 with open(filename, 'rb') as f:
-                    # self.write(f.read())
                     self.wfile.write(f.read())
                 return
 
@@ -69,7 +68,6 @@ class OurHTTPServer_RequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
             # Send message back to client
-            message = "Hello world!"
             if len(query) == 0 and (name.endswith('.sw') or name.endswith('.swc')):
                 filename = sw_file_dir + '/' + name
                 with open(filename, 'r') as f:
@@ -78,22 +76,24 @@ class OurHTTPServer_RequestHandler(BaseHTTPRequestHandler):
                     self.write(text)
                     self.write('</pre>\n')
                 return
+
             query_dict = {}
             if len(query) > 0:
                 query_dict = dict(q.split("=") for q in query.split("&"))
+            message = "Hello world!"
             # Write content as utf-8 data
             # self.wfile.write(bytes(message, "utf8"))
             # self.wfile.write(bytes("<p>You accessed path: %s</p>" % self.path, "utf-8"))
             # self.wfile.write(bytes("<p>headers: %s</p>" % self.headers, "utf-8"))
             # self.wfile.write(bytes("<p>query: %s</p>" % query, "utf-8"))
             # self.wfile.write(bytes("<p>query_dict: %s</p>" % query_dict, "utf-8"))
-            self.write(message)
-            self.write("<p>You accessed path: %s</p>" % self.path)
-            self.write("<p>query: %s</p>" % query)
-            self.write("<p>query_dict: %s</p>" % query_dict)
+            # self.write(message)
+            self.write("You accessed path: %s<br>" % self.path)
+            self.write("query: %s<br>" % query)
+            self.write("query_dict: %s<br>" % query_dict)
             for h in self.headers:
-                self.write("<p>header: %s</p>" % h)
-                self.write("<p>value: %s</p>" % self.headers[h])
+                self.write("header: %s<br>" % h)
+                self.write("value: %s<br>" % self.headers[h])
             self.write("<hr>")
             self.write(intro_page())
         except Exception as e:
@@ -250,7 +250,7 @@ def process_input(line):
             data.append([base, extract_sw_stats(file)])
         for file, stats in data:
             result += '  <a href="%s">%s</a>%s%s%s\n' % (file, file, ''.ljust(max_len - len(file)), sep, stats)
-    elif line == "i" or line == "history":
+    elif line in ["i", "history"]:
         result = '<form method="post">\n'
         for k, line in enumerate(command_history):
             result += '<input type="radio" name="%s" value="%s">%s\n' % ('sa-input', escape(line), line)
@@ -258,7 +258,6 @@ def process_input(line):
     elif line == "graph":
         if not have_graphviz:
             return 'graph is disabled\nPlease install graphviz'
-
 
         dot = Digraph(comment=context.context_name(), format='png')
 
@@ -309,7 +308,6 @@ def process_input(line):
             end_time = time.time()
             delta_time = end_time - start_time
             result += "\n  Time taken: %s\n" % display_time(delta_time)
-
 
     return header + s + '<pre>\n' + result + '</pre>\n' + form + footer
 
