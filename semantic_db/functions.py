@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 27/8/2018
+# Update: 31/8/2018
 # Copyright: GPLv3
 #
 # A collection of functions that apply to kets, superpositions and sequences.
@@ -81,6 +81,52 @@ context_whitelist_table_3 = {}
 function_operators_usage = {}
 sequence_functions_usage = {}
 
+
+# process config file, if it exists:
+home_dir = os.environ['HOME']
+sdb_config_dir = home_dir + '/.sdb'
+sdb_config_file = sdb_config_dir + '/config'
+
+# load config values from file:
+if os.path.exists(sdb_config_file):
+    try:
+        with open(sdb_config_file, 'r') as f:
+            config = f.read()
+    except Exception as e:
+        print('failed to load config file.\nReason: %s' % e)
+
+# set default config values in case config file doesn't have them:
+config = ''
+save_table = True
+save_matrix = False
+save_table_filename = 'saved-table.txt'
+save_matrix_filename = 'saved-matrix.txt'
+
+# now process config file:
+for line in config.split('\n'):
+    line = line.strip()
+    if line == '':
+        continue
+    option, value = line.split(' = ')[:2]
+    value = value.strip("'")
+    # print('option: %s' % option)
+    try:
+        if option == 'save-table':
+            if value == 'True':
+                save_table = True
+            else:
+                save_table = False
+        elif option == 'save-matrix':
+            if value == 'True':
+                save_matrix = True
+            else:
+                save_matrix = False
+        elif option == 'save-table-filename':
+            save_table_filename = value
+        elif option == 'save-matrix-filename':
+            save_matrix_filename = value
+    except Exception as e:
+        print('failed to process:\n  option: %s\n  value: %s\nReason: %s\n' % (option, value, e))
 
 
 # mainly used in the parser code:
@@ -870,12 +916,13 @@ def pretty_print_table(one, context, *ops):
     s += header
     print(s)
 
-    # code to save the table (useful for big ones that are too hard to cut and paste from the console)
-    logger.info("saving to: saved-table.txt")
-    file = open("saved-table.txt", 'w')
-    file.write("sa: table[%s]\n" % ','.join(ops))
-    file.write(s)
-    file.close()
+    if save_table:
+        # code to save the table (useful for big ones that are too hard to cut and paste from the console)
+        logger.info("saving to: %s" % save_table_filename)
+        file = open(save_table_filename, 'w')
+        # file.write("sa: table[%s]\n" % ','.join(ops))
+        file.write(s)
+        file.close()
 
     return ket('table')
 
@@ -6749,6 +6796,13 @@ def matrix(one, context, *ops):
 
     matrix = paste_columns([y, '=', M, x])
     print(matrix)
+    if save_matrix:
+        # code to save the matrix (useful for big ones that are too hard to cut and paste from the console)
+        logger.info("saving to: %s" % save_matrix_filename)
+        file = open(save_matrix_filename, 'w')
+        file.write("sa: merged-matrix[" + ",".join(ops) + "]\n")
+        file.write(matrix)
+        file.close()
     return ket("matrix")
 
 
@@ -6790,6 +6844,14 @@ def naked_matrix(one, context, *ops):
 
     two, M = single_matrix_merged(one, context, ops)
     print(M)
+    if save_matrix:
+        # code to save the matrix (useful for big ones that are too hard to cut and paste from the console)
+        logger.info("saving to: %s" % save_matrix_filename)
+        file = open(save_matrix_filename, 'w')
+        file.write("sa: naked-matrix[" + ",".join(ops) + "]\n")
+        file.write(M)
+        file.close()
+
     return ket("matrix")
 
 
@@ -6888,12 +6950,13 @@ def multi_matrix(one, context, *ops):
     matrix = paste_columns(line)
     print(matrix)
 
-    # code to save the matrix (useful for big ones that are too hard to cut and paste from the console)
-    print("saving to: saved-matrix.txt")
-    file = open("saved-matrix.txt", 'w')
-    file.write("sa: matrix[" + ",".join(ops[::-1]) + "]\n")
-    file.write(matrix)
-    file.close()
+    if save_matrix:
+        # code to save the matrix (useful for big ones that are too hard to cut and paste from the console)
+        logger.info("saving to: %s" % save_matrix_filename)
+        file = open(save_matrix_filename, 'w')
+        file.write("sa: matrix[" + ",".join(ops[::-1]) + "]\n")
+        file.write(matrix)
+        file.close()
 
     return ket("matrix")
 
