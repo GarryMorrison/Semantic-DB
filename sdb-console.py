@@ -162,20 +162,6 @@ for line in config.split('\n'):
     except Exception as e:
         print('failed to process:\n  option: %s\n  value: %s\nReason: %s\n' % (option, value, e))
 
-    # print(line)
-# in testing, print out options:
-# print('shell_history_length: %s' % shell_history_length)
-# print('save_shell_history: %s' % save_shell_history)
-# print('load_shell_history: %s' % load_shell_history)
-# print('shell_history_location: %s' % shell_history_location)
-# print('shell_history_filename: %s' % shell_history_filename)
-# print('create_sw_directory_on_startup: %s' % create_sw_directory_on_startup)
-# print('create_dot_directory_on_startup: %s' % create_dot_directory_on_startup)
-# print('sw_file_dir: %s' % sw_file_dir)
-# print('dot_file_dir: %s' % dot_file_dir)
-# print('quiet: %s' % quiet)
-# sys.exit(0)
-
 
 if create_sw_directory_on_startup:
     # check sw_file_dir exists, if not create it:
