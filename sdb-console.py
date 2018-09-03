@@ -21,6 +21,7 @@ import time
 import urllib.request
 import getopt
 import readline
+from pathlib import Path,PurePath
 
 readline.parse_and_bind('tab: complete')
 
@@ -305,7 +306,7 @@ def display_time(seconds):
 # save history function:
 def save_history():
     # check shell_history_location exists, if not create it:
-    Path.mkdir(parents=True, exist_ok=True)
+    Path(shell_history_location).mkdir(parents=True, exist_ok=True)
     history_file = shell_history_location + '/' + shell_history_filename
     print("saving history ... ")
     readline.write_history_file(history_file)
