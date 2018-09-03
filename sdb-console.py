@@ -20,6 +20,9 @@ import datetime
 import time
 import urllib.request
 import getopt
+import readline
+
+readline.parse_and_bind('tab: complete')
 
 try:
     from graphviz import Digraph
@@ -252,9 +255,9 @@ help_string = """
   id                                    display the default ket/superposition
   s, store                              set x to the result of the last computation
   .                                     repeat last computation
-  i                                     interactive history
-  history                               show last 30 commands
-  history n                             show last n commands
+  [Depreceated] i                       interactive history
+  [Depreceated] history                 show last 30 commands
+  [Depreceated] history n               show last n commands
   save history                          save console history to file
   debug on                              switch verbose debug messages on
   debug off                             switch debug messages off
@@ -269,7 +272,6 @@ help_string = """
 x = ket()
 result = ket()
 stored_line = ""
-command_history = []
 
 
 # our display time intervals:
@@ -301,60 +303,24 @@ def display_time(seconds):
 
 
 # save history function:
-def save_history(history):
+def save_history():
     # check shell_history_location exists, if not create it:
-    if not os.path.exists(shell_history_location):
-        print('Creating "%s" directory.' % shell_history_location)
-        os.makedirs(shell_history_location)
-
+    Path.mkdir(parents=True, exist_ok=True)
     history_file = shell_history_location + '/' + shell_history_filename
-
     print("saving history ... ")
-    try:
-        on_disk_history = []
-        with open(history_file, 'r') as f:
-            for line in f:
-                on_disk_history.append(line.strip('\n'))
-        on_disk_history.append(str(datetime.date.today()))
-        found_start = False
-        for line in history:
-            if line == '-- start here --':
-                found_start = True
-            elif found_start:
-                on_disk_history.append('  ' + line)
-        on_disk_history = on_disk_history[-shell_history_length:]
-        with open(history_file, 'w') as f:
-            for line in on_disk_history:
-                f.write(line + '\n')
-            f.write('\n')
-        print("Done.")
-    except Exception as e:
-        print("failed!\nReason: %s" % e)
+    readline.write_history_file(history_file)
 
 
 # load history from file:
-def load_history():
-    command_history = []
-    try:
-        on_disk_history = []
-        source = shell_history_location + '/' + shell_history_filename
-        with open(source, 'r') as f:
-            for line in f:
-                if line.startswith('  '):  # filter out date-lines, which don't start with two spaces.
-                    line = line.strip()
-                    on_disk_history.append(line)
-        command_history = on_disk_history[-shell_history_length:]
-    except FileNotFoundError:
-        if interactive:
-            print('history file not found')
-    return command_history
-
-
 if load_shell_history:
-    command_history = load_history()
+    readline.set_history_length(shell_history_length)
+    history_file = shell_history_location + '/' + shell_history_filename
+    try:
+        # Silently catch an error if there's no history file, no cause for alarm
+        readline.read_history_file(history_file)
+    except FileNotFoundError:
+        pass
 
-# mark the beginning of this sessions history:
-command_history.append('-- start here --')
 
 # run our command line files:
 for sw_file in files_to_run:
@@ -362,8 +328,7 @@ for sw_file in files_to_run:
     if path == "":
         path = sw_file_dir
     full_name = path + '/' + file
-    # command_history.append('load ' + file)
-    command_history.append('load ' + full_name)
+    readline.add_history('load ' + full_name)
     context.load(full_name)
 
 
@@ -446,31 +411,10 @@ while True:
     line = input("\nsa: ")
     line = line.strip()
 
-    if line == "i":
-        # n = 30  # increase this? Make it into a defined variable, somewhere above? A config option too?
-        n = shell_history_display_length
-        if len(command_history) > 0:
-            count = min(len(command_history), n)
-            history = command_history[-count:]
-            for k, line in enumerate(history):
-                print(" %s)  %s" % (str(k+1), line))
-            selection = input("\nEnter your selection: ")
-            try:
-                selection = int(selection)
-                line = history[selection-1]
-                print("Your selection: %s\n" % line)
-            except:
-                continue
-        else:
-            print("history is empty")
-            continue
-    command_history.append(line)
-    command_history = command_history[-shell_history_length:]
-
     # exit the agent:
     if line in ['q', 'quit', 'exit']:
         if save_shell_history:
-            save_history(command_history)
+            save_history()
 
         print("\nBye!")
         break
@@ -478,7 +422,7 @@ while True:
     if line in ['h', 'help']:
         print(help_string)
 
-    elif line.startswith('--'):
+    elif line.startswith('--'): # ToDo: Remove this if not needed from issue #29
         continue
 
     elif line == "context":
@@ -581,7 +525,7 @@ while True:
             print("\n  Time taken:", display_time(delta_time))
 
     elif line == "save history":
-        save_history(command_history)
+        save_history()
 
     elif line.startswith("save multi "):
         name = line[11:]
@@ -770,18 +714,6 @@ while True:
 
     elif line.startswith("--"):
         continue
-
-    elif line.startswith("history"):
-        try:
-            n = int(line[8:])
-        except:
-            # n = 30  # like 'i' command, we probably shouldn't hard code it in down here.
-            n = shell_history_display_length
-
-        if len(command_history) > 0:
-            count = min(len(command_history), n)
-            for line in command_history[-count:]:
-                print("  " + line)
 
     elif line == 'debug on':
         logger.setLevel(logging.DEBUG)
