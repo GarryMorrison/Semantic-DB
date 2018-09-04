@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 3/9/2018
-# Update: 3/9/2018
+# Update: 4/9/2018
 # Copyright: GPLv3
 #
 #
@@ -16,12 +16,13 @@ import os
 import time
 import glob
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from io import BytesIO
+# from io import BytesIO
 from urllib.parse import urlparse, unquote_plus
 from html import escape
 from semantic_db import *
 import io
 from contextlib import redirect_stdout
+import urllib.request
 
 try:
     from graphviz import Digraph
@@ -36,12 +37,15 @@ dot_file_dir = 'graph-examples'
 x = ket()
 stored_line = ""
 command_history = []
-command_history_len = 100
+command_history_length = 100
+shell_history_length = 20
+full_history = []
 
 
 # HTTPRequestHandler class
 class OurHTTPServer_RequestHandler(BaseHTTPRequestHandler):
 
+    # Write content as utf-8 data
     def write(self, s):
         self.wfile.write(bytes(s, 'utf8'))
 
@@ -62,10 +66,17 @@ class OurHTTPServer_RequestHandler(BaseHTTPRequestHandler):
                 with open(filename, 'rb') as f:
                     self.wfile.write(f.read())
                 return
+        except Exception as e:
+            self.write('Reason: %s' % e)
+            return
 
+        try:
             # Send headers
             self.send_header('Content-type', 'text/html')
             self.end_headers()
+
+            query = urlparse(self.path).query
+            name = os.path.basename(self.path)
 
             # Send message back to client
             if len(query) == 0 and (name.endswith('.sw') or name.endswith('.swc')):
@@ -81,12 +92,6 @@ class OurHTTPServer_RequestHandler(BaseHTTPRequestHandler):
             if len(query) > 0:
                 query_dict = dict(q.split("=") for q in query.split("&"))
             message = "Hello world!"
-            # Write content as utf-8 data
-            # self.wfile.write(bytes(message, "utf8"))
-            # self.wfile.write(bytes("<p>You accessed path: %s</p>" % self.path, "utf-8"))
-            # self.wfile.write(bytes("<p>headers: %s</p>" % self.headers, "utf-8"))
-            # self.wfile.write(bytes("<p>query: %s</p>" % query, "utf-8"))
-            # self.wfile.write(bytes("<p>query_dict: %s</p>" % query_dict, "utf-8"))
             # self.write(message)
             self.write("You accessed path: %s<br>" % self.path)
             self.write("query: %s<br>" % query)
@@ -105,6 +110,7 @@ class OurHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         content_length = int(self.headers['Content-Length'])
         body = self.rfile.read(content_length)
         self.send_response(200)
+        # self.send_header('Location', '#form')
         self.end_headers()
         # response = BytesIO()
         # response.write(b'This is POST request. ')
@@ -124,6 +130,15 @@ class OurHTTPServer_RequestHandler(BaseHTTPRequestHandler):
                 elif 'history' in query_dict:
                     history_input = query_dict['history']
                     self.write('history: %s' % history_input)
+                elif 'reset' in query_dict:
+                    reset_input = query_dict['reset']
+                    self.write(process_reset(reset_input))
+                elif 'download' in query_dict:
+                    download_input = query_dict['download']
+                    # self.write(process_download(download_input))
+                    self.write(process_download(query_dict))
+                elif 'webload' in query_dict:
+                    self.write(process_webload(query_dict))
         except Exception as e:
             self.write('Reason: %s' % e)
         return
@@ -182,7 +197,7 @@ web-files <a href="http://semantic-db.org/sw/">http://semantic-db.org/sw/</a><p>
 To see usage docs:
 <a href="http://semantic-db.org/docs/usage/">http://semantic-db.org/docs/usage/</a><p>
 <form method="post">
-  sa: <input type="text" name="sa-input" size="100">
+  sa: <input type="text" name="sa-input" size="100" autofocus="autofocus">
   <input type="submit" name="compute" value="compute">
 </form>
 <p>
@@ -195,27 +210,30 @@ To see usage docs:
     return header + footer
 
 
-
-def process_input(line):
-    line = line.strip()
-    header = """
+header = """
 <html>
 <head><title>Semantic DB</title></head>
 <body>
 <h3>Semantic DB</h3>
 """
 
-    form = """
+form = """
+<a name="form"></a>
 <form method="post">
-  sa: <input type="text" name="sa-input" size="100">
+  sa: <input type="text" name="sa-input" size="100" autofocus="autofocus">
   <input type="submit" name="compute" value="compute">
 </form>
 """
-    footer = """
+
+footer = """
 </body>
 </html>
 """
-    s = 'sa: %s<br>' % line
+
+def process_input(line):
+    line = line.strip()
+    # s = 'sa: %s<br>' % line
+    s = 'sa: %s' % line
     command_history.append(line)
     result = ''
     if line == "dump":
@@ -250,11 +268,77 @@ def process_input(line):
             data.append([base, extract_sw_stats(file)])
         for file, stats in data:
             result += '  <a href="%s">%s</a>%s%s%s\n' % (file, file, ''.ljust(max_len - len(file)), sep, stats)
+    elif line.startswith("web-files "):
+        # print('List and load remote sw files.\nFor example:\n\n  web-files http://semantic-db.org/sw/\n')
+        url_prefix, url_base = os.path.split(line[10:])
+        # print('url_prefix: %s' % url_prefix)
+        # print('url_base: %s' % url_base)
+
+        # try sw-index.txt first
+        url = url_prefix + '/sw-index.txt'
+        have_sw_index = False
+        have_result = True
+
+        # download sw-index.txt:
+        try:
+            result += 'downloading sw index file: <a href="%s">%s</a>\n' % (url, url)
+            headers = {'User-Agent': 'semantic-agent/2.0'}
+            req = urllib.request.Request(url, None, headers)  # does it handle https?
+            f = urllib.request.urlopen(req)
+            html = f.read()
+            f.close()
+            have_sw_index = True
+        except:
+            # try index.html next:
+            if url_base == '':
+                url = url_prefix + '/'
+            else:
+                url = url_prefix + '/' + url_base
+
+            # download index.html:
+            try:
+                result += 'downloading sw index file: <a href="%s">%s</a>\n' % (url, url)
+                headers = {'User-Agent': 'semantic-agent/2.0'}
+                req = urllib.request.Request(url, None, headers)  # does it handle https?
+                f = urllib.request.urlopen(req)
+                html = f.read()
+                f.close()
+            except:
+                result += 'failed to download: <a href="%s">%s</a>\n' % (url, url)
+                have_result = False
+
+        if have_result:
+            result += '<form method="post">'
+            urls = []
+            k = 1
+            # process sw-index.txt file if we have it:
+            if have_sw_index:
+                for line in html.decode('ascii').split('\n'):
+                    line = line.strip()
+                    if line != '':
+                        file = line.split(' ')[0]
+                        file_url = url_prefix + '/' + file
+                        urls.append((file_url, file))
+                        # print(' %s)  %s' % (k, line))
+                        result += '    <input type="checkbox" name="%s" value="%s">%s\n' % ('download' + str(k), escape(file_url), line)
+                        k += 1
+            else:
+                for file in re.findall('href="(.*sw|.*swc)"', html.decode('utf-8')):  # do we want to sort the list?
+                    base = os.path.basename(file)
+                    file_url = url_prefix + '/' + file
+                    # print('file_url: %s' % file_url)
+                    urls.append((file_url, base))
+                    # print(' %s)  %s' % (k, base))
+                    result += '    <input type="checkbox" name="%s" value="%s">%s\n' % ('download' + str(k), escape(file_url), base)
+                    k += 1
+
+            result += '    <input type="submit" name="download" value="download">\n</form>'
+
     elif line in ["i", "history"]:
-        result = '<form method="post">\n'
+        result = '<form method="post">'
         for k, line in enumerate(command_history):
             result += '<input type="radio" name="%s" value="%s">%s\n' % ('sa-input', escape(line), line)
-        result += '<input type="submit" name="compute" value="compute">\n</form>\n'
+        result += '<input type="submit" name="compute" value="compute">\n</form>'
     elif line == "graph":
         if not have_graphviz:
             return 'graph is disabled\nPlease install graphviz'
@@ -288,11 +372,40 @@ def process_input(line):
         # finish up:
         name = dot_file_dir + '/tmp.dot'
         dot.render(name)
-        result = header
+        # result = header
         result += '\n<img src="%s.png">\n' % name
-        result += form + footer
-        return result
-
+        # result += form + footer
+        # return result
+    elif line == "display":
+        result += context.display_all()
+    elif line.startswith("display "):
+        var = line[8:]
+        # print("var: %s\n" % var)
+        try:
+            seq = extract_compound_sequence(context, var)
+            result += context.display_seq(seq)
+        except:
+            pass
+    elif line == "quiet on":
+        global quiet
+        quiet = True
+    elif line == "quiet off":
+        global quiet
+        quiet = False
+    elif line.startswith('usage '):
+        op_names = line[6:].split(', ')
+        with io.StringIO() as buf, redirect_stdout(buf):  # ugly hack for now
+            usage(op_names)
+            result += buf.getvalue()
+    elif line == "reset":
+        result += "\n  Warning! This will erase all unsaved work! Are you sure?"
+        result += """
+<form method="post">
+    <input type="submit" name="reset" value="yes"> <input type="submit" name="reset" value="no">
+</form>"""
+        # if len(check) > 0 and check[0] == 'y':
+        #     context.reset('sw console')
+        #     print("\n  Gone ... ")
     else:
         if not quiet:
             start_time = time.time()
@@ -309,7 +422,75 @@ def process_input(line):
             delta_time = end_time - start_time
             result += "\n  Time taken: %s\n" % display_time(delta_time)
 
-    return header + s + '<pre>\n' + result + '</pre>\n' + form + footer
+    # return header + s + '<pre>\n' + result + '</pre>\n' + form + footer
+    full_history.append(s + '<pre>' + result + '</pre>\n')
+    return header + "".join(full_history) + form + footer
+
+
+def process_reset(reset_input):
+    result = ''
+    if reset_input == 'yes':
+        context.reset('http shell')
+        result += '\n    Gone!'
+    full_history.append('<pre>' + result + '</pre>\n')
+    return header + "".join(full_history) + form + footer
+
+
+def process_download(query_dict):
+    result = """<form method="post">"""
+    max_len = 0
+    data = []
+    for key, value in query_dict.items():
+        if key.startswith('download'):
+            idx = key[8:]
+            if len(idx) > 0:
+                # result += '%s: %s\n' % (idx, value)
+                # result += 'webloading: %s\n' % unquote_plus(value)
+                value = unquote_plus(value)
+                name = value.split("/")[-1]
+                dest = sw_file_dir + "/" + name
+                # check if it exists:
+                if os.path.exists(dest):
+                    max_len = max(max_len, len(name))
+                    data.append((name, idx, value))
+    for name, idx, value in data:
+        result += """    File "%s" already exists:%s <input type="radio" name="webload-%s" value="overwrite-%s">overwrite <input type="radio" name="webload-%s" value="rename-%s">rename <input type="radio" name="webload-%s" value="dont_save-%s">don't save\n""" % (name, ''.ljust(max_len - len(name)), idx, value, idx, value, idx, value)
+    result += '    <input type="submit" name="webload" value="download">\n</form>'
+    # return header + '<pre>' + result + '</pre>' + form + footer
+    full_history.append('<pre>' + result + '</pre>\n')
+    return header + "".join(full_history) + form + footer
+
+
+def process_webload(query_dict):
+    # result = ''
+    max_len = 0
+    rename_files = []
+    result = '<form method="post">'
+    for key, value in query_dict.items():
+        value = unquote_plus(value)
+        if key.startswith('webload-'):
+            # result += '%s: %s\n' % (key, value)
+            if value.startswith('overwrite-'):
+                # result += 'Overwrite: %s\n' % value[10:]
+                pass
+            elif value.startswith('rename-'):
+                # result += 'Rename: %s\n' % value[7:]
+                name = os.path.basename(value[7:])
+                max_len = max(max_len, len(name))
+                rename_files.append(name)
+                # result += '<form method="post">'
+                # result += '  rename: %s <input type="text" name="rename" value="%s" size="100" autofocus="autofocus">\n' % (name, name)
+                # result += '</form>'
+            elif value.startswith('dont_save-'):
+                # result += "Don't save: %s\n" % value[10:]
+                pass
+    result = '<form method="post">'
+    for name in rename_files:
+        result += '    rename %s <input type="text" name="rename" value="%s" size="100" autofocus="autofocus">\n' % (name.ljust(max_len), name)
+    result += '    <input type="submit" name="rename" value="rename"></form>'
+    # return header + '<pre>' + result + '</pre>' + form + footer
+    full_history.append('<pre>' + result + '</pre>\n')
+    return header + "".join(full_history) + form + footer
 
 
 if __name__ == '__main__':
