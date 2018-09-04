@@ -100,6 +100,7 @@ setup(
         'parsley',
         'numpy',
         'matplotlib',
+        "pathlib2 ; python_version<'3.4'",
     ],
     extras_require={
         'Graph':  ["graphviz"],
