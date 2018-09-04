@@ -16,7 +16,7 @@
 import sys
 import datetime
 import time
-import urllib.request
+import urllib.request,urllib.parse
 import getopt
 import readline
 from pathlib import Path,PurePath
@@ -98,8 +98,8 @@ shell_history_location = Path(".")
 shell_history_filename = 'sdb-history.txt'
 create_sw_directory_on_startup = False
 create_dot_directory_on_startup = False
-sw_file_dir = '.'
-dot_file_dir = '.'
+sw_file_dir = Path('.')
+dot_file_dir = ('.')
 quiet = False
 
 
@@ -302,8 +302,8 @@ def save_history():
 
 
 # load history from file:
+readline.set_history_length(shell_history_length)
 if load_shell_history:
-    readline.set_history_length(shell_history_length)
     history_file = shell_history_location / shell_history_filename
     try:
         # Silently catch an error if there's no history file, no cause for alarm
@@ -331,7 +331,7 @@ if not interactive:
 # define our web-load() function:
 def web_load(url):
     # find the sw file name:
-    name = url.split("/")[-1]
+    name = PurePath(urllib.parse.urlparse(url).path).name
     dest = sw_file_dir / name  # if sw_file_dir is '', then it puts it in root directory! Fix!
 
     dont_save = False
