@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 2/9/2018
+# Update: 5/9/2018
 # Copyright: GPLv3
 #
 # Usage: ./sdb-console.py [--debug | --info] [-q] [-i] [--version] [file1.sw ... filen.sw]
@@ -212,7 +212,7 @@ if len(files_to_run) == 0:
 
 
 if interactive:
-    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 2 September, 2018")
+    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 5 September, 2018")
     print("\nTo load remote sw files, run:\n\n  web-files http://semantic-db.org/sw/\n")
     print("To see usage docs, visit:\n\n  http://semantic-db.org/docs/usage/\n")
 
@@ -631,11 +631,11 @@ while True:
 
                 sp = context.recall(op, x)  # find the superposition for a given operator applied to the given ket
                 if type(sp) is stored_rule:
-                    sp = ket(sp.rule)
+                    sp = ket(sp.rule.replace('"', '\\"'))
                     arrow_type = "box"
 
                 if type(sp) is memoizing_rule:
-                    sp = ket(sp.rule)
+                    sp = ket(sp.rule.replace('"', '\\"'))
                     arrow_type = "tee"
 
                 if type(sp) is sequence:  # handle sequences later! Fix!
