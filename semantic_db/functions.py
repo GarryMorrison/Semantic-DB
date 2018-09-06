@@ -9010,6 +9010,7 @@ function_operators_usage['q-learn'] = """
 
     examples:
         -- load q-learning-example.sw
+        -- data from here: http://mnemstudio.org/path-finding-q-learning-tutorial.htm
         step |0> => |4>
         step |1> => |3> + |5>
         step |2> => |3>
@@ -9025,7 +9026,24 @@ function_operators_usage['q-learn'] = """
         reward |5> => |100>
 
         q-learn[1, 0.9, step] |5>
-        
+            +-------+--------+
+            | state | tidy-Q |
+            +-------+--------+
+            | 0: 4  | 80.0   |
+            | 1: 3  | 64.0   |
+            | 1: 5  | 100.0  |
+            | 2: 3  | 64.0   |
+            | 3: 1  | 80.0   |
+            | 3: 2  | 51.2   |
+            | 3: 4  | 80.0   |
+            | 4: 0  | 64.0   |
+            | 4: 3  | 64.0   |
+            | 4: 5  | 100.0  |
+            | 5: 1  | 80.0   |
+            | 5: 4  | 80.0   |
+            | 5: 5  | 100.0  |
+            +-------+--------+
+
     see also:
 
 """
