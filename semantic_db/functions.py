@@ -9004,7 +9004,7 @@ compound_table['q-learn'] = ['apply_sp_fn', 'q_learn', 'context']
 # set usage info:
 function_operators_usage['q-learn'] = """
     description:
-        q-learn[alpha, gamma, op] sp
+        q-learn[iterations, alpha, gamma, op] sp
         q-learn with respect to states given by op
         and sp is the set of final states
 
@@ -9025,7 +9025,7 @@ function_operators_usage['q-learn'] = """
         reward |4> => |0>
         reward |5> => |100>
 
-        q-learn[1, 0.9, step] |5>
+        q-learn[1000, 1, 0.9, step] |5>
             +-------+--------+
             | state | tidy-Q |
             +-------+--------+
@@ -9050,7 +9050,7 @@ function_operators_usage['q-learn'] = """
 def q_learn(final_states, context, *parameters):
     try:
         print('final_states: %s' % final_states)
-        alpha, gamma, op = parameters
+        iterations, alpha, gamma, op = parameters
     except:
         return ket()
     states = context.relevant_kets(op)
@@ -9103,7 +9103,7 @@ def q_learn(final_states, context, *parameters):
             print('Q_state_state: %s' % Q_state_state)
 
     # run the single episode a bunch of times:
-    for _ in range(1000):
+    for _ in range(int(iterations)):
         single_episode(states, gamma)
 
     # find max_Q:

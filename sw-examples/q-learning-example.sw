@@ -15,7 +15,7 @@ reward |4> => |0>
 reward |5> => |100>
 
 -- q-learn[alpha, gamma, op] set-of-terminal-states:
-|null> => q-learn[1, 0.8, step] |5>
+|null> => q-learn[1000, 1, 0.8, step] |5>
 
 
 -- now display the results in a table:
