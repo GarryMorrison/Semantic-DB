@@ -9006,7 +9006,7 @@ function_operators_usage['q-learn'] = """
     description:
         q-learn[iterations, alpha, gamma, op] sp
         q-learn with respect to states given by op
-        and sp is the set of final states
+        and sp is the set of final/goal states
 
     examples:
         -- load q-learning-example.sw
@@ -9025,7 +9025,19 @@ function_operators_usage['q-learn'] = """
         reward |4> => |0>
         reward |5> => |100>
 
+        -- learn the Q and norm-Q values:
         q-learn[1000, 1, 0.9, step] |5>
+        
+        -- now display the results in a table:
+        -- tables chomp the leading category, which we don't want, so we apply one (yeah, a bit of a hack):
+        apply-prefix |*> #=> |prefix:> __ |_self>
+        
+        -- define our tidy results operator:
+        tidy-Q |*> #=> round[3] norm-Q remove-prefix["prefix: "] |_self>
+        
+        -- show the table:
+        table[state, tidy-Q] apply-prefix ket-sort rel-kets[norm-Q]
+        
             +-------+--------+
             | state | tidy-Q |
             +-------+--------+
@@ -9057,7 +9069,7 @@ def q_learn(final_states, context, *parameters):
     print('relevant states: %s' % states)
 
     def recall_Q(x):
-        Q_label = context.recall('Q', x).to_sp()
+        Q_label = context.recall('Q', x).to_ket()
         if len(Q_label) == 0:
             Q = 0
         else:
