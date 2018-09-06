@@ -9036,26 +9036,26 @@ function_operators_usage['q-learn'] = """
         tidy-Q |*> #=> round[3] norm-Q remove-prefix["prefix: "] |_self>
         
         -- show the table:
-        table[state, tidy-Q] apply-prefix ket-sort rel-kets[norm-Q]
-        
-            +-------+--------+
-            | state | tidy-Q |
-            +-------+--------+
-            | 0: 4  | 80.0   |
-            | 1: 3  | 64.0   |
-            | 1: 5  | 100.0  |
-            | 2: 3  | 64.0   |
-            | 3: 1  | 80.0   |
-            | 3: 2  | 51.2   |
-            | 3: 4  | 80.0   |
-            | 4: 0  | 64.0   |
-            | 4: 3  | 64.0   |
-            | 4: 5  | 100.0  |
-            | 5: 1  | 80.0   |
-            | 5: 4  | 80.0   |
-            | 5: 5  | 100.0  |
-            +-------+--------+
+        table[transition, tidy-Q] apply-prefix ket-sort rel-kets[norm-Q]
 
+            +------------+--------+
+            | transition | tidy-Q |
+            +------------+--------+
+            | 0: 4       | 80.0   |
+            | 1: 3       | 64.0   |
+            | 1: 5       | 100.0  |
+            | 2: 3       | 64.0   |
+            | 3: 1       | 80.0   |
+            | 3: 2       | 51.2   |
+            | 3: 4       | 80.0   |
+            | 4: 0       | 64.0   |
+            | 4: 3       | 64.0   |
+            | 4: 5       | 100.0  |
+            | 5: 1       | 80.0   |
+            | 5: 4       | 80.0   |
+            | 5: 5       | 100.0  |
+            +------------+--------+
+        
     see also:
 
 """
@@ -9076,17 +9076,12 @@ def q_learn(final_states, context, *parameters):
             Q = float(Q_label.label)
         return Q
 
-    def single_episode(states, gamma):
-        # state = ket('2')
-        # state = ket('1')
+    def single_episode(states, alpha, gamma):
         state = states.pick_elt()
         while True:
-            # next_states = state.apply_op(context, op).to_sp()
             next_states = context.recall(op, state).to_sp()
-            # rewards = next_states.apply_op(context, 'reward').to_sp()
             random_next_state = next_states.pick_elt()
-            # index_next_state = next_states.find_index(random_next_state)
-            reward_next_state = context.recall('reward', random_next_state).to_ket()
+            reward_next_state = context.recall('reward', random_next_state).to_ket().label
             future_states = context.recall(op, random_next_state).to_sp()
             max_Q = 0
             for x in future_states:
@@ -9094,29 +9089,25 @@ def q_learn(final_states, context, *parameters):
                 print('inside state_state: %s' % state_state)
                 Q = recall_Q(state_state)
                 max_Q = max(max_Q, Q)
-            # state_action = state.label + ': ' + str(index_next_state)
             state_state = state.label + ': ' + random_next_state.label
             Q = recall_Q(state_state)
-            Q_state_state = (1 - alpha) * Q + alpha * (float(reward_next_state.label) + gamma * max_Q )
+            Q_state_state = (1 - alpha) * Q + alpha * (float(reward_next_state) + gamma * max_Q )
             context.learn('Q', state_state, str(Q_state_state))
             if final_states.find_value(random_next_state) > 0:
                 break
             state = random_next_state
             print('state: %s' % state)
             print('next_states: %s' % next_states)
-            # print('rewards: %s' % rewards)
             print('random_next_state: %s' % random_next_state)
-            # print('index_next_state: %s' % index_next_state)
             print('reward_next_state: %s' % reward_next_state)
             print('future_states: %s' % future_states)
             print('max_Q: %s' % max_Q)
-            # print('state_action: %s' % state_action)
             print('state_state: %s' % state_state)
             print('Q_state_state: %s' % Q_state_state)
 
     # run the single episode a bunch of times:
     for _ in range(int(iterations)):
-        single_episode(states, gamma)
+        single_episode(states, alpha, gamma)
 
     # find max_Q:
     max_Q = 0

@@ -28,5 +28,5 @@ apply-prefix |*> #=> |prefix:> __ |_self>
 tidy-Q |*> #=> round[3] norm-Q remove-prefix["prefix: "] |_self>
 
 -- show the table:
-|null> => table[state, tidy-Q] apply-prefix ket-sort rel-kets[norm-Q] |>
+|null> => table[transition, tidy-Q] apply-prefix ket-sort rel-kets[norm-Q] |>
 
