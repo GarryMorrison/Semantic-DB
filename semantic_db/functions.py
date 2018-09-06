@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 31/8/2018
+# Update: 6/9/2018
 # Copyright: GPLv3
 #
 # A collection of functions that apply to kets, superpositions and sequences.
@@ -8996,3 +8996,109 @@ def input_seq_test(input_seq, one, two):
     print('one: %s' % one)
     print('two: %s' % two)
     return input_seq
+
+
+
+# set invoke method:
+compound_table['q-learn'] = ['apply_sp_fn', 'q_learn', 'context']
+# set usage info:
+function_operators_usage['q-learn'] = """
+    description:
+        q-learn[alpha, gamma, op] sp
+        q-learn with respect to states given by op
+        and sp is the set of final states
+
+    examples:
+        -- load q-learning-example.sw
+        step |0> => |4>
+        step |1> => |3> + |5>
+        step |2> => |3>
+        step |3> => |1> + |2> + |4>
+        step |4> => |0> + |3> + |5>
+        step |5> => |1> + |4> + |5>
+        
+        reward |0> => |0>
+        reward |1> => |0>
+        reward |2> => |0>
+        reward |3> => |0>
+        reward |4> => |0>
+        reward |5> => |100>
+
+        q-learn[1, 0.9, step] |5>
+        
+    see also:
+
+"""
+def q_learn(final_states, context, *parameters):
+    try:
+        print('final_states: %s' % final_states)
+        alpha, gamma, op = parameters
+    except:
+        return ket()
+    states = context.relevant_kets(op)
+    print('relevant states: %s' % states)
+
+    def recall_Q(x):
+        Q_label = context.recall('Q', x).to_sp()
+        if len(Q_label) == 0:
+            Q = 0
+        else:
+            Q = float(Q_label.label)
+        return Q
+
+    def single_episode(states, gamma):
+        # state = ket('2')
+        # state = ket('1')
+        state = states.pick_elt()
+        while True:
+            # next_states = state.apply_op(context, op).to_sp()
+            next_states = context.recall(op, state).to_sp()
+            # rewards = next_states.apply_op(context, 'reward').to_sp()
+            random_next_state = next_states.pick_elt()
+            # index_next_state = next_states.find_index(random_next_state)
+            reward_next_state = context.recall('reward', random_next_state).to_ket()
+            future_states = context.recall(op, random_next_state).to_sp()
+            max_Q = 0
+            for x in future_states:
+                state_state = random_next_state.label + ': ' + x.label
+                print('inside state_state: %s' % state_state)
+                Q = recall_Q(state_state)
+                max_Q = max(max_Q, Q)
+            # state_action = state.label + ': ' + str(index_next_state)
+            state_state = state.label + ': ' + random_next_state.label
+            Q = recall_Q(state_state)
+            Q_state_state = (1 - alpha) * Q + alpha * (float(reward_next_state.label) + gamma * max_Q )
+            context.learn('Q', state_state, str(Q_state_state))
+            if final_states.find_value(random_next_state) > 0:
+                break
+            state = random_next_state
+            print('state: %s' % state)
+            print('next_states: %s' % next_states)
+            # print('rewards: %s' % rewards)
+            print('random_next_state: %s' % random_next_state)
+            # print('index_next_state: %s' % index_next_state)
+            print('reward_next_state: %s' % reward_next_state)
+            print('future_states: %s' % future_states)
+            print('max_Q: %s' % max_Q)
+            # print('state_action: %s' % state_action)
+            print('state_state: %s' % state_state)
+            print('Q_state_state: %s' % Q_state_state)
+
+    # run the single episode a bunch of times:
+    for _ in range(1000):
+        single_episode(states, gamma)
+
+    # find max_Q:
+    max_Q = 0
+    for x in context.relevant_kets('Q'):
+        Q = recall_Q(x)
+        max_Q = max(max_Q, Q)
+    print('max_Q: %s' % max_Q)
+
+    if max_Q > 0:
+        # now normalize our Q matrix:
+        for x in context.relevant_kets('Q'):
+            Q = recall_Q(x)
+            context.learn('norm-Q', x, str(100 * Q / max_Q))
+    return ket('q-learn')
+
