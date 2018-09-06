@@ -30,3 +30,7 @@ tidy-Q |*> #=> round[3] norm-Q remove-prefix["prefix: "] |_self>
 -- show the table:
 |null> => table[transition, tidy-Q] apply-prefix ket-sort rel-kets[norm-Q] |>
 
+
+-- show the walk sequences:
+walk |*> #=> q-walk |_self>
+|null> => table[start, walk] range(|0>, |5>) |>

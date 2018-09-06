@@ -9123,3 +9123,40 @@ def q_learn(final_states, context, *parameters):
             context.learn('norm-Q', x, str(100 * Q / max_Q))
     return ket('q-learn')
 
+
+# set invoke method:
+ket_context_table['q-walk'] = 'q_walk'
+# set usage info:
+function_operators_usage['q-walk'] = """
+    description:
+        q-walk ket
+        after we have run q-learn, we can walk the result
+
+    examples:
+
+    see also:
+"""
+# start is a ket
+def q_walk(start, context):
+    seq = sequence([]) + start
+    previous_step = start.label
+    while True:
+        steps = context.starts_with(ket(previous_step + ': '))  # maybe context.starts_with() should also handle strings?
+        # print('steps: %s' % steps)
+        best_step = ['', 0]
+        for x in steps:
+            tail = extract_value(x).label
+            reward = float(context.recall('norm-Q', x).to_ket().label)
+            if reward > best_step[1]:
+                best_step = [tail, reward]
+            # print('tail: %s' % tail)
+            # print('reward: %s' % reward)
+        # print('best_step: %s' % best_step)
+        next_step = best_step[0]
+        if next_step == previous_step:
+            break
+        previous_step = next_step
+        if next_step != '':
+            seq += ket(next_step)
+    # print('seq: %s' % seq)
+    return seq
