@@ -9140,7 +9140,9 @@ function_operators_usage['q-walk'] = """
 def q_walk(start, context):
     seq = sequence([]) + start
     previous_step = start.label
-    while True:
+    previous_steps = [previous_step]
+    k = 0
+    while True and k < 6:
         steps = context.starts_with(ket(previous_step + ': '))  # maybe context.starts_with() should also handle strings?
         # print('steps: %s' % steps)
         best_step = ['', 0]
@@ -9153,10 +9155,12 @@ def q_walk(start, context):
             # print('reward: %s' % reward)
         # print('best_step: %s' % best_step)
         next_step = best_step[0]
-        if next_step == previous_step:
+        if next_step in previous_steps:
             break
         previous_step = next_step
+        previous_steps.append(previous_step)
         if next_step != '':
             seq += ket(next_step)
+        k += 1
     # print('seq: %s' % seq)
     return seq

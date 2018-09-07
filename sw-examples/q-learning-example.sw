@@ -14,7 +14,7 @@ reward |3> => |0>
 reward |4> => |0>
 reward |5> => |100>
 
--- q-learn[alpha, gamma, op] set-of-terminal-states:
+-- q-learn[iterations, alpha, gamma, op] set-of-terminal-states:
 |null> => q-learn[1000, 1, 0.8, step] |5>
 
 
@@ -33,4 +33,4 @@ tidy-Q |*> #=> round[3] norm-Q remove-prefix["prefix: "] |_self>
 
 -- show the walk sequences:
 walk |*> #=> q-walk |_self>
-|null> => table[start, walk] range(|0>, |5>) |>
+|null> => table[start, walk] rel-kets[step] |>
