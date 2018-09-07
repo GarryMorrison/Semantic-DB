@@ -9036,30 +9036,25 @@ function_operators_usage['q-learn'] = """
         q-learn[1000, 1, 0.8, step] |5>
         
         -- now display the results in a table:        
-        -- define our tidy results operator:
-        tidy-Q |*> #=> round[3] norm-Q |_self>
-        
-        -- show the table:
-        table[transition, tidy-Q] ket-sort rel-kets[norm-Q]
+        table[transition, norm-Q] ket-sort rel-kets[norm-Q]
 
             +------------+--------+
-            | transition | tidy-Q |
+            | transition | norm-Q |
             +------------+--------+
-            | 0 -> 4     | 80.0   |
+            | 0 -> 4     | 80     |
             | 1 -> 3     | 64.0   |
-            | 1 -> 5     | 100.0  |
+            | 1 -> 5     | 100    |
             | 2 -> 3     | 64.0   |
-            | 3 -> 1     | 80.0   |
+            | 3 -> 1     | 80     |
             | 3 -> 2     | 51.2   |
-            | 3 -> 4     | 80.0   |
+            | 3 -> 4     | 80     |
             | 4 -> 0     | 64.0   |
             | 4 -> 3     | 64.0   |
-            | 4 -> 5     | 100.0  |
-            | 5 -> 1     | 80.0   |
-            | 5 -> 4     | 80.0   |
+            | 4 -> 5     | 100    |
+            | 5 -> 1     | 80     |
+            | 5 -> 4     | 80     |
             | 5 -> 5     | 100.0  |
             +------------+--------+
-
 
         -- next example, data from here (see the cheese example): 
         -- https://medium.freecodecamp.org/diving-deeper-into-reinforcement-learning-with-q-learning-c18d0db58efe
@@ -9082,23 +9077,19 @@ function_operators_usage['q-learn'] = """
         -- q-learn[iterations, alpha, gamma, op] set-of-terminal-states:
         |null> => q-learn[1000, 1, 0.8, step] (|E> + |F>)
         
-        -- now display the results in a table:       
-        -- define our tidy results operator:
-        tidy-Q |*> #=> round[3] norm-Q |_self>
-        
-        -- show the transition table:
-        table[transition, tidy-Q] ket-sort rel-kets[norm-Q]
+        -- now display the transition table:       
+        table[transition, norm-Q] ket-sort rel-kets[norm-Q]
 
             +------------+--------+
-            | transition | tidy-Q |
+            | transition | norm-Q |
             +------------+--------+
             | A -> B     | 66.0   |
             | A -> D     | 46.24  |
             | B -> A     | 52.8   |
-            | B -> C     | 80.0   |
+            | B -> C     | 80     |
             | B -> E     | -20.0  |
             | C -> B     | 66.0   |
-            | C -> F     | 100.0  |
+            | C -> F     | 100    |
             | D -> A     | 52.8   |
             | D -> E     | -20.0  |
             | E -> E     | -20.0  |
@@ -9106,7 +9097,7 @@ function_operators_usage['q-learn'] = """
             | F -> E     | -20.0  |
             | F -> F     | 100.0  |
             +------------+--------+
-        
+
         -- show the walk sequences:
         walk |*> #=> q-walk |_self>
         table[start, walk] rel-kets[step]
@@ -9186,7 +9177,8 @@ def q_learn(final_states, context, *parameters):
         # now normalize our Q matrix:
         for x in context.relevant_kets('Q'):
             Q = recall_Q(x)
-            context.learn('norm-Q', x, str(100 * Q / max_Q))
+            # context.learn('norm-Q', x, str(100 * Q / max_Q))
+            context.learn('norm-Q', x, float_to_int(100 * Q / max_Q))
     return ket('q-learn')
 
 
@@ -9207,13 +9199,12 @@ function_operators_usage['q-walk'] = """
 def q_walk(start, context):
     seq = sequence([]) + start
     previous_step = start.label
-    previous_steps = [previous_step]
+    previous_steps = set(previous_step)
     while True:
         steps = context.starts_with(previous_step + ' -> ')
         # print('steps: %s' % steps)
         best_step = ['', 0]
         for x in steps:
-            # tail = extract_value(x).label
             tail = x.label.split(' -> ')[-1]
             score = float(context.recall('norm-Q', x).to_ket().label)
             if score > best_step[1]:
@@ -9225,7 +9216,7 @@ def q_walk(start, context):
         if next_step in previous_steps:
             break
         previous_step = next_step
-        previous_steps.append(previous_step)
+        previous_steps.add(previous_step)
         if next_step != '':
             seq += ket(next_step)
     # print('seq: %s' % seq)

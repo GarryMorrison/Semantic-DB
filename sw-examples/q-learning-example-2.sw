@@ -29,12 +29,7 @@ reward |F> => |10>
 
 
 -- now display the results in a table:
-
--- define our tidy results operator:
-tidy-Q |*> #=> round[3] norm-Q |_self>
-
--- show the table:
-|null> => table[transition, tidy-Q] ket-sort rel-kets[norm-Q] |>
+|null> => table[transition, norm-Q] ket-sort rel-kets[norm-Q] |>
 
 
 -- show the walk sequences:
