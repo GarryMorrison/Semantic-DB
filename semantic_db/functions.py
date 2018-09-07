@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 6/9/2018
+# Update: 7/9/2018
 # Copyright: GPLv3
 #
 # A collection of functions that apply to kets, superpositions and sequences.
@@ -25,7 +25,11 @@ import math
 from math import factorial
 from pprint import pprint
 # import numpy as np
-from matplotlib import pyplot as plt
+try:
+    from matplotlib import pyplot as plt
+    have_matplotlib = True
+except ImportError:
+    have_matplotlib = False
 import datetime
 from time import gmtime, strftime, ctime, sleep
 import hashlib
@@ -948,6 +952,9 @@ function_operators_usage['plot'] = """
         improve the placement of the columns
 """
 def plot(one):
+    if not have_matplotlib:
+        return ket('matplotlib not installed')
+    
     values = []
     labels = []
     for label, value in one.items():
