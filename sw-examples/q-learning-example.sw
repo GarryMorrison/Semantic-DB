@@ -20,15 +20,11 @@ reward |5> => |100>
 
 -- now display the results in a table:
 
--- tables chomp the leading category, which we don't want, so we apply one:
--- yeah, a bit of a hack.
-apply-prefix |*> #=> |prefix:> __ |_self>
-
 -- define our tidy results operator:
-tidy-Q |*> #=> round[3] norm-Q remove-prefix["prefix: "] |_self>
+tidy-Q |*> #=> round[3] norm-Q |_self>
 
 -- show the table:
-|null> => table[transition, tidy-Q] apply-prefix ket-sort rel-kets[norm-Q] |>
+|null> => table[transition, tidy-Q] ket-sort rel-kets[norm-Q] |>
 
 
 -- show the walk sequences:

@@ -4,7 +4,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2018
-# Update: 27/8/2018
+# Update: 7/9/2018
 # Copyright: GPLv3
 #
 # Usage: 
@@ -2101,9 +2101,12 @@ class NewContext(object):
     # Now, just need to test it!
     # decided to rename and tweak, and call it starts-with.
     # eg: starts-with |animal: > to list all animals.
-    # e is a ket.
+    # e is a string or a ket.
     def starts_with(self, e):
-        label = e.label
+        if type(e) is str:
+            label = e
+        elif type(e) is ket:
+            label = e.label
         #    if len(label) == 0:
         #      return ket("",0)
         #    if label[-1] != "*":

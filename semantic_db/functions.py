@@ -954,7 +954,7 @@ function_operators_usage['plot'] = """
 def plot(one):
     if not have_matplotlib:
         return ket('matplotlib not installed')
-    
+
     values = []
     labels = []
     for label, value in one.items():
@@ -9033,38 +9033,97 @@ function_operators_usage['q-learn'] = """
         reward |5> => |100>
 
         -- learn the Q and norm-Q values:
-        q-learn[1000, 1, 0.9, step] |5>
+        q-learn[1000, 1, 0.8, step] |5>
         
-        -- now display the results in a table:
-        -- tables chomp the leading category, which we don't want, so we apply one (yeah, a bit of a hack):
-        apply-prefix |*> #=> |prefix:> __ |_self>
-        
+        -- now display the results in a table:        
         -- define our tidy results operator:
-        tidy-Q |*> #=> round[3] norm-Q remove-prefix["prefix: "] |_self>
+        tidy-Q |*> #=> round[3] norm-Q |_self>
         
         -- show the table:
-        table[transition, tidy-Q] apply-prefix ket-sort rel-kets[norm-Q]
+        table[transition, tidy-Q] ket-sort rel-kets[norm-Q]
 
             +------------+--------+
             | transition | tidy-Q |
             +------------+--------+
-            | 0: 4       | 80.0   |
-            | 1: 3       | 64.0   |
-            | 1: 5       | 100.0  |
-            | 2: 3       | 64.0   |
-            | 3: 1       | 80.0   |
-            | 3: 2       | 51.2   |
-            | 3: 4       | 80.0   |
-            | 4: 0       | 64.0   |
-            | 4: 3       | 64.0   |
-            | 4: 5       | 100.0  |
-            | 5: 1       | 80.0   |
-            | 5: 4       | 80.0   |
-            | 5: 5       | 100.0  |
+            | 0 -> 4     | 80.0   |
+            | 1 -> 3     | 64.0   |
+            | 1 -> 5     | 100.0  |
+            | 2 -> 3     | 64.0   |
+            | 3 -> 1     | 80.0   |
+            | 3 -> 2     | 51.2   |
+            | 3 -> 4     | 80.0   |
+            | 4 -> 0     | 64.0   |
+            | 4 -> 3     | 64.0   |
+            | 4 -> 5     | 100.0  |
+            | 5 -> 1     | 80.0   |
+            | 5 -> 4     | 80.0   |
+            | 5 -> 5     | 100.0  |
+            +------------+--------+
+
+
+        -- next example, data from here (see the cheese example): 
+        -- https://medium.freecodecamp.org/diving-deeper-into-reinforcement-learning-with-q-learning-c18d0db58efe
+        -- load q-learning-example-2.sw
+        
+        step |A> => |B> + |D>
+        step |B> => |A> + |E> + |C>
+        step |C> => |B> + |F>
+        step |D> => |A> + |E>
+        step |E> => |E>
+        step |F> => |E> + |C> + |F>
+        
+        reward |A> => |0>
+        reward |B> => |1>
+        reward |C> => |0>
+        reward |D> => |2>
+        reward |E> => |-10>
+        reward |F> => |10>
+
+        -- q-learn[iterations, alpha, gamma, op] set-of-terminal-states:
+        |null> => q-learn[1000, 1, 0.8, step] (|E> + |F>)
+        
+        -- now display the results in a table:       
+        -- define our tidy results operator:
+        tidy-Q |*> #=> round[3] norm-Q |_self>
+        
+        -- show the transition table:
+        table[transition, tidy-Q] ket-sort rel-kets[norm-Q]
+
+            +------------+--------+
+            | transition | tidy-Q |
+            +------------+--------+
+            | A -> B     | 66.0   |
+            | A -> D     | 46.24  |
+            | B -> A     | 52.8   |
+            | B -> C     | 80.0   |
+            | B -> E     | -20.0  |
+            | C -> B     | 66.0   |
+            | C -> F     | 100.0  |
+            | D -> A     | 52.8   |
+            | D -> E     | -20.0  |
+            | E -> E     | -20.0  |
+            | F -> C     | 80.0   |
+            | F -> E     | -20.0  |
+            | F -> F     | 100.0  |
             +------------+--------+
         
-    see also:
+        -- show the walk sequences:
+        walk |*> #=> q-walk |_self>
+        table[start, walk] rel-kets[step]
 
+            +-------+-------------------+
+            | start | walk              |
+            +-------+-------------------+
+            | A     | A . B . C . F     |
+            | B     | B . C . F         |
+            | C     | C . F             |
+            | D     | D . A . B . C . F |
+            | E     | E                 |
+            | F     | F                 |
+            +-------+-------------------+
+
+    see also:
+        q-walk, q-learning-example.sw, q-learning-example-2.sw
 """
 def q_learn(final_states, context, *parameters):
     try:
@@ -9092,11 +9151,11 @@ def q_learn(final_states, context, *parameters):
             future_states = context.recall(op, random_next_state).to_sp()
             max_Q = 0
             for x in future_states:
-                state_state = random_next_state.label + ': ' + x.label
+                state_state = random_next_state.label + ' -> ' + x.label
                 print('inside state_state: %s' % state_state)
                 Q = recall_Q(state_state)
                 max_Q = max(max_Q, Q)
-            state_state = state.label + ': ' + random_next_state.label
+            state_state = state.label + ' -> ' + random_next_state.label
             Q = recall_Q(state_state)
             Q_state_state = (1 - alpha) * Q + alpha * (float(reward_next_state) + gamma * max_Q )
             context.learn('Q', state_state, str(Q_state_state))
@@ -9137,27 +9196,28 @@ ket_context_table['q-walk'] = 'q_walk'
 function_operators_usage['q-walk'] = """
     description:
         q-walk ket
-        after we have run q-learn, we can walk the result
+        after we have run q-learn, we can walk the result, starting from the given ket.
 
     examples:
 
     see also:
+        q-learn
 """
 # start is a ket
 def q_walk(start, context):
     seq = sequence([]) + start
     previous_step = start.label
     previous_steps = [previous_step]
-    k = 0
-    while True and k < 6:
-        steps = context.starts_with(ket(previous_step + ': '))  # maybe context.starts_with() should also handle strings?
+    while True:
+        steps = context.starts_with(previous_step + ' -> ')
         # print('steps: %s' % steps)
         best_step = ['', 0]
         for x in steps:
-            tail = extract_value(x).label
-            reward = float(context.recall('norm-Q', x).to_ket().label)
-            if reward > best_step[1]:
-                best_step = [tail, reward]
+            # tail = extract_value(x).label
+            tail = x.label.split(' -> ')[-1]
+            score = float(context.recall('norm-Q', x).to_ket().label)
+            if score > best_step[1]:
+                best_step = [tail, score]
             # print('tail: %s' % tail)
             # print('reward: %s' % reward)
         # print('best_step: %s' % best_step)
@@ -9168,6 +9228,5 @@ def q_walk(start, context):
         previous_steps.append(previous_step)
         if next_step != '':
             seq += ket(next_step)
-        k += 1
     # print('seq: %s' % seq)
     return seq
