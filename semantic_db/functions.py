@@ -9206,7 +9206,7 @@ def q_walk(start, context):
 
     seq = sequence([]) + start
     previous_step = start.label
-    previous_steps = set(previous_step)
+    previous_steps = set([previous_step])
     while True:
         steps = context.starts_with(previous_step + ' -> ')
         # print('steps: %s' % steps)
@@ -9220,6 +9220,7 @@ def q_walk(start, context):
             # print('reward: %s' % reward)
         # print('best_step: %s' % (best_step,))
         next_step = best_step[0]
+        # print('previous_steps: %s' % previous_steps)
         if next_step in previous_steps:
             break
         previous_step = next_step
