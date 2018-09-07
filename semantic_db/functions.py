@@ -9125,30 +9125,30 @@ def q_learn(final_states, context, *parameters):
     states = context.relevant_kets(op)
     print('relevant states: %s' % states)
 
-    def recall_Q(x):
-        Q_label = context.recall('Q', x).to_ket()
-        if len(Q_label) == 0:
-            Q = 0
-        else:
-            Q = float(Q_label.label)
-        return Q
+    def recall_float(op, x):
+        r_label = context.recall(op, x).to_ket().label
+        try:
+            r = float(r_label)
+        except:
+            r = 0
+        return r
 
     def single_episode(states, alpha, gamma):
         state = states.pick_elt()
         while True:
             next_states = context.recall(op, state).to_sp()
             random_next_state = next_states.pick_elt()
-            reward_next_state = context.recall('reward', random_next_state).to_ket().label
+            reward_next_state = recall_float('reward', random_next_state)
             future_states = context.recall(op, random_next_state).to_sp()
             max_Q = 0
             for x in future_states:
                 state_state = random_next_state.label + ' -> ' + x.label
                 print('inside state_state: %s' % state_state)
-                Q = recall_Q(state_state)
+                Q = recall_float('Q', state_state)
                 max_Q = max(max_Q, Q)
             state_state = state.label + ' -> ' + random_next_state.label
-            Q = recall_Q(state_state)
-            Q_state_state = (1 - alpha) * Q + alpha * (float(reward_next_state) + gamma * max_Q )
+            Q = recall_float('Q', state_state)
+            Q_state_state = (1 - alpha) * Q + alpha * (reward_next_state + gamma * max_Q )
             context.learn('Q', state_state, str(Q_state_state))
             if final_states.find_value(random_next_state) > 0:
                 break
@@ -9169,15 +9169,14 @@ def q_learn(final_states, context, *parameters):
     # find max_Q:
     max_Q = 0
     for x in context.relevant_kets('Q'):
-        Q = recall_Q(x)
+        Q = recall_float('Q', x)
         max_Q = max(max_Q, Q)
     print('max_Q: %s' % max_Q)
 
     if max_Q > 0:
         # now normalize our Q matrix:
         for x in context.relevant_kets('Q'):
-            Q = recall_Q(x)
-            # context.learn('norm-Q', x, str(100 * Q / max_Q))
+            Q = recall_float('Q', x)
             context.learn('norm-Q', x, float_to_int(100 * Q / max_Q))
     return ket('q-learn')
 
@@ -9197,21 +9196,29 @@ function_operators_usage['q-walk'] = """
 """
 # start is a ket
 def q_walk(start, context):
+    def recall_float(op, x):
+        r_label = context.recall(op, x).to_ket().label
+        try:
+            r = float(r_label)
+        except:
+            r = 0
+        return r
+
     seq = sequence([]) + start
     previous_step = start.label
     previous_steps = set(previous_step)
     while True:
         steps = context.starts_with(previous_step + ' -> ')
         # print('steps: %s' % steps)
-        best_step = ['', 0]
+        best_step = ('', 0)
         for x in steps:
             tail = x.label.split(' -> ')[-1]
-            score = float(context.recall('norm-Q', x).to_ket().label)
+            score = recall_float('norm-Q', x)
             if score > best_step[1]:
-                best_step = [tail, score]
+                best_step = (tail, score)
             # print('tail: %s' % tail)
             # print('reward: %s' % reward)
-        # print('best_step: %s' % best_step)
+        # print('best_step: %s' % (best_step,))
         next_step = best_step[0]
         if next_step in previous_steps:
             break
