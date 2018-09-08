@@ -9142,25 +9142,25 @@ def q_learn(final_states, context, *parameters):
             future_states = context.recall(op, random_next_state).to_sp()
             max_Q = 0
             for x in future_states:
-                state_state = random_next_state.label + ' -> ' + x.label
-                print('inside state_state: %s' % state_state)
+                state_state = random_next_state.label + ' -- ' + x.label
+                # print('inside state_state: %s' % state_state)
                 Q = recall_float('Q', state_state)
                 max_Q = max(max_Q, Q)
-            state_state = state.label + ' -> ' + random_next_state.label
+            state_state = state.label + ' -- ' + random_next_state.label
             Q = recall_float('Q', state_state)
             Q_state_state = (1 - alpha) * Q + alpha * (reward_next_state + gamma * max_Q )
             context.learn('Q', state_state, str(Q_state_state))
             if final_states.find_value(random_next_state) > 0:
                 break
             state = random_next_state
-            print('state: %s' % state)
-            print('next_states: %s' % next_states)
-            print('random_next_state: %s' % random_next_state)
-            print('reward_next_state: %s' % reward_next_state)
-            print('future_states: %s' % future_states)
-            print('max_Q: %s' % max_Q)
-            print('state_state: %s' % state_state)
-            print('Q_state_state: %s' % Q_state_state)
+            # print('state: %s' % state)
+            # print('next_states: %s' % next_states)
+            # print('random_next_state: %s' % random_next_state)
+            # print('reward_next_state: %s' % reward_next_state)
+            # print('future_states: %s' % future_states)
+            # print('max_Q: %s' % max_Q)
+            # print('state_state: %s' % state_state)
+            # print('Q_state_state: %s' % Q_state_state)
 
     # run the single episode a bunch of times:
     for _ in range(int(iterations)):
@@ -9208,11 +9208,11 @@ def q_walk(start, context):
     previous_step = start.label
     previous_steps = set([previous_step])
     while True:
-        steps = context.starts_with(previous_step + ' -> ')
+        steps = context.starts_with(previous_step + ' -- ')
         # print('steps: %s' % steps)
         best_step = ('', 0)
         for x in steps:
-            tail = x.label.split(' -> ')[-1]
+            tail = x.label.split(' -- ')[-1]
             score = recall_float('norm-Q', x)
             if score > best_step[1]:
                 best_step = (tail, score)
