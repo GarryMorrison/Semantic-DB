@@ -47,6 +47,7 @@ def load_map(context, map):
 
     value_dict = {}
     value_dict[''] = '0'
+    value_dict[' '] = '0'
     value_dict['S'] = '0'
     value_dict['F'] = '0'
     value_dict['H'] = '-1'
