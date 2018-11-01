@@ -8,15 +8,15 @@ not |no> => |yes>
 not |don't know> => |don't know>
 
 
-child |*> #=> son |_self> + daughter |_self>
-parent |*> #=> mother |_self> + father |_self>
-sibling |*> #=> drop (clean child parent |_self> - |_self>)
-brother |*> #=> drop (clean son parent |_self> - |_self>)
-sister |*> #=> drop (clean daughter parent |_self> - |_self>)
+child |*> #=> (son + daughter) |_self>
+parent |*> #=> (mother + father) |_self>
+sibling |*> #=> drop (clean child parent - 1) |_self>
+brother |*> #=> drop (clean son parent - 1) |_self>
+sister |*> #=> drop (clean daughter parent - 1) |_self>
 brother-and-sister |*> #=> sibling |_self>
 
-half-brother |*> #=> drop (son mother |_self> - son father |_self> ) + drop (son father |_self> - son mother |_self> )
-half-sister |*> #=> drop (daughter mother |_self> - daughter father |_self> ) + drop (daughter father |_self> - daughter mother |_self> )
+half-brother |*> #=> drop son (mother - father) |_self> + drop son (father - mother) |_self>
+half-sister |*> #=> drop daughter (mother - father) |_self> + drop daughter (father - mother) |_self>
 
 grand-parent |*> #=> parent parent |_self>
 grand-mother |*> #=> mother parent |_self>
@@ -33,10 +33,10 @@ great-grand-father |*> #=> father parent parent |_self>
 
 uncle |*> #=> brother parent |_self> 
 aunt |*> #=> sister parent |_self>
-aunt-and-uncle |*> #=> aunt |_self> + uncle |_self>
+aunt-and-uncle |*> #=> (aunt + uncle) |_self>
 great-uncle |*> #=> brother grand-parent |_self>
 great-aunt |*> #=> sister grand-parent |_self>
-great-aunt-and-uncle |*> #=> great-aunt |_self> + great-uncle |_self>
+great-aunt-and-uncle |*> #=> (great-aunt + great-uncle) |_self>
 
 cousin |*> #=> clean child aunt-and-uncle |_self>
 niece |*> #=> daughter brother-and-sister |_self>
@@ -44,11 +44,11 @@ nephew |*> #=> son brother-and-sister |_self>
 
 -- brother-in-law |*> #=> husband sister |_self>
 -- sister-in-law |*> #=> wife brother |_self>
-brother-in-law |*> #=> brother wife |_self> + brother husband |_self> + husband sister |_self>
-sister-in-law |*> #=> sister wife |_self> + sister husband |_self> + wife brother |_self>
-mother-in-law |*> #=> mother wife |_self> + mother husband |_self>
-father-in-law |*> #=> father wife |_self> + father husband |_self>
-spouse |*> #=> wife |_self> + husband |_self>
+brother-in-law |*> #=> (brother wife + brother husband + husband sister) |_self>
+sister-in-law |*> #=> (sister wife + sister husband + wife brother) |_self>
+mother-in-law |*> #=> mother (wife + husband) |_self>
+father-in-law |*> #=> father (wife + husband) |_self>
+spouse |*> #=> (wife + husband) |_self>
 is-married |*> #=> do-you-know spouse |_self>
 not |yes> => |no>
 not |no> => |yes>
@@ -62,13 +62,13 @@ is-a-parent |*> #=> do-you-know child |_self>
 is-a-son |*> #=> is-mbr(|_self>, clean son parent |_self>)
 is-a-daughter |*> #=> is-mbr(|_self>, clean daughter parent |_self>)
 
-is-a-grand-mother |*> #=> is-mbr(|_self>, clean mother parent child child |_self>)
-is-a-grand-father |*> #=> is-mbr(|_self>, clean father parent child child |_self>)
-is-a-grand-parent |*> #=> do-you-know child child |_self>
+is-a-grand-mother |*> #=> is-mbr(|_self>, clean mother parent child^2 |_self>)
+is-a-grand-father |*> #=> is-mbr(|_self>, clean father parent child^2 |_self>)
+is-a-grand-parent |*> #=> do-you-know child^2 |_self>
 
-is-a-great-grand-mother |*> #=> is-mbr(|_self>, clean mother parent parent child child child |_self>)
-is-a-great-grand-father |*> #=> is-mbr(|_self>, clean father parent parent child child child |_self>)
-is-a-great-grand-parent |*> #=> do-you-know child child child |_self>
+is-a-great-grand-mother |*> #=> is-mbr(|_self>, clean mother parent^2 child^3 |_self>)
+is-a-great-grand-father |*> #=> is-mbr(|_self>, clean father parent^2 child^3 |_self>)
+is-a-great-grand-parent |*> #=> do-you-know child^3 |_self>
 
 is-a-male |*> #=> or(is-a-son |_self>, is-a-father |_self>)
 is-a-female |*> #=> or(is-a-daughter |_self>, is-a-mother |_self>)
@@ -110,8 +110,8 @@ have-a-nephew |*> #=> do-you-know nephew |_self>
 
 -- now a collection of how-many rules:
 how-many-children |*> #=> how-many child |_self>
-how-many-grand-children |*> #=> how-many child child |_self>
-how-many-great-grand-children |*> #=> how-many child child child |_self>
+how-many-grand-children |*> #=> how-many child^2 |_self>
+how-many-great-grand-children |*> #=> how-many child^3 |_self>
 how-many-brothers |*> #=> how-many brother |_self>
 how-many-sisters |*> #=> how-many sister |_self>
 how-many-uncles |*> #=> how-many uncle |_self>
