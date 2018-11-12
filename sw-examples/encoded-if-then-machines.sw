@@ -33,6 +33,10 @@ if-then |*> #=> then similar-input[pattern] encode words-to-list |_self>
 -- if-then-2 |*> #=> then similar-input[pattern] encode then similar-input[pattern] encode words-to-list |_self>
 if-then-2 |*> #=> (then similar-input[pattern] encode)^2 words-to-list |_self>
 
+|null> => print |>
+|null> => print |if (A and B) then C>
+|null> => print |if (A or B) then D>
+|null> => print |if (C and D) then E>
 |null> => table[input, if-then, if-then-2] (|A> + |B> + |A and B>)
 
 
@@ -51,6 +55,7 @@ pattern |node: 6: 2> => encode |K2>
 pattern |node: 6: 3> => encode |K3>
 then |node: 6: *> => |K>
 
+|null> => print |if ((E and F) or (G and H and I) or J) then K>
 |null> => table[input, if-then, if-then-2] (|E> + |F> + |G> + |H> + |I> + |J> + |G and H> + |G and I> + |H and I> + |E and F> + |G, H and I>)
 
 
