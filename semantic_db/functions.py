@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 7/9/2018
+# Update: 12/11/2018
 # Copyright: GPLv3
 #
 # A collection of functions that apply to kets, superpositions and sequences.
@@ -2265,7 +2265,7 @@ def rescaled_list_simm(w, f, g):
 #  print("result:",result)
 #  return result
 
-def superposition_simm(A, B):
+def rescaled_superposition_simm(A, B):
     if len(A) == 0 or len(B) == 0:
         return 0
     if len(A) == 1 and len(B) == 1:
@@ -2307,7 +2307,43 @@ def superposition_simm(A, B):
                 merged_sum += min(v1, v2)
         return merged_sum
     except Exception as e:
-        print("fast_simm exception reason: %s" % e)
+        print("rescaled_superposition_simm exception reason: %s" % e)
+
+
+def superposition_simm(A, B):  # unscaled version
+    if len(A) == 0 or len(B) == 0:
+        return 0
+
+    # now calculate the superposition version of simm, while trying to be as fast as possible:
+    try:
+        merged = {}
+        one_sum = 0
+        one = {}
+        for label, value in A.drop().items():  # handle superpositions with negative coeffs by dropping them, for now! Improve later!!
+            one[label] = value
+            one_sum += value  # assume all values in A are >= 0
+            merged[label] = True  # potentially we could use abs(elt.value)
+
+        two_sum = 0
+        two = {}
+        for label, value in B.drop().items():
+            two[label] = value
+            two_sum += value  # assume all values in B are >= 0
+            merged[label] = True
+
+        # prevent div by zero:
+        if one_sum == 0 or two_sum == 0:
+            return 0
+
+        merged_sum = 0
+        for key in merged:
+            if key in one and key in two:
+                v1 = one[key]
+                v2 = two[key]
+                merged_sum += min(v1, v2)
+        return merged_sum / max(one_sum, two_sum)
+    except Exception as e:
+        print("superposition_simm exception reason: %s" % e)
 
 
 #  if type(A) is sequence:                     # hack just for now, until we can implement a sequence version of simm.

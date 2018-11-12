@@ -1,4 +1,4 @@
--- encode our states:
+-- encode our states using simple random encoder:
 full |range> => range(|1>, |65535>)
 encode |A> => pick[10] full |range>
 encode |B> => pick[10] full |range>
