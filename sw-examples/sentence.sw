@@ -1,3 +1,6 @@
+pick-class |*> #=> spick-elt class |_self>
+merge-class (*) #=> smerge[" "] sdrop pick-class |_self>
+
 class |A> => |the>
 class |B> => |young> . |>
 class |C> => |girl> . |boy>
@@ -7,19 +10,10 @@ class |F> => |saw>
 class |G> => |through the>
 class |H> => |telescope> . |binoculars> . |night vision goggles>
 
-pick-class |*> #=> spick-elt class |_self>
+class |K> #=> merge-class (|B> . |C>) . merge-class (|D> . |E>)
+class |M> #=> merge-class (|A> . |K>) . |>
+class |N> #=> merge-class (|A> . |K> . |F> . |M> . |G> . |H>)
 
-merged-class |I> #=> smerge[" "] sdrop pick-class (|B> . |C>)
-merged-class |J> #=> smerge[" "] sdrop pick-class (|D> . |E>)
-
-class |K> #=> merged-class (|I> . |J>)
-
-merged-class |L> #=> smerge[" "] sdrop pick-class (|A> . |K>)
-
-class |M> #=> merged-class |L> . |>
-
-merged-class |N> #=> smerge[" "] sdrop pick-class (|A> . |K> . |F> . |M> . |G> . |H>)
-
-sentence |*> #=> to-upper[1] merged-class |_self> _ |.>
+sentence |*> #=> to-upper[1] class |_self> _ |.>
 
 
