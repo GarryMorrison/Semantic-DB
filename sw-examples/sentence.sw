@@ -1,5 +1,5 @@
-pick-class |*> #=> spick-elt class |_self>
-merge-class (*) #=> smerge[" "] sdrop pick-class |_self>
+pick-from-class |*> #=> spick-elt class |_self>
+merge-class (*) #=> smerge[" "] sdrop pick-from-class |_self>
 
 class |A> => |the>
 class |B> => |young> . |>
