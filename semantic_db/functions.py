@@ -660,6 +660,7 @@ sequence_functions_usage['apply'] = """
         nick-name |Fred> => |Freddie>
         mother |Fred> => |Jude>
         father |Fred> => |Tom>
+        
         star |*> #=> apply(supported-ops|_self>, |_self>)
         star |Fred>
             |35> + |Freddie> + |Jude> + |Tom>

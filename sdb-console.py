@@ -650,7 +650,8 @@ while True:
         # finish up:
         print('\nNow we use graphviz to display it:')
         print('http://www.graphviz.org/')
-        dot.render(name, view=True)
+        # dot.render(name, view=True)  # currently fails
+        dot.render(name, view=False)
 
     elif line == "files":
         sep = "   "

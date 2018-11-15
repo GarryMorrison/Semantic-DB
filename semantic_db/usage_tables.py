@@ -1659,7 +1659,7 @@ examples_usage['intersection-class-random-sentences'] = """
         merge-class (*) #=> smerge pick-from-class |_self>
         
         sentence |1> #=> to-upper[1] merge-class (|THE> . | > . |DOG> . | > . |SAT> . | > . |ON> . | > . |THE> . | > . |STONE> . |.>)
-        sentence |2> #=> to-upper[1] merge-class (|IT> . | > . |WAS> . | > . |THE> . | > . |START> . | > . |OF> . | > . |A> . | > . |GRAND> . | > . |DAY> . |.>)
+        sentence |2> #=> to-upper[1] merge-class (|IT> . | > . |WAS> . | > . |THE> . | > . |START> . | > . |OF> . | > . |A> . | > . |GOOD> . | > . |DAY> . |.>)
 
     examples:
         sa: sentence |1>
@@ -1688,22 +1688,47 @@ examples_usage['intersection-class-random-sentences'] = """
         
     
         sa: sentence |2>
-        |It is your start for some GRAND morning.>
+        |Everything had a start in his lovely time.>
         
         sa: .
-        |There was their start of the GRAND year.>
+        |It was your drink in his good morning.>
         
         sa: .
-        |Everything was its start in his GRAND day.>
+        |There had your drink with my nice evening.>
         
         sa: .
-        |There is his start in a GRAND day.>
+        |Everything was his drink for your fine evening.>
         
         sa: .
-        |There is our drink in this GRAND evening.>
+        |There is his start for another good night.>
         
         sa: .
-        |It was our drink for your GRAND morning.>    
+        |Everything was this start with this good year.>
+        
+        sa: .
+        |Everything is the start in my bad moment.>
+        
+        sa: .
+        |It is my drink in this bad day.>
+        
+        sa: .
+        |It was its start of a nice year.>
+        
+        sa: .
+        |It was our start for your bad evening.>
+        
+        sa: .
+        |Everything is this start with my bad time.>
+        
+        sa: .
+        |It had her start with another lovely time.>
+        
+        sa: .
+        |Everything was this drink in a bad time.>
+        
+        sa: .
+        |Everything had the start of your bad morning.>
+
 
     future:
         Parse a text and convert it to a collection of sentences that we can then permute.
