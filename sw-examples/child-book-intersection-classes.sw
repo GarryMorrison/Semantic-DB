@@ -1,4 +1,3 @@
-filename: child-book-full-intn-classes.txt
 class |THE> => |the> + |his> + |their> + |my> + |our> + |this> + |her> + |its> + |your> + |a>
 class |AND> => |and> + |but> + |or> + |now>
 class |A> => |a> + |some> + |my> + |your> + |the> + |another> + |this> + |his>
