@@ -1,6 +1,7 @@
 pick-from-class |*> #=> pick-elt class |_self>
-merge-class (*) #=> smerge[" "] drop pick-from-class |_self>
+merge-class (*) #=> smerge[" "] pick-from-class |_self>
 
+class |*> #=> |_self>
 class |THE> => |the> + |his> + |their> + |my> + |our> + |this> + |her> + |its> + |your> + |a>
 class |DOG> => |dog> + |cat> + |child>
 class |ON> => |on> + |in> + |upon> + |by> + |over> + |from> + |under>
