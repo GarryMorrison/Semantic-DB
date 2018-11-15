@@ -1736,6 +1736,11 @@ examples_usage['if-then-machines'] = """
         if-then |*> #=> then similar-input[pattern] words-to-list |_self>
         if-then-2 |*> #=> (then similar-input[pattern])^2 words-to-list |_self>
         
+        -- if you instead want strict logic, instead of "fuzzy", use:
+        if-then |*> #=> drop-below[0.98] then similar-input[pattern] words-to-list |_self>
+        if-then-2 |*> #=> (drop-below[0.98] then similar-input[pattern])^2 words-to-list |_self>
+        
+                
         |null> => print |>
         |null> => print |if (A and B) then C>
         |null> => print |if (A or B) then D>
@@ -1762,6 +1767,7 @@ examples_usage['if-then-machines'] = """
         |null> => table[input, if-then, if-then-2] (|E> + |F> + |G> + |H> + |I> + |J> + |G and H> + |G and I> + |H and I> + |E and F> + |G, H and I>)
 
     examples:
+        -- first, the fuzzy version:
         sa: load if-then-machines.sw
         loading sw file: sw-examples/if-then-machines.sw
         
@@ -1793,6 +1799,39 @@ examples_usage['if-then-machines'] = """
         | G, H and I | K2      | K         |
         +------------+---------+-----------+
 
+        
+        -- now the non-fuzzy version:
+        sa: load if-then-machines.sw
+        loading sw file: sw-examples/if-then-machines.sw
+        
+        if (A and B) then C
+        if (A or B) then D
+        if (C and D) then E
+        +---------+---------+-----------+
+        | input   | if-then | if-then-2 |
+        +---------+---------+-----------+
+        | A       | D       |           |
+        | B       | D       |           |
+        | A and B | C, D    | E         |
+        +---------+---------+-----------+
+        
+        if ((E and F) or (G and H and I) or J) then K
+        +------------+---------+-----------+
+        | input      | if-then | if-then-2 |
+        +------------+---------+-----------+
+        | E          |         |           |
+        | F          |         |           |
+        | G          |         |           |
+        | H          |         |           |
+        | I          |         |           |
+        | J          | K3      | K         |
+        | G and H    |         |           |
+        | G and I    |         |           |
+        | H and I    |         |           |
+        | E and F    | K1      | K         |
+        | G, H and I | K2      | K         |
+        +------------+---------+-----------+
+        
     future:
 
     source code:

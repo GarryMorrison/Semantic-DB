@@ -11,9 +11,15 @@ then |node: 2: *> => |D>
 pattern |node: 7: 1> => |C> + |D>
 then |node: 7: *> => |E>
 
+-- fuzzy version:
 if-then |*> #=> then similar-input[pattern] words-to-list |_self>
--- if-then-2 |*> #=> then similar-input[pattern] then similar-input[pattern] words-to-list |_self>
 if-then-2 |*> #=> (then similar-input[pattern])^2 words-to-list |_self>
+
+-- non-fuzzy version:
+-- NB: the drop-below[0.98]
+-- if-then |*> #=> drop-below[0.98] then similar-input[pattern] words-to-list |_self>
+-- if-then-2 |*> #=> (drop-below[0.98] then similar-input[pattern])^2 words-to-list |_self>
+
 
 |null> => print |>
 |null> => print |if (A and B) then C>
