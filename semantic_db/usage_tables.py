@@ -1613,7 +1613,7 @@ examples_usage['improved-random-sentence'] = """
             |The young boy saw the young girl through the night vision goggles.>
 
     future:
-        scale it up
+        scale it up, and given a text auto learn these structures
 
     source code:
         load sentence.sw

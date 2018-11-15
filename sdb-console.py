@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 5/9/2018
+# Update: 15/11/2018
 # Copyright: GPLv3
 #
 # Usage: ./sdb-console.py [--debug | --info] [-q] [-i] [--version] [file1.sw ... filen.sw]
@@ -212,7 +212,7 @@ if len(files_to_run) == 0:
 
 
 if interactive:
-    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 5 September, 2018")
+    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 15 November, 2018")
     print("\nTo load remote sw files, run:\n\n  web-files http://semantic-db.org/sw/\n")
     print("To see usage docs, visit:\n\n  http://semantic-db.org/docs/usage/\n")
 
@@ -260,6 +260,8 @@ help_string = """
   debug off                             switch debug messages off
   info on                               switch info messages on
   info off                              switch info messages off
+  quiet on                              switch time-taken messages off
+  quiet off                             switch time-taken messages on
   -- comment                            ignore, this is just a comment line.
   usage                                 show list of usage information
   usage op1, op2, op3                   show usage of listed operators
@@ -794,6 +796,12 @@ while True:
 
     elif line == 'info off':
         logger.setLevel(logging.WARNING)
+
+    elif line == 'quiet on':
+        quiet = True
+
+    elif line == 'quiet off':
+        quiet = False
 
     elif line == 'usage':
         usage()
