@@ -1730,6 +1730,76 @@ examples_usage['intersection-class-random-sentences'] = """
         |Everything had the start of your bad morning.>
 
 
+        -- now a form of poetry:
+        sa: print-sentence |*> #=> print sentence |2>
+        sa: drop 0 print-sentence range(|1>, |30>)
+            Everything is our start of a nice morning.
+            Everything was my start with a lovely day.
+            Everything is your drink with some lovely day.
+            Everything was her start of this bad afternoon.
+            There had a start in another fine afternoon.
+            There had your start in the lovely afternoon.
+            There is my drink of a fine night.
+            It was their start in some good year.
+            Everything is his start with the bad afternoon.
+            Everything was its drink of another bad day.
+            It had the drink of the bad day.
+            There is my start of this bad morning.
+            There is his drink in some nice year.
+            It is a drink of a bad night.
+            It had her start in the bad moment.
+            There was a drink with another fine evening.
+            Everything is its drink in my lovely night.
+            It is our start in another bad night.
+            There was your start for another nice night.
+            It had their drink in the lovely year.
+            It is the start in your good evening.
+            Everything had my drink with some lovely year.
+            Everything was the drink in another good evening.
+            There is a drink for my nice time.
+            There had its drink with your good evening.
+            Everything is the start of his nice evening.
+            It was the drink of this lovely time.
+            Everything had the drink in my fine day.
+            It was her start in your good night.
+            There was this start for your good time.
+            |>
+
+        -- and another one:
+        sa: drop 0 print-sentence range(|1>, |30>)
+            There had my drink for my nice morning.
+            There is his drink with a bad morning.
+            There is his drink of another good day.
+            Everything had this drink in his nice year.
+            It is our drink in this bad night.
+            Everything was its drink in the good moment.
+            It is his start of the fine evening.
+            There was our start in another nice time.
+            It had its start in his nice time.
+            Everything had a start of another bad year.
+            Everything was this drink in this good time.
+            It had your drink in your good night.
+            Everything was this start with your bad moment.
+            There had a drink for the good morning.
+            Everything was her start of another lovely day.
+            It is the drink in some nice night.
+            Everything had the drink with my good year.
+            There had a drink with another good evening.
+            Everything is this start for his good time.
+            There had a start of your fine moment.
+            It is my start with this good morning.
+            There was the start in my good night.
+            There was her start in this bad morning.
+            There was the start for some bad afternoon.
+            It is this start of his nice evening.
+            Everything is their start in another good year.
+            There was a start in some nice morning.
+            It was his start of a bad night.
+            There was the start for this good day.
+            It is a drink of your good time.
+            |>
+                
+
     future:
         Parse a text and convert it to a collection of sentences that we can then permute.
         
