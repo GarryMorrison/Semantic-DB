@@ -1574,6 +1574,232 @@ examples_usage['random-sentence'] = """
         load the-woman-saw.sw
 """
 
+examples_usage['improved-random-sentence'] = """
+    description:
+        learn some sentence fragments, and then produce a valid sentence
+        motivated by this: http://write-up.semantic-db.org/221-generating-random-grammatically-correct-sentences.html
+        this produces the same random sentences as the "random-sentence" example, but using an improved method
+
+    code:
+        pick-from-class |*> #=> spick-elt class |_self>
+        merge-class (*) #=> smerge[" "] sdrop pick-from-class |_self>
+        
+        class |A> => |the>
+        class |B> => |young> . |>
+        class |C> => |girl> . |boy>
+        class |D> => |old> . |other> . |>
+        class |E> => |man> . |woman> . |lady>
+        class |F> => |saw>
+        class |G> => |through the>
+        class |H> => |telescope> . |binoculars> . |night vision goggles>
+        
+        class |K> #=> merge-class (|B> . |C>) . merge-class (|D> . |E>)
+        class |M> #=> merge-class (|A> . |K>) . |>
+        class |N> #=> merge-class (|A> . |K> . |F> . |M> . |G> . |H>)
+        
+        sentence |*> #=> to-upper[1] class |_self> _ |.>
+
+    examples:
+        sentence
+            |The other lady saw the old woman through the telescope.>
+
+        sentence
+            |The young boy saw the young girl through the binoculars.>
+
+        sentence
+            |The old woman saw the other man through the telescope.>
+
+        sentence
+            |The young boy saw the young girl through the night vision goggles.>
+
+    future:
+        scale it up
+
+    source code:
+        load sentence.sw
+"""
+
+examples_usage['intersection-class-random-sentences'] = """
+    description:
+        first, we create intersection classes using create-intersection-classes.py
+        for example, I used The Children's Book Test from here: https://research.fb.com/downloads/babi/
+        which generated this sw file: child-book-intersection-classes.sw
+        
+        Here is the start of that file:
+            class |THE> => |the> + |his> + |their> + |my> + |our> + |this> + |her> + |its> + |your> + |a>
+            class |AND> => |and> + |but> + |or> + |now>
+            class |A> => |a> + |some> + |my> + |your> + |the> + |another> + |this> + |his>
+            class |OF> => |of> + |for> + |in> + |with>
+            class |I> => |i> + |we> + |he> + |she> + |they> + |you>
+            class |HE> => |he> + |she> + |they>
+            class |WAS> => |was> + |is> + |had>
+            class |IT> => |it> + |there> + |everything>
+            class |IN> => |in> + |on> + |by>
+            class |''> => |''> + |'> + |but> + |now>
+            class |THAT> => |that> + |what> + |as> + |but>
+            class |YOU> => |you> + |ye> + |i> + |we>
+            class |HIS> => |his> + |their> + |the> + |her> + |its> + |my> + |our> + |your>
+            class |HER> => |her> + |his> + |my> + |him> + |them> + |your>
+            class |SHE> => |she> + |he> + |they> + |everybody>
+
+        Then we need this code:
+            class |*> #=> |_self>
+            pick-from-class |*> #=> pick-elt class |_self>
+            merge-class (*) #=> smerge pick-from-class |_self>
+        
+        Then we define sentences, such as:
+            sentence |1> #=> to-upper[1] merge-class (|IT> . | > . |WAS> . | > . |THE> . | > . |START> . | > . |OF> . | > . |A> . | > . |GRAND> . | > . |DAY> . |.>)
+        
+        Then when we invoke it, it produces permutations of the given sentence, that hopefully are not too far from being grammatically correct.
+        
+    code:
+        load child-book-intersection-classes.sw
+        class |*> #=> |_self>
+        pick-from-class |*> #=> pick-elt class |_self>
+        merge-class (*) #=> smerge pick-from-class |_self>
+        
+        sentence |1> #=> to-upper[1] merge-class (|THE> . | > . |DOG> . | > . |SAT> . | > . |ON> . | > . |THE> . | > . |STONE> . |.>)
+        sentence |2> #=> to-upper[1] merge-class (|IT> . | > . |WAS> . | > . |THE> . | > . |START> . | > . |OF> . | > . |A> . | > . |GRAND> . | > . |DAY> . |.>)
+
+    examples:
+        sa: sentence |1>
+        |Their child sat under your stone.>
+        
+        sa: .
+        |The child stood from my rock.>
+        
+        sa: .
+        |His dog stood in your rock.>
+        
+        sa: .
+        |Her cat stood in our rock.>
+        
+        sa: .
+        |Their cat stood under his rock.>
+        
+        sa: .
+        |Their dog stood under its stone.>
+        
+        sa: .
+        |Their child stood in your rock.>
+        
+        sa: .
+        |My cat stood upon the rock.>
+        
+    
+        sa: sentence |2>
+        |It is your start for some GRAND morning.>
+        
+        sa: .
+        |There was their start of the GRAND year.>
+        
+        sa: .
+        |Everything was its start in his GRAND day.>
+        
+        sa: .
+        |There is his start in a GRAND day.>
+        
+        sa: .
+        |There is our drink in this GRAND evening.>
+        
+        sa: .
+        |It was our drink for your GRAND morning.>    
+
+    future:
+        Parse a text and convert it to a collection of sentences that we can then permute.
+        
+    source code:
+        load child-book-intersection-classes.sw, intersection-class-sentences.sw
+"""
+
+
+examples_usage['if-then-machines'] = """
+    description:
+        if-then machines are my simplified model of neurons
+        they consist of several patterns that "trigger" the neuron, and then a resulting output ket
+        in this example we show they can implement simple logic, and a type of fuzzy logic
+
+    code:
+        -- if (A and B) then C
+        pattern |node: 1: 1> => |A> + |B>
+        then |node: 1: *> => |C>
+        
+        -- if (A or B) then D
+        pattern |node: 2: 1> => |A>
+        pattern |node: 2: 2> => |B>
+        then |node: 2: *> => |D>
+        
+        -- if (C and D) then E
+        pattern |node: 7: 1> => |C> + |D>
+        then |node: 7: *> => |E>
+        
+        if-then |*> #=> then similar-input[pattern] words-to-list |_self>
+        if-then-2 |*> #=> (then similar-input[pattern])^2 words-to-list |_self>
+        
+        |null> => print |>
+        |null> => print |if (A and B) then C>
+        |null> => print |if (A or B) then D>
+        |null> => print |if (C and D) then E>
+        |null> => table[input, if-then, if-then-2] (|A> + |B> + |A and B>)
+        
+        
+        -- if ((E and F) or (G and H and I) or J) then K
+        pattern |node: 3: 1> => |E> + |F>
+        then |node: 3: *> => |K1>
+        
+        pattern |node: 4: 1> => |G> + |H> + |I>
+        then |node: 4: *> => |K2>
+        
+        pattern |node: 5: 1> => |J>
+        then |node: 5: *> => |K3>
+        
+        pattern |node: 6: 1> => |K1>
+        pattern |node: 6: 2> => |K2>
+        pattern |node: 6: 3> => |K3>
+        then |node: 6: *> => |K>
+        
+        |null> => print |if ((E and F) or (G and H and I) or J) then K>
+        |null> => table[input, if-then, if-then-2] (|E> + |F> + |G> + |H> + |I> + |J> + |G and H> + |G and I> + |H and I> + |E and F> + |G, H and I>)
+
+    examples:
+        sa: load if-then-machines.sw
+        loading sw file: sw-examples/if-then-machines.sw
+        
+        if (A and B) then C
+        if (A or B) then D
+        if (C and D) then E
+        +---------+-----------+-----------+
+        | input   | if-then   | if-then-2 |
+        +---------+-----------+-----------+
+        | A       | D, 0.50 C | 0.75 E    |
+        | B       | D, 0.50 C | 0.75 E    |
+        | A and B | C, D      | E         |
+        +---------+-----------+-----------+
+        
+        if ((E and F) or (G and H and I) or J) then K
+        +------------+---------+-----------+
+        | input      | if-then | if-then-2 |
+        +------------+---------+-----------+
+        | E          | 0.50 K1 | 0.50 K    |
+        | F          | 0.50 K1 | 0.50 K    |
+        | G          | 0.33 K2 | 0.33 K    |
+        | H          | 0.33 K2 | 0.33 K    |
+        | I          | 0.33 K2 | 0.33 K    |
+        | J          | K3      | K         |
+        | G and H    | 0.67 K2 | 0.67 K    |
+        | G and I    | 0.67 K2 | 0.67 K    |
+        | H and I    | 0.67 K2 | 0.67 K    |
+        | E and F    | K1      | K         |
+        | G, H and I | K2      | K         |
+        +------------+---------+-----------+
+
+    future:
+
+    source code:
+        load if-then-machines.sw
+"""
+
+
 examples_usage['active-logic'] = """
     description:
         proof of concept using simple if-then machines
