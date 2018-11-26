@@ -32,10 +32,8 @@ then |*> #=> |_self>
 
 
 -- is-a rules:
--- currently broken:
--- is-a-place |*> #=> is-mbr(|_self>, list-of |places>)
-is-a-place |*> #=> do-you-know mbr(|_self>, list-of |places>)
-is-a-movement |*> #=> do-you-know mbr(|_self>, list-of |movement types>)
+is-a-place |*> #=> is-mbr(|_self>, list-of |places>)
+is-a-movement |*> #=> is-mbr(|_self>, list-of |movement types>)
 
 
 -- processing rules:

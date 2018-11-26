@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 12/11/2018
+# Update: 26/11/2018
 # Copyright: GPLv3
 #
 # A collection of functions that apply to kets, superpositions and sequences.
@@ -5152,7 +5152,7 @@ sequence_functions_usage['is-mbr'] = """
         mbr
 """
 def is_mbr(input_seq, e, two):
-    return mbr(e, two).is_not_empty()
+    return mbr(input_seq, e, two).is_not_empty()
 
 
 # 9/4/2015:
