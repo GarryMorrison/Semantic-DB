@@ -2768,3 +2768,141 @@ examples_usage['finding-a-path-between-early-us-presidents'] = """
     see also:
         find-path-between
 """
+
+examples_usage['simple-dialog'] = """
+    description:
+        given some simple statements, extract a person's location
+        it makes use of an if-then machine, explain[op] and predict[op]
+        
+        statements are from here:
+        The Dialog-based Language Learning dataset:
+        https://research.fb.com/downloads/babi/
+
+    code:
+        -- our statements:
+        statement |1> => |Mary moved to the bathroom.>
+        statement |2> => |John went to the hallway.>
+        statement |3> => |Daniel went back to the hallway.>
+        statement |4> => |Sandra moved to the garden.>
+        statement |5> => |John moved to the office.>
+        statement |6> => |Sandra journeyed to the bathroom.>
+        statement |7> => |Mary moved to the hallway.>
+        statement |8> => |Daniel travelled to the office.>
+        statement |9> => |John went back to the garden.>
+        statement |10> => |John moved to the bedroom.>
+        
+        -- relevant lists:
+        list-of |places> => split |bathroom hallway garden office bedroom>
+        list-of |movement types> => split |moved went journeyed travelled>
+        list-of |people> => split |Mary John Daniel Sandra>
+        
+        -- movement if-then machine:
+        pattern |node: 1: 1> => |moved>
+        pattern |node: 1: 2> => |went>
+        pattern |node: 1: 3> => |journeyed>
+        pattern |node: 1: 4> => |travelled>
+        then |node: 1: *> => |MOVEMENT>
+        then |*> #=> |_self>
+        
+        -- is-a rules:
+        is-a-place |*> #=> is-mbr(|_self>, list-of |places>)
+        is-a-movement |*> #=> is-mbr(|_self>, list-of |movement types>)
+        
+        -- processing rules:
+        split-a-statement |*> #=> ssplit[" "] to-lower remove-suffix["."] statement |_self>
+        make-movement-statement |*> #=> then explain[pattern] split-statement |_self>
+        
+        -- now apply them:
+        |null> => map[split-a-statement, split-statement] rel-kets[statement] |>
+        |null> => map[make-movement-statement, movement-statement] rel-kets[split-statement] |>
+        
+        -- various versions of our where-is operator:
+        first-where-is |*> #=> such-that[is-a-place] split-statement select[1,1] reverse extract-category predict[split-statement] to-lower |_self>
+        second-where-is |*> #=> such-that[is-a-place] split-statement select[1,1] reverse extract-category predict[movement-statement] ( to-lower |_self> . |MOVEMENT> . |to> )
+        third-where-is |*> #=> extract-value select[1,1] reverse predict[movement-statement] ( to-lower |_self> . |MOVEMENT> . |to> )
+        where-is |*> #=> third-where-is |_self>
+        
+        -- now display a table of results:
+        |null> => table[person, where-is] list-of |people>
+    
+    examples:
+        -- load and process our statements:
+        sa: load dialog.sw
+        
+        -- show our processed statements:
+        -- NB: our if-then machine and explain[pattern] operator have canonicalized "moved", "went", "journeyed" and "travelled" to "MOVEMENT"
+        -- so our predict[movement-statement] operator can now answer what follows: to-lower |_self> . |MOVEMENT> . |to>
+        sa: dump rel-kets[statement]
+            statement |1> => |Mary moved to the bathroom.>
+            split-statement |1> => |mary> . |moved> . |to> . |the> . |bathroom>
+            movement-statement |1> => |mary> . |MOVEMENT> . |to> . |the> . |bathroom>
+            
+            statement |2> => |John went to the hallway.>
+            split-statement |2> => |john> . |went> . |to> . |the> . |hallway>
+            movement-statement |2> => |john> . |MOVEMENT> . |to> . |the> . |hallway>
+            
+            statement |3> => |Daniel went back to the hallway.>
+            split-statement |3> => |daniel> . |went> . |back> . |to> . |the> . |hallway>
+            movement-statement |3> => |daniel> . |MOVEMENT> . |back> . |to> . |the> . |hallway>
+            
+            statement |4> => |Sandra moved to the garden.>
+            split-statement |4> => |sandra> . |moved> . |to> . |the> . |garden>
+            movement-statement |4> => |sandra> . |MOVEMENT> . |to> . |the> . |garden>
+            
+            statement |5> => |John moved to the office.>
+            split-statement |5> => |john> . |moved> . |to> . |the> . |office>
+            movement-statement |5> => |john> . |MOVEMENT> . |to> . |the> . |office>
+            
+            statement |6> => |Sandra journeyed to the bathroom.>
+            split-statement |6> => |sandra> . |journeyed> . |to> . |the> . |bathroom>
+            movement-statement |6> => |sandra> . |MOVEMENT> . |to> . |the> . |bathroom>
+            
+            statement |7> => |Mary moved to the hallway.>
+            split-statement |7> => |mary> . |moved> . |to> . |the> . |hallway>
+            movement-statement |7> => |mary> . |MOVEMENT> . |to> . |the> . |hallway>
+            
+            statement |8> => |Daniel travelled to the office.>
+            split-statement |8> => |daniel> . |travelled> . |to> . |the> . |office>
+            movement-statement |8> => |daniel> . |MOVEMENT> . |to> . |the> . |office>
+            
+            statement |9> => |John went back to the garden.>
+            split-statement |9> => |john> . |went> . |back> . |to> . |the> . |garden>
+            movement-statement |9> => |john> . |MOVEMENT> . |back> . |to> . |the> . |garden>
+            
+            statement |10> => |John moved to the bedroom.>
+            split-statement |10> => |john> . |moved> . |to> . |the> . |bedroom>
+            movement-statement |10> => |john> . |MOVEMENT> . |to> . |the> . |bedroom>
+
+        
+        -- now apply our where-is operator:
+        sa: where-is |Mary>
+            1.0     1       |the> . |bathroom>
+            1.0     7       |the> . |hallway>
+            |the . hallway>
+        
+        sa: where-is |John>
+            1.0     2       |the> . |hallway>
+            1.0     5       |the> . |office>
+            1.0     9       |the> . |garden>
+            1.0     10      |the> . |bedroom>
+            |the . bedroom>
+        
+        sa: where-is |Daniel>
+            1.0     3       |the> . |hallway>
+            1.0     8       |the> . |office>
+            |the . office>
+        
+        sa: where-is |Sandra>
+            1.0     4       |the> . |garden>
+            1.0     6       |the> . |bathroom>
+            |the . bathroom>
+
+    future:
+        scale up, and implement an example with more if-then machines.
+        
+    see also:
+        if-then-machines, explain, predict
+
+    source code:
+        load dialog.sw
+"""
