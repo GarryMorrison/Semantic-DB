@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 26/11/2018
+# Update: 2/12/2018
 # Copyright: GPLv3
 #
 # A collection of functions that apply to kets, superpositions and sequences.
@@ -693,12 +693,10 @@ compound_table['such-that'] = ['apply_seq_fn', 'seq_such_that', 'context']
 function_operators_usage['such-that'] = """
     description:
         such-that[op1, op2, ... , opn] seq 
-        filters the given sequence to elements that return true for "op |element>"
+        filters the given sequence to elements that return true for op applied to that element
         where the coeff of |true> must be >= 0.5     
         
     examples:
-        such-that[is-a-woman] rel-kets[supported-ops] |>
-      
         is-hungry |Fred> => |yes>
         is-hungry |Sam> => |no>
         such-that[is-hungry] rel-kets[supported-ops] |>
@@ -727,7 +725,7 @@ function_operators_usage['such-that'] = """
 def seq_such_that(one, context, *ops):
     def valid_ket(one, context, ops):
         for op in ops:
-            e = one.apply_op(context, op).to_sp()
+            e = one.apply_op(context, op).to_ket()
             if e.label not in ["true", "yes"]:
                 return False
             if e.value < 0.5:  # need to test this bit.
@@ -742,6 +740,101 @@ def seq_such_that(one, context, *ops):
                 r.add_sp(x)
         seq += r
     return seq.sdrop()
+
+
+# set invoke method:
+compound_table['such-that-or'] = ['apply_seq_fn', 'seq_such_that_or', 'context']
+# set usage info:
+function_operators_usage['such-that-or'] = """
+    description:
+        such-that-or[op1, op2, ... , opn] seq 
+        filters the given sequence to elements that return true for at least one operator in op1, ... , opn
+        contrast with such-that-and[] that filters to elements that return true for all operators in op1, ... , opn
+        where the coeff of |true> must be >= 0.5     
+
+    examples:
+        list-of |colors> => |red> + |orange> + |yellow> + |green> + |blue> + |indigo> + |violet>
+        list-of |digits> => range(|0>, |9>)
+        list-of |furniture> => |chair> + |table> + |lamp>
+        list-of |names> => |John> + |Mary> + |Sam> + |Emma> + |Liz> + |Jack> + |Fred>
+        list-of |animals> => |dog> + |cat> + |horse> + |mouse> + |elephant> + |rabbit>
+        list-of |things> => list-of split |colors digits furniture names animals>
+        
+        is-a-color |*> #=> is-mbr(|_self>, list-of |colors>)
+        is-a-digit |*> #=> is-mbr(|_self>, list-of |digits>)
+        is-furniture |*> #=> is-mbr(|_self>, list-of |furniture>)
+        is-a-name |*> #=> is-mbr(|_self>, list-of |names>)
+        is-an-animal |*> #=> is-mbr(|_self>, list-of |animals>)
+        
+        such-that-or[is-a-digit, is-a-name] list-of |things>
+            |0> + |1> + |2> + |3> + |4> + |5> + |6> + |7> + |8> + |9> + |John> + |Mary> + |Sam> + |Emma> + |Liz> + |Jack> + |Fred>
+
+    see also:
+        such-that, such-that-and
+        
+    TODO:
+        fix quirk so we don't need literal operator wrappers around function operators.
+        eg: is-prime |*> #=> is-prime |_self>
+"""
+def seq_such_that_or(one, context, *ops):
+    def valid_ket(one, context, ops):
+        for op in ops:
+            e = one.apply_op(context, op).to_ket()
+            if e.label in ["true", "yes"] and e.value > 0.5:
+                return True
+        return False
+
+    seq = sequence([])
+    for sp in sequence(one):
+        r = superposition()
+        for x in sp:
+            if valid_ket(x, context, ops):
+                r.add_sp(x)
+        seq += r
+    return seq.sdrop()
+
+
+# set invoke method:
+compound_table['such-that-and'] = ['apply_seq_fn', 'seq_such_that', 'context']
+# set usage info:
+function_operators_usage['such-that-and'] = """
+    description:
+        such-that-and[op1, op2, ... , opn] seq 
+        filters the given sequence to elements that return true for all operators in op1, ... , opn
+        contrast with such-that-or[] that filters to elements that return true for at least one operator in op1, ... , opn
+        where the coeff of |true> must be >= 0.5     
+
+    examples:
+        list-of |colors> => |red> + |orange> + |yellow> + |green> + |blue> + |indigo> + |violet>
+        list-of |digits> => range(|0>, |9>)
+        list-of |furniture> => |chair> + |table> + |lamp>
+        list-of |names> => |John> + |Mary> + |Sam> + |Emma> + |Liz> + |Jack> + |Fred>
+        list-of |animals> => |dog> + |cat> + |horse> + |mouse> + |elephant> + |rabbit>
+        list-of |things> => list-of split |colors digits furniture names animals>
+
+        is-a-color |*> #=> is-mbr(|_self>, list-of |colors>)
+        is-a-digit |*> #=> is-mbr(|_self>, list-of |digits>)
+        is-furniture |*> #=> is-mbr(|_self>, list-of |furniture>)
+        is-a-name |*> #=> is-mbr(|_self>, list-of |names>)
+        is-an-animal |*> #=> is-mbr(|_self>, list-of |animals>)
+        is-a-thing |*> #=> is-mbr(|_self>, list-of |things>)
+
+        -- is-a-digit and is-a-name have no common elements, so we get the empty ket:
+        such-that-and[is-a-digit, is-a-name] list-of |things>
+            |>
+        
+        -- is-a-thing and is-furniture returns only a list of furniture:
+        such-that-and[is-a-thing, is-furniture] list-of |things>
+            |chair> + |table> + |lamp>
+
+    see also:
+        such-that, such-that-or
+
+    TODO:
+        fix quirk so we don't need literal operator wrappers around function operators.
+        eg: is-prime |*> #=> is-prime |_self>
+"""
+
 
 
 def print_table(table):
