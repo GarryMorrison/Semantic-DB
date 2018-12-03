@@ -38,10 +38,15 @@ pattern |node: 3: 4> => |office>
 pattern |node: 3: 5> => |bedroom>
 then |node: 3: *> => |PLACE>
 
+-- pmp if-then machine:
+pattern |node: 4: 1> => |PERSON> . |MOVEMENT> . |to> . |the> . |PLACE>
+then |node: 4: *> => |PMP statement>
+
 
 -- processing rules:
 split-a-statement |*> #=> ssplit[" "] to-lower remove-suffix["."] statement |_self>
 make-person-movement-place-statement |*> #=> then explain[pattern] split-statement |_self>
+-- make-person-movement-place-statement |*> #=> (then explain[pattern])^2 split-statement |_self>
 
 
 -- now apply them:
