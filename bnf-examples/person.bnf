@@ -1,0 +1,7 @@
+space = ' '
+initial = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z'
+first-name = 'John' | 'Frank' | 'Emma' | 'Jane' | 'Liz' | 'Sam' | 'Mary' | 'Rob' | 'Jenny'
+last-name = 'Smith' | 'Richards' | 'Harrison' | 'Murphy' | 'Turing' | 'Freeman'
+personal-part = initial . '.' | first-name
+name-part = personal-part . space . last-name . opt-suffix-part | personal-part . space . name-part
+opt-suffix-part = ' Sr.' | ' Jr.' | ''

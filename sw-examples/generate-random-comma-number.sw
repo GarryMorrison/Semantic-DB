@@ -4,8 +4,9 @@
 -- digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
 -- non-zero-digit = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
 -- hundreds = non-zero-digit | non-zero-digit . digit | non-zero-digit . digit . digit
--- tail = tail | comma . digit . digit . digit | ''
--- int = 0 | hundreds . tail
+-- tail-0 = comma . digit . digit . digit | ''
+-- tail = tail-0 | tail-0 . tail
+-- int = '0' | hundreds . tail
 -- decimal = non-zero-digit | digit . decimal
 -- number = int | int . dot . decimal
 

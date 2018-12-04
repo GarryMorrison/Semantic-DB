@@ -1,0 +1,11 @@
+space = ' ' 
+dot = '.' 
+IT = 'it' | 'there' | 'everything' 
+WAS = 'was' | 'is' | 'had' 
+THE = 'the' | 'his' | 'their' | 'my' | 'our' | 'this' | 'her' | 'its' | 'your' | 'a' 
+START = 'start' | 'drink' 
+OF = 'of' | 'for' | 'in' | 'with' 
+A = 'a' | 'some' | 'my' | 'your' | 'the' | 'another' | 'this' | 'his' 
+GOOD = 'good' | 'fine' | 'bad' | 'nice' | 'lovely' 
+DAY = 'day' | 'night' | 'morning' | 'evening' | 'year' | 'time' | 'afternoon' | 'moment' 
+sentence = IT . space . WAS . space . THE . space . START . space . OF . space . A . space . GOOD . space . DAY . dot
