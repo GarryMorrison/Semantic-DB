@@ -1,7 +1,11 @@
 space = ' '
 initial = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z'
-first-name = 'John' | 'Frank' | 'Emma' | 'Jane' | 'Liz' | 'Sam' | 'Mary' | 'Rob' | 'Jenny'
+female-first-name = 'Emma' | 'Jane' | 'Liz' | 'Mary' | 'Jenny'
+male-first-name = 'John' | 'Frank' | 'Sam' | 'Rob'
 last-name = 'Smith' | 'Richards' | 'Harrison' | 'Murphy' | 'Turing' | 'Freeman'
-personal-part = initial . '.' | first-name
-name-part = personal-part . space . last-name . opt-suffix-part | personal-part . space . name-part
+female-personal-part = initial . '.' | female-first-name
+male-personal-part = initial . '.' | male-first-name
+female-name-part = female-personal-part . space . last-name | female-personal-part . space . female-name-part
+male-name-part = male-personal-part . space . last-name . opt-suffix-part | male-personal-part . space . male-name-part
 opt-suffix-part = ' Sr.' | ' Jr.' | ''
+name = female-name-part | male-name-part

@@ -27,21 +27,28 @@ if __name__ == '__main__':
 
     s = '-- the following code implements this grammar:\n'
     rules = {}
+    smerge = ''
     with open(filename, 'r') as f:
         for line in f:
             line = line.strip()
             s += '-- ' + line + '\n'
-            head, tail = line.split(' = ')
-            tail = tail.split(' | ')
-            tail = [x.split(' . ') for x in tail]
-            rules[head] = tail
+            try:
+                head, tail = line.split(' = ')
+                if head == '_smerge':
+                    smerge = tail[1:-1]
+                    continue
+                tail = tail.split(' | ')
+                tail = [x.split(' . ') for x in tail]
+                rules[head] = tail
+            except:
+                continue
 
     s += '\n\n-- define our chomp null operator:\n'
     s += 'chomp |*> #=> |_self>\n'
     s += 'chomp |null> #=> |>\n'
 
     s += '\n-- define our merge class operator:\n'
-    s += 'merge (*) #=> smerge sdrop chomp clean weighted-pick-elt class |_self>\n'
+    s += 'merge (*) #=> smerge[\"%s\"] sdrop chomp clean weighted-pick-elt class |_self>\n' % smerge
 
     s += '\n-- define our classes:\n'
     s += 'class |*> #=> remove-suffix[\"\'\"] remove-prefix[\"\'\"] |_self>\n'

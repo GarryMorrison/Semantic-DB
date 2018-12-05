@@ -1,0 +1,14 @@
+_smerge = ' '
+space = ' '
+A = 'the'
+B = 'young' | ''
+C = 'girl' | 'boy'
+D = 'old' | 'other' | ''
+E = 'man' | 'woman' | 'lady'
+F = 'saw'
+G = 'through the'
+H = 'telescope' | 'binoculars' | 'night vision goggles'
+
+K = B . C | D . E
+M = A . K | ''
+N = A . K . F . M . G . H
