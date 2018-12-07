@@ -4,7 +4,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2018
-# Update: 7/9/2018
+# Update: 7/12/2018
 # Copyright: GPLv3
 #
 # Usage: 
@@ -2507,7 +2507,7 @@ fraction = number:numerator (ws '/' ws number | -> 1):denominator -> float_int(n
 ws = ' '*
 S1 = ' '+
 op_start_char = anything:x ?(x.isalpha() or x == '!') -> x
-op_char = anything:x ?(x.isalpha() or x.isdigit() or x in '-+!?.:')
+op_char = anything:x ?(x.isalpha() or x.isdigit() or x in '-+!?.:_')
 simple_op = op_start_char:first <op_char*>:rest -> first + rest
 filtered_char = anything:x ?(x not in '[]|><') -> x
 filtered_parameter_string = '"' ( ~'"' filtered_char)*:c '"' -> ''.join(c)

@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 2/12/2018
+# Update: 7/12/2018
 # Copyright: GPLv3
 #
 # A collection of functions that apply to kets, superpositions and sequences.
@@ -672,6 +672,20 @@ sequence_functions_usage['apply'] = """
     see also:
         learn, add-learn
 """
+def first_apply_sp(input_seq, context, one, two):
+    seq = sequence([])
+    for sp in one:
+        r = superposition()
+        for x in sp:
+            if x.label.startswith("op: "):
+                op = x.label[4:]
+                value = two.apply_op(context, op).multiply(x.value)
+                if len(value) > 0:
+                    value = value.to_sp()
+                    r += value
+        seq += r
+    return seq
+
 def apply_sp(input_seq, context, one, two):
     seq = sequence([])
     for sp in one:
@@ -685,6 +699,7 @@ def apply_sp(input_seq, context, one, two):
                     r += value
         seq += r
     return seq
+
 
 
 # set invoke method:
@@ -9351,3 +9366,96 @@ def q_walk(start, context):
             seq += ket(next_step)
     # print('seq: %s' % seq)
     return seq
+
+
+# set invoke method:
+compound_table['interpolate'] = ['apply_fn', 'interpolate', 'context']
+# set usage info:
+function_operators_usage['interpolate'] = """
+    description:
+        interpolate[rule] ket
+        
+        
+    examples:
+    see also:
+
+"""
+def interpolate(one, context, op):
+    def tidy_op_target(supported_op, one):
+        return context.recall(supported_op, one).apply_fn(extract_value).apply_sp_fn(sp_to_words).to_ket().label
+    try:
+        target = to_upper(extract_value(one), 1).label
+        supported_ops = context.recall('supported-ops', one)
+        # print(supported_ops)
+        for idx in context.relevant_kets(op):
+            r = context.recall(op, idx).to_ket().label
+            r2 = r.replace('##', target)
+            for supported_op in supported_ops:
+                op_target = tidy_op_target(supported_op, one)
+                hash_op = '#%s#' % supported_op.label[4:]
+                r2 = r2.replace(hash_op, op_target)
+            print(r2)
+    except Exception as e:
+        print('interpolate exception: %s' % e)
+    return ket('interpolate')
+
+
+# set invoke method:
+compound_table['process'] = ['apply_fn', 'process', 'context']
+# set usage info:
+function_operators_usage['process'] = """
+    description:
+        process[rule] ket
+
+
+    examples:
+    see also:
+
+"""
+def process(one, context, op):
+    try:
+        sentence = one.to_ket().label
+        print()
+        print(sentence)
+
+        # find ops defined in our collection of rules:
+        known_ops = []
+        for idx in context.relevant_kets(op):
+            rule = context.recall(op, idx).to_ket().label
+            known_op = re.findall('#[a-zA-Z0-9\-_]+#', rule)
+            # print('known_op:', known_op)
+            if len(known_op) > 0:
+                known_ops.append(known_op[0])
+        # print('known_ops:', known_ops)
+
+        match_triple = (None, None, None)
+        for idx in context.relevant_kets(op):
+            rule = context.recall(op, idx).to_ket().label
+            # print(rule)
+            new_rule = rule.replace('##', '([a-zA-Z \']+)')
+            new_rule = re.sub('#[a-zA-Z0-9\-_]+#', '[0-9a-zA-Z\-_]+', new_rule)
+            target = re.findall(new_rule, sentence)
+
+            if len(target) > 0:
+                target_rule = rule.replace('##', target[0])
+                for known_op in known_ops:
+                    if known_op in target_rule:
+                        op_rule = target_rule.replace(known_op, '([0-9a-zA-Z, \-\.@:]+)')
+                        op_target = re.findall(op_rule, sentence)
+                        print('known_op:', known_op)
+                        print('op_rule:', op_rule)
+                        print('op_target:', op_target)
+                        if match_triple[1] is None or len(match_triple[2]) >= len(op_target[0]): # shorter results over-ride longer results
+                            match_triple = (known_op, target[0], op_target[0])                   # later rules over-ride earlier rules if they are the same length
+
+        # print out and learn our results:
+        if match_triple[0] is not None:
+            print('%s |%s> => %s' % match_triple)
+            op = match_triple[0][1:-1]
+            name = match_triple[1]
+            value = words_to_sp(ket(match_triple[2]))
+            context.learn(op, name, value)
+        # context.print_universe()
+    except Exception as e:
+        print('process[rule] exception: %s' % e)
+    return ket('process')

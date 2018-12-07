@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 15/11/2018
+# Update: 7/12/2018
 # Copyright: GPLv3
 #
 # Usage: ./sdb-console.py [--debug | --info] [-q] [-i] [--version] [file1.sw ... filen.sw]
@@ -212,7 +212,7 @@ if len(files_to_run) == 0:
 
 
 if interactive:
-    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 15 November, 2018")
+    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 7 December, 2018")
     print("\nTo load remote sw files, run:\n\n  web-files http://semantic-db.org/sw/\n")
     print("To see usage docs, visit:\n\n  http://semantic-db.org/docs/usage/\n")
 
