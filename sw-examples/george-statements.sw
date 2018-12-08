@@ -20,5 +20,4 @@ statement |18> => |George's email address is george.douglas@gmail.com.>
 statement |19> => |George's education level is high-school.>
 
 -- process those facts, and extract triples:
-process-single-rule |*> #=> process[rule] |_self>
-|null> => process-single-rule statement rel-kets[statement] |>
+|null> => process[rule] statement rel-kets[statement] |>

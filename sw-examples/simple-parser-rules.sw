@@ -1,3 +1,16 @@
+class |female name> => |Beth> + |Jane> + |Liz> + |Sarah> + |Emily> + |Emma> + |Bella> + |Madison>
+class |male name> => |Fred> + |Andrew> + |David> + |Frank> + |Tim> + |Sam>
+class |name> => clean class (|female name> + |male name>)
+class |gender> => |male> + |female>
+
+is-valid-gender |*> #=> is-mbr(|_self>, class |gender>)
+is-valid-mother |*> #=> is-mbr(|_self>, class |female name>)
+is-valid-father |*> #=> is-mbr(|_self>, class |male name>)
+is-valid-sister |*> #=> is-mbr(|_self>, class |female name>)
+is-valid-brother |*> #=> is-mbr(|_self>, class |male name>)
+is-valid-brothers |*> #=> is-subset(words-to-list |_self>, class |male name>)
+
+
 -- our simple parser rules:
 rule |1> => |## is #gender#.>
 rule |2> => |## is #age# years old.>

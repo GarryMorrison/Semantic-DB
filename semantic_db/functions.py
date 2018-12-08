@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 7/12/2018
+# Update: 8/12/2018
 # Copyright: GPLv3
 #
 # A collection of functions that apply to kets, superpositions and sequences.
@@ -9445,9 +9445,10 @@ def process(one, context, op):
                         print('known_op:', known_op)
                         print('op_rule:', op_rule)
                         print('op_target:', op_target)
-                        if match_triple[1] is None or len(match_triple[2]) >= len(op_target[0]): # shorter results over-ride longer results
-                            match_triple = (known_op, target[0], op_target[0])                   # later rules over-ride earlier rules if they are the same length
-
+                        if match_triple[1] is None or (len(match_triple[1]) >= len(target[0]) and len(match_triple[2]) >= len(op_target[0])): # shorter results over-ride longer results
+                            test_op = ket(op_target[0]).apply_op(context, 'is-valid-' + known_op[1:-1]).to_ket().label  # later rules over-ride earlier rules if they are the same length
+                            if len(test_op) == 0 or test_op == 'yes':
+                                match_triple = (known_op, target[0], op_target[0])
         # print out and learn our results:
         if match_triple[0] is not None:
             print('%s |%s> => %s' % match_triple)
