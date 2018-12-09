@@ -55,9 +55,6 @@ statement |51> => |Madison's personality type is the performer.>
 statement |52> => |Madison's current emotion is indignation.>
 statement |53> => |Madison's bed time is 10:30pm.>
 statement |54> => |Madison is 23 years old.>
--- for some reason the space causes it to not match the age rule:
--- can we fix it, or is it due to the way regex's work?
--- statement |54> => |Madison is twenty three years old.>
 statement |55> => |Madison's friends are Emma and Bella.>
 
 

@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 8/12/2018
+# Update: 9/12/2018
 # Copyright: GPLv3
 #
 # A collection of functions that apply to kets, superpositions and sequences.
@@ -6301,6 +6301,98 @@ def third_explain(one, context, *ops):
     return ssplit(ket(sorted_solutions[0][0]), merge_char)
 
 
+def fourth_explain(one, context, *ops):
+    if len(ops) == 1:
+        op = ops[0]
+        merge_char = ' . '  # currently bugs out if merge_char == ""
+    else:
+        op, merge_char = ops
+
+    max_depth = 10  # hard code in a max_depth for now. Maybe later make it infinity.
+    target = smerge(one, merge_char).label
+    len_input = len(one)
+
+    def single_step(one, context, op):
+        seq = sequence([])
+        for x in one:
+            child = x.apply_op(context, op)
+            if len(child) == 0:
+                child = x
+            seq += child
+        return seq
+
+    forward_cause = {}
+    seen_sequences = {}
+
+    # learn all the cause tree's:
+    for x in context.relevant_kets(op):
+        elt = x
+        len_elt = 1
+        for k in range(max_depth):
+            elt = single_step(elt, context, op)
+            if len(elt) == len_elt and k > 0:
+                break
+            len_elt = len(elt)
+            # print('elt: %s' % elt)
+            if x.label not in forward_cause:
+                forward_cause[x.label] = superposition()
+            seq = smerge(elt, merge_char)
+            forward_cause[x.label].add_sp(seq)
+            seen_sequences[seq.label] = True  # later convert to set
+
+    # learn input elements:
+    for x in one:
+        if x.label not in seen_sequences:
+            forward_cause[x.label] = superposition() + x
+
+    # print cause tree:
+    # for label, sp in forward_cause.items():
+    #     print('%s: %s'% (label, sp))
+
+    # find causes:
+    def find_next_step(solutions, forward_cause):
+        new_solutions = []
+        for head_label, target in solutions:
+            if len(target) == 0:
+                new_solutions.append([head_label, target])
+            else:
+                for label, sp in forward_cause.items():
+                    for x in sp:
+                        if target.startswith(x.label):
+                            new_solutions.append([head_label + merge_char + label, target[len(x.label) + len(merge_char):]])
+        return new_solutions
+
+    # filter to valid first step solutions:
+    solutions = []
+    for label, sp in forward_cause.items():
+        for x in sp:
+            if target.startswith(x.label):
+                solutions.append([label, target[len(x.label) + len(merge_char):]])
+    # print(solutions)
+
+    for _ in range(len_input + 1):
+        solutions = find_next_step(solutions, forward_cause)
+        # print(solutions)
+
+    sorted_solutions = sorted(solutions, key=lambda x: len(x[0].split(merge_char)), reverse=False)
+
+    # for label, _ in sorted_solutions:
+    #     print(label)
+    # return ket(target)
+
+    # return ssplit(ket(sorted_solutions[0][0]), merge_char)
+
+    top_solutions = []
+    first_solution_len = len(sorted_solutions[0][0].split(merge_char))
+    for solution in sorted_solutions:
+        current_solution_len = len(solution[0].split(merge_char))
+        if current_solution_len == first_solution_len:
+            current_solution = ssplit(ket(solution[0]), merge_char)
+            top_solutions.append(current_solution)
+    return top_solutions
+
+
+
 # set invoke method:
 compound_table['sngrams'] = ['apply_seq_fn', 'seq_ngrams', '']
 # set usage info:
@@ -9401,7 +9493,10 @@ def interpolate(one, context, op):
 
 
 # set invoke method:
-compound_table['process'] = ['apply_fn', 'process', 'context']
+# compound_table['process'] = ['apply_fn', 'first_process', 'context']
+# compound_table['process'] = ['apply_sp_fn', 'second_process', 'context']
+# compound_table['process'] = ['apply_sp_fn', 'third_process', 'context']
+compound_table['process'] = ['apply_sp_fn', 'fourth_process', 'context']
 # set usage info:
 function_operators_usage['process'] = """
     description:
@@ -9412,7 +9507,7 @@ function_operators_usage['process'] = """
     see also:
 
 """
-def process(one, context, op):
+def first_process(one, context, op):
     try:
         sentence = one.to_ket().label
         print()
@@ -9460,3 +9555,271 @@ def process(one, context, op):
     except Exception as e:
         print('process[rule] exception: %s' % e)
     return ket('process')
+
+
+def second_process(one, context, op):
+    prefix = 'str: '
+
+    def extract_rule_text(t):
+        on = True
+        s = ''
+        r = []
+        for c in t:
+            if c == '#':
+                on = not on
+                if not on:
+                    r.append(s)
+                    s = ''
+                continue
+            if on:
+                s += c
+        r.append(s)
+        return r
+
+    def extract_result_text(sentence):
+        seq = sequence([])
+        r = []
+        rule_match = []
+        for c in sentence:
+            if c.label.startswith(prefix):
+                if len(seq) > 0:
+                    r.append(smerge(seq).label)
+                seq = sequence([])
+                current_rule = c.label.split(': ')[1]
+                rule_match.append(current_rule)
+            else:
+                seq += c
+        if len(seq) > 0:
+            r.append(smerge(seq).label)
+        return r, rule_match
+
+    try:
+        # find ops defined in our collection of rules:
+        known_ops = []
+        for idx in context.relevant_kets(op):
+            rule = context.recall(op, idx).to_ket().label
+            known_op = re.findall('#[a-zA-Z0-9\-_]+#', rule)
+            if len(known_op) > 0:
+                known_ops.append(known_op[0])
+        print('known_ops:', known_ops)
+
+        # learn our rules:
+        for idx in context.relevant_kets(op):
+            rule = context.recall(op, idx).to_ket().label
+            extracted_rule = extract_rule_text(rule)
+            print(extracted_rule)
+            for s in extracted_rule:
+                if len(s) > 1:
+                    name = prefix + idx.label + ': ' + s
+                    # name = prefix + s
+                    check_exists = context.recall('cause', name)
+                    if len(check_exists) == 0:
+                        context.learn('cause', name, ssplit(ket(s)))
+
+        for sentence in one:
+            print()
+            print(sentence.label)
+            split_sentence = ssplit(sentence)
+            # print(split_sentence)
+            explain_sentence = third_explain(split_sentence, context, 'cause')  # need an explain that doesn't print junk!
+            print(explain_sentence)
+            result_text, rule_match = extract_result_text(explain_sentence)
+            print(result_text)
+            print(rule_match)
+
+    except Exception as e:
+        print('process[rule] exception: %s' % e)
+    return ket('process')
+
+
+def third_process(one, context, op):
+    prefix = 'str: '
+
+    def extract_rule_text(t):
+        on = True
+        s = ''
+        r = []
+        for c in t:
+            if c == '#':
+                on = not on
+                if not on:
+                    r.append(s)
+                    s = ''
+                continue
+            if on:
+                s += c
+        r.append(s)
+        return r
+
+    def extract_result_text(sentence):
+        seq = sequence([])
+        r = []
+        # rule_match = []
+        for c in sentence:
+            if c.label.startswith(prefix):
+                if len(seq) > 0:
+                    r.append(smerge(seq).label)
+                seq = sequence([])
+                # current_rule = c.label.split(': ')[1]
+                # rule_match.append(current_rule)
+            else:
+                seq += c
+        if len(seq) > 0:
+            r.append(smerge(seq).label)
+        # return r, rule_match
+        return r
+
+    try:
+        # find ops defined in our collection of rules:
+        known_ops = []
+        for idx in context.relevant_kets(op):
+            rule = context.recall(op, idx).to_ket().label
+            known_op = re.findall('#[a-zA-Z0-9\-_]+#', rule)
+            if len(known_op) > 0:
+                known_ops.append(known_op[0])
+        print('known_ops:', known_ops)
+
+        # learn our rules:
+        for idx in context.relevant_kets(op):
+            rule = context.recall(op, idx).to_ket().label
+            extracted_rule = extract_rule_text(rule)
+            print(extracted_rule)
+            for s in extracted_rule:
+                if len(s) > 1:
+                    name = prefix + idx.label + ': ' + s
+                    # name = prefix + s
+                    # check_exists = context.recall('cause', name)
+                    # if len(check_exists) == 0:
+                    #     context.learn('cause', name, ssplit(ket(s)))
+                    context.learn('cause-' + idx.label, name, ssplit(ket(s)))
+
+        for sentence in one:
+            print()
+            print(sentence.label)
+            split_sentence = ssplit(sentence)
+            # print(split_sentence)
+            for idx in context.relevant_kets(op):
+                print(idx)
+                explain_sentence = third_explain(split_sentence, context, 'cause-' + idx.label)
+                print(explain_sentence)
+                result_text = extract_result_text(explain_sentence)
+                print(result_text)
+
+
+    except Exception as e:
+        print('process[rule] exception: %s' % e)
+    return ket('process')
+
+
+def fourth_process(one, context, op):
+    prefix = 'str: '
+
+    def extract_rule_text(t, on=True):
+        s = ''
+        r = []
+        for c in t:
+            if c == '#':
+                on = not on
+                if not on:
+                    r.append(s)
+                    s = ''
+                continue
+            if on:
+                s += c
+        if len(s) > 0:
+            r.append(s)
+        return r
+
+    def extract_result_text(sentence):
+        seq = sequence([])
+        r = []
+        rule_match = []
+        for c in sentence:
+            if c.label.startswith(prefix):
+                if len(seq) > 0:
+                    r.append(smerge(seq).label)
+                seq = sequence([])
+                current_rule = c.label[len(prefix):].split(': ')[0]
+                rule_match.append(current_rule)
+            else:
+                seq += c
+        if len(seq) > 0:
+            r.append(smerge(seq).label)
+        return r, rule_match
+
+    try:
+        # find ops defined in our collection of rules:
+        known_ops = []
+        for idx in context.relevant_kets(op):
+            rule = context.recall(op, idx).to_ket().label
+            known_op = re.findall('#[a-zA-Z0-9\-_]+#', rule)
+            if len(known_op) > 0:
+                known_ops.append(known_op[0])
+        print('known_ops:', known_ops)
+
+        # learn our rules:
+        for idx in context.relevant_kets(op):
+            rule = context.recall(op, idx).to_ket().label
+            extracted_rule = extract_rule_text(rule)
+            print(extracted_rule)
+            for s in extracted_rule:
+                if len(s) > 1:  # we can't learn cause rules that are length 1, as this breaks our explain[cause] parsing
+                    name = prefix + idx.label + ': ' + s
+                    # name = prefix + idx.label  # does not produce unique names, ie, won't work!
+                    check_exists = context.recall('cause', name)
+                    if len(check_exists) == 0:
+                        context.learn('cause', name, ssplit(ket(s)))
+
+        for sentence in one:
+            print()
+            print(sentence.label)
+            split_sentence = ssplit(sentence)
+            explain_sentences = fourth_explain(split_sentence, context, 'cause')
+            matching_rules = []
+            matching_text = []
+            for explain_sentence in explain_sentences:
+                print(explain_sentence)
+                result_text, rule_match = extract_result_text(explain_sentence)
+                print(result_text)
+                print(rule_match)
+                if len(set(rule_match)) == 1:
+                    matching_rules.append(rule_match[0])
+                    matching_text.append(result_text)
+            print('matching rules:', matching_rules)
+            print('matching text:', matching_text)
+            for j, idx in enumerate(matching_rules):
+                rule = context.recall(op, idx).to_ket().label
+                parsed_text = matching_text[j]
+                rule_ops = extract_rule_text(rule, on=False)
+                print(rule)
+                print(parsed_text)
+                print(rule_ops)
+                new_rule = rule
+                target = ''
+                if len(parsed_text) != len(rule_ops):
+                    print('parsed text and rule ops have different lengths!')
+                else:
+                    for k, rule_op in enumerate(rule_ops):
+                        # new_rule = new_rule.replace('#%s#' % rule_op, parsed_text[k])
+                        new_rule = new_rule.replace('#%s#' % rule_op, parsed_text[k].rstrip('.')) # hack until fix end of line . issue
+                        if len(rule_op) == 0:
+                            target = parsed_text[k]
+                print(new_rule)
+                print(target)
+                if new_rule == sentence.label and len(target) > 0:
+                    print('found it!')
+                    for k, rule_op in enumerate(rule_ops):
+                        if len(rule_op) > 0:
+                            value = ket(parsed_text[k].rstrip('.'))
+                            test_op = value.apply_op(context, 'is-valid-' + rule_op).to_ket().label
+                            value = words_to_sp(value) # breaks numbers written as English, eg: |three hundred and forty five>
+                            if len(test_op) == 0 or test_op == 'yes':
+                                print('learned it!')
+                                # context.learn(rule_op, target, value)
+                                context.add_learn(rule_op, target, value)
+                    break
+
+    except Exception as e:
+        print('process[rule] exception: %s' % e)
+    return ket('process')
+

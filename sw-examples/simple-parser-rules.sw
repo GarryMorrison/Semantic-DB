@@ -1,7 +1,8 @@
-class |female name> => |Beth> + |Jane> + |Liz> + |Sarah> + |Emily> + |Emma> + |Bella> + |Madison>
-class |male name> => |Fred> + |Andrew> + |David> + |Frank> + |Tim> + |Sam>
+class |female name> => |Beth> + |Jane> + |Liz> + |Sarah> + |Emily> + |Emma> + |Bella> + |Madison> + |Mia>
+class |male name> => |Fred> + |Andrew> + |David> + |Frank> + |Tim> + |Sam> + |Ian> + |William> + |Nathan>
 class |name> => clean class (|female name> + |male name>)
 class |gender> => |male> + |female>
+class |birth sign> => |aries> + |taurus> + |gemini> + |cancer> + |leo> + |virgo> + |libra> + |scorpio> + |sagittarius> + |capricorn> + |aquarius> + |pisces>
 
 is-valid-gender |*> #=> is-mbr(|_self>, class |gender>)
 is-valid-mother |*> #=> is-mbr(|_self>, class |female name>)
@@ -9,6 +10,7 @@ is-valid-father |*> #=> is-mbr(|_self>, class |male name>)
 is-valid-sister |*> #=> is-mbr(|_self>, class |female name>)
 is-valid-brother |*> #=> is-mbr(|_self>, class |male name>)
 is-valid-brothers |*> #=> is-subset(words-to-list |_self>, class |male name>)
+is-valid-birth-sign |*> #=> is-mbr(to-lower |_self>, class |birth sign>)
 
 
 -- our simple parser rules:
@@ -52,3 +54,29 @@ rule |37> => |##'s religion is #religion#.>
 rule |38> => |##'s personality type is #personality-type#.>
 rule |39> => |##'s current emotion is #current-emotion#.>
 rule |40> => |##'s bed time is #bed-time#.>
+
+rule |41> => |## name is #name#.>
+rule |42> => |## age is #age#.>
+rule |43> => |## mother is #mother#.>
+
+rule |44> => |The ## ate the #ate#.>
+rule |45> => |The ## ate the #ate# and then #action#.>
+
+rule |46> => |## is a #is-a#.>
+rule |47> => |##'s are #property#.>
+
+rule |48> => |#friend-of# is a friend of ##.>
+
+-- the ' and ' in these rules break statements like: 'Sam is a friend of Liz and Mary.'
+-- this is the same bug that is causing issues with counting '.' as a match string.
+-- eg: george.douglas@gmail.com
+-- these rules also break statements like: 'George's brothers are Frank, Tim and Sam.'
+-- and they make statements like 'the shopping list is chocolate, cream, milk, apples and steak' very slow!
+-- Hrmm.... how fix??? I think it is in the explain[cause] branch of the code.
+
+-- rule |49> => |## is #first#, #second# and #third#.>
+-- rule |50> => |## is #first#, #second#, #third# and #fourth#.>
+-- rule |51> => |## is #first#, #second#, #third#, #fourth# and #fifth#.>
+
+
+p |*> #=> process[rule] |_self>
