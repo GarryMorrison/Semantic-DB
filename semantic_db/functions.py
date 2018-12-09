@@ -9496,7 +9496,8 @@ def interpolate(one, context, op):
 # compound_table['process'] = ['apply_fn', 'first_process', 'context']
 # compound_table['process'] = ['apply_sp_fn', 'second_process', 'context']
 # compound_table['process'] = ['apply_sp_fn', 'third_process', 'context']
-compound_table['process'] = ['apply_sp_fn', 'fourth_process', 'context']
+# compound_table['process'] = ['apply_sp_fn', 'fourth_process', 'context']
+compound_table['process'] = ['apply_sp_fn', 'fifth_process', 'context']
 # set usage info:
 function_operators_usage['process'] = """
     description:
@@ -9823,3 +9824,111 @@ def fourth_process(one, context, op):
         print('process[rule] exception: %s' % e)
     return ket('process')
 
+
+def fifth_process(one, context, op):
+    prefix = 'str: '
+
+    def extract_rule_text(t, on=True):
+        s = ''
+        r = []
+        for c in t:
+            if c == '#':
+                on = not on
+                if not on:
+                    r.append(s)
+                    s = ''
+                continue
+            if on:
+                s += c
+        if len(s) > 0:
+            r.append(s)
+        return r
+
+    def extract_result_text(sentence):
+        seq = sequence([])
+        r = []
+        rule_match = []
+        for c in sentence:
+            if c.label.startswith(prefix):
+                if len(seq) > 0:
+                    r.append(smerge(seq).label)
+                seq = sequence([])
+                current_rule = c.label[len(prefix):].split(': ')[0]
+                rule_match.append(current_rule)
+            else:
+                seq += c
+        if len(seq) > 0:
+            r.append(smerge(seq).label)
+        return r, rule_match
+
+    try:
+        # find ops defined in our collection of rules:
+        known_ops = []
+        for idx in context.relevant_kets(op):
+            rule = context.recall(op, idx).to_ket().label
+            known_op = re.findall('#[a-zA-Z0-9\-_]+#', rule)
+            if len(known_op) > 0:
+                known_ops.append(known_op[0])
+        print('known_ops:', known_ops)
+
+        # learn our rules:
+        for idx in context.relevant_kets(op):
+            rule = context.recall(op, idx).to_ket().label
+            extracted_rule = extract_rule_text(rule)
+            print(extracted_rule)
+            for s in extracted_rule:
+                if len(s) > 1:  # we can't learn cause rules that are length 1, as this breaks our explain[cause] parsing
+                    name = prefix + idx.label + ': ' + s  # the name must be unique
+                    check_exists = context.recall('cause-' + idx.label, name)
+                    if len(check_exists) == 0:
+                        context.learn('cause-' + idx.label, name, ssplit(ket(s)))
+
+        for sentence in one:
+            print()
+            print(sentence.label)
+            split_sentence = ssplit(sentence)
+            match_triple = (None, None, None)
+            for idx in context.relevant_kets(op):
+                rule = context.recall(op, idx).to_ket().label
+                rule_ops = extract_rule_text(rule, on=False)
+                new_rule = rule
+                explain_sentences = fourth_explain(split_sentence, context, 'cause-' + idx.label)
+                for explain_sentence in explain_sentences:
+                    result_text, rule_match = extract_result_text(explain_sentence)
+                    if len(result_text) == len(rule_ops):
+                        for k, rule_op in enumerate(rule_ops):
+                            new_rule = new_rule.replace('#%s#' % rule_op, result_text[k].rstrip('.')) # hack until fix end of line . issue
+                        if new_rule == sentence.label:
+                            print(explain_sentence)
+                            print(result_text)
+                            print(rule_ops)
+                            print(rule_match)
+                            print(new_rule)
+                            print(len(explain_sentence))
+                            if match_triple[0] is None or len(explain_sentence) <= match_triple[0]:
+                                match_triple = (len(explain_sentence), result_text, rule_ops)
+            if match_triple[0] is not None:
+                print('----------')
+                for elt in match_triple:
+                    print(elt)
+                target = None
+                for k, rule_op in enumerate(match_triple[2]):
+                    if len(rule_op) == 0:
+                        target = match_triple[1][k]
+                        break # target is first match for '' rule_op
+                print(target)
+                if target is not None:
+                    for k, rule_op in enumerate(match_triple[2]):
+                        if len(rule_op) > 0:
+                            value = ket(match_triple[1][k].rstrip('.'))
+                            test_op = ''
+                            test_op = value.apply_op(context, 'is-valid-' + rule_op).to_ket().label # may want to switch this off!
+                            if len(test_op) == 0 or test_op == 'yes':
+                                value = words_to_sp(value)  # breaks numbers written as English, eg: |three hundred and forty five>
+                                context.add_learn(rule_op, target, value)
+                            else:
+                                print("'%s' is not a valid %s" % (value.label, rule_op))
+
+    except Exception as e:
+        print('process[rule] exception: %s' % e)
+    return ket('process')
