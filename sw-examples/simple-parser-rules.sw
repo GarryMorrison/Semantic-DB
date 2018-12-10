@@ -1,16 +1,21 @@
+-- define our classes:
 class |female name> => |Beth> + |Jane> + |Liz> + |Sarah> + |Emily> + |Emma> + |Bella> + |Madison> + |Mia> + |Judy>
 class |male name> => |Fred> + |Andrew> + |David> + |Frank> + |Tim> + |Sam> + |Ian> + |William> + |Nathan>
 class |name> => clean class (|female name> + |male name>)
 class |gender> => |male> + |female>
 class |birth sign> => |aries> + |taurus> + |gemini> + |cancer> + |leo> + |virgo> + |libra> + |scorpio> + |sagittarius> + |capricorn> + |aquarius> + |pisces>
+class |digit> => |0> + |1> + |2> + |3> + |4> + |5> + |6> + |7> + |8> + |9>
 
+-- verify an object has the right properties before we learn it:
+-- if not defined for an operator, then accept anything
 is-valid-gender |*> #=> is-mbr(|_self>, class |gender>)
 is-valid-mother |*> #=> is-mbr(|_self>, class |female name>)
 is-valid-father |*> #=> is-mbr(|_self>, class |male name>)
 is-valid-sister |*> #=> is-mbr(|_self>, class |female name>)
 is-valid-brother |*> #=> is-mbr(|_self>, class |male name>)
-is-valid-brothers |*> #=> is-subset(words-to-list |_self>, class |male name>)
+is-valid-brothers |*> #=> is-subset(clean words-to-list |_self>, class |male name>)
 is-valid-birth-sign |*> #=> is-mbr(to-lower |_self>, class |birth sign>)
+is-valid-number |*> #=> is-subset(clean split[""] |_self>, class |digit>)
 
 
 -- our simple parser rules:
@@ -38,7 +43,8 @@ rule |21> => |##'s parents are #parents#.>
 rule |22> => |##'s family is #family_1#.>
 rule |23> => |##'s family are #family_2#.>
 rule |24> => |##'s family and friends are #family-and-friends#.>
-rule |25> => |##'s email address is #email#.>
+rule |25> => |##'s email address is #email#>
+-- rule |25> => |##'s email address is #email#.>
 rule |26> => |##'s education level is #education#.>
 rule |27> => |##'s birth sign is #birth-sign#.>
 rule |28> => |## has #number-sibling# sibling.>
@@ -75,5 +81,9 @@ rule |52> => |this should be #buggy#.>
 rule |53> => |The ## sat on the #sat-on#, and turned into a #turned-into-a#.>
 rule |54> => |The ## sat on the #sat-on#, and turned into an #turned-into-an#.>
 
+rule |55> => |##'s email address is #email-name#@#email-domain#>
+rule |56> => |##'s email address is #email-name# -at- #email-domain#>
+
+rule |57> => |## S#season#E#episode#>
 
 p |*> #=> process[rule] |_self>

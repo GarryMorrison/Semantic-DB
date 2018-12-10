@@ -16,7 +16,8 @@ statement |14> => |George's siblings are Frank, Tim, Sam and Emily.>
 statement |15> => |George's parents are Sarah and David.>
 statement |16> => |George's family are Sarah, David, Frank, Tim, Sam and Emily.>
 statement |17> => |George's family and friends are Sarah, David, Frank, Tim, Sam, Emily, Fred, Jane, Liz and Andrew.>
-statement |18> => |George's email address is george.douglas@gmail.com.>
+statement |18> => |George's email address is george.douglas@gmail.com>
+-- statement |18> => |George's email address is george.douglas@gmail.com>
 statement |19> => |George's education level is high-school.>
 
 -- process those facts, and extract triples:

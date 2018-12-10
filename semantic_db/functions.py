@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 9/12/2018
+# Update: 10/12/2018
 # Copyright: GPLv3
 #
 # A collection of functions that apply to kets, superpositions and sequences.
@@ -9497,7 +9497,7 @@ def interpolate(one, context, op):
 # compound_table['process'] = ['apply_sp_fn', 'second_process', 'context']
 # compound_table['process'] = ['apply_sp_fn', 'third_process', 'context']
 # compound_table['process'] = ['apply_sp_fn', 'fourth_process', 'context']
-compound_table['process'] = ['apply_sp_fn', 'fifth_process', 'context']
+# compound_table['process'] = ['apply_sp_fn', 'fifth_process', 'context']
 # set usage info:
 function_operators_usage['process'] = """
     description:
@@ -9877,7 +9877,7 @@ def fifth_process(one, context, op):
             extracted_rule = extract_rule_text(rule)
             print(extracted_rule)
             for s in extracted_rule:
-                if len(s) > 1:  # we can't learn cause rules that are length 1, as this breaks our explain[cause] parsing
+                if len(s) > 0:  # we can't learn cause rules that are length 1, as this breaks our explain[cause] parsing
                     name = prefix + idx.label + ': ' + s  # the name must be unique
                     check_exists = context.recall('cause-' + idx.label, name)
                     if len(check_exists) == 0:
@@ -9897,7 +9897,8 @@ def fifth_process(one, context, op):
                     result_text, rule_match = extract_result_text(explain_sentence)
                     if len(result_text) == len(rule_ops):
                         for k, rule_op in enumerate(rule_ops):
-                            new_rule = new_rule.replace('#%s#' % rule_op, result_text[k].rstrip('.')) # hack until fix end of line . issue
+                            # new_rule = new_rule.replace('#%s#' % rule_op, result_text[k].rstrip('.')) # hack until fix end of line . issue
+                            new_rule = new_rule.replace('#%s#' % rule_op, result_text[k])
                         if new_rule == sentence.label:
                             print(explain_sentence)
                             print(result_text)
@@ -9920,7 +9921,8 @@ def fifth_process(one, context, op):
                 if target is not None:
                     for k, rule_op in enumerate(match_triple[2]):
                         if len(rule_op) > 0:
-                            value = ket(match_triple[1][k].rstrip('.'))
+                            # value = ket(match_triple[1][k].rstrip('.'))
+                            value = ket(match_triple[1][k])
                             test_op = ''
                             test_op = value.apply_op(context, 'is-valid-' + rule_op).to_ket().label # may want to switch this off!
                             if len(test_op) == 0 or test_op == 'yes':
@@ -9932,3 +9934,147 @@ def fifth_process(one, context, op):
     except Exception as e:
         print('process[rule] exception: %s' % e)
     return ket('process')
+
+
+compound_table['process'] = ['apply_sp_fn', 'sixth_process', 'context']
+def sixth_process(one, context, op):
+
+    def extract_rule_text(t, on=True):
+        s = ''
+        r = []
+        for c in t:
+            if c == '#':
+                on = not on
+                if not on:
+                    r.append(s)
+                    s = ''
+                continue
+            if on:
+                s += c
+        if len(s) > 0:
+            r.append(s)
+        return r
+
+    def split_substring(s, substr, previous_head=''):
+        if substr == '':
+            return []
+        split_s = s.split(substr, maxsplit=1)
+        if len(split_s) == 1:
+            return []
+        r = []
+        head, tail = split_s
+        if previous_head != '':
+            head = previous_head + substr + head
+        r.append([head, tail])
+        r += split_substring(tail, substr, head)
+        return r
+
+    def split_string(s, rule):
+        substr = rule[0]
+        if substr == '' and len(rule) > 1:
+            return split_string(s, rule[1:])
+        r = []
+        for head, tail in split_substring(s, substr):
+            # print(head)
+            # print(tail)
+            # print()
+            if len(rule) <= 1:
+                r.append([head, tail])
+            else:
+                for new_tail in split_string(tail, rule[1:]):
+                    r.append([head] + new_tail)
+        return r
+
+    def print_parsed_text(r):
+        for line in r:
+            print(line)
+
+    try:
+        rules = {}
+        operators = {}
+        # learn our rules:
+        for idx in context.relevant_kets(op):
+            rule = context.recall(op, idx).to_ket().label
+            extracted_rule = extract_rule_text(rule)
+            extracted_ops = extract_rule_text(rule, on=False)
+            print(extracted_rule)
+            rules[idx.label] = extracted_rule
+            operators[idx.label] = extracted_ops
+        print(rules)
+        print(operators)
+
+        for sentence in one:
+            print(sentence.label)
+            matching_text = {}
+            min_len = math.inf
+            for idx, rule in rules.items():
+                # print(rule)
+                parsed_text = split_string(sentence.label, rule)
+                if len(parsed_text) > 0:
+                    print(len(parsed_text))
+                    print_parsed_text(parsed_text)
+                    matching_text[idx] = parsed_text
+                    new_min_len = min( len(''.join(text)) for text in parsed_text)
+                    min_len = min(min_len, new_min_len)
+            print('min_len:', min_len)
+
+            # filter to those of length min_len and valid operator type:
+            match_count = 0
+            new_matching_text = {}
+            for idx, parsed_text in matching_text.items():
+                for text in parsed_text:
+                    valid = True
+                    if text[0] == '':       # just a hack for now to remove preceding and trailing ''
+                        text = text[1:]
+                    if text[-1] == '':
+                        text = text[:-1]
+                    if len(text) != len(operators[idx]): # check text and operators are the same length
+                        print('bug!')
+                        valid = False
+                    if len(''.join(text)) == min_len:  # filter to those of min_len
+
+                        for k, rule_op in enumerate(operators[idx]):
+                            if rule_op != '':
+                                value = ket(text[k])
+                                test_op = value.apply_op(context, 'is-valid-' + rule_op).to_ket().label # may want to switch this off
+                                if len(test_op) > 0 and test_op != 'yes':  # filter to those of valid type
+                                    valid = False
+                                    break
+                        if valid:
+                            if idx not in new_matching_text:
+                                new_matching_text[idx] = []
+                            new_matching_text[idx].append(text)
+                            match_count += 1
+
+            # print out new matching_results:
+            for idx, parsed_text in new_matching_text.items():
+                for text in parsed_text:
+                    print('%s: %s' % (idx, text))
+                    print('%s: %s' % (idx, operators[idx]))
+            print('match_count:', match_count)
+
+            # now learn target:
+            target = None
+            for idx, parsed_text in new_matching_text.items():
+                for text in parsed_text:
+                    for k, rule_op in enumerate(operators[idx]):
+                        if rule_op == '':
+                            target = text[k]
+                            break
+                    break
+                break
+            print('target:', target)
+
+            # now learn the first matching rule:
+            for idx, parsed_text in new_matching_text.items():
+                for text in parsed_text:
+                    for k, rule_op in enumerate(operators[idx]):
+                        if rule_op != '':
+                            value = words_to_sp(ket(text[k]))
+                            context.add_learn(rule_op, target, value)
+                    break
+                break
+        return ket('process')
+
+    except Exception as e:
+        print('process[rule] exception:', e)
