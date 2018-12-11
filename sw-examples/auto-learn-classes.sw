@@ -14,7 +14,7 @@ seed-statement |1> => |Mary moved to the bathroom>
 process-a-statement |*> #=> smerge[" "] then explain[pattern] ssplit[" "] seed-statement |_self>
 
 -- now apply it:
-|null> => map[process-a-statement, processed-statement] seed-statement rel-kets[seed-statement] |>
+|null> => map[process-a-statement, processed-statement] rel-kets[seed-statement] |>
 
 
 

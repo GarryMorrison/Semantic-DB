@@ -10096,10 +10096,10 @@ def sixth_process(one, context, op):
 
 
 compound_table['class-to-if-then-machine'] = ['apply_naked_fn', 'class_to_if_then', 'context']
-def class_to_if_then(context, op1, op2):
+def class_to_if_then(context, op1, op2, op3):
     try:
         max_node_idx = 0
-        for node in context.relevant_kets(op1):
+        for node in context.relevant_kets(op2):
             if node.label.startswith('node: '):
                 try:
                     node_idx = node.label[6:].split(': ')[0]
@@ -10108,19 +10108,19 @@ def class_to_if_then(context, op1, op2):
                 except:
                     continue
         print('max node idx:', max_node_idx)
-        context.learn(op2, '*', stored_rule('|_self>'))
-        for object_class in context.relevant_kets('class'):
+        context.learn(op3, '*', stored_rule('|_self>'))
+        for object_class in context.relevant_kets(op1):
             print('object class:', object_class.label)
             max_node_idx += 1
             k = 0
-            for x in context.recall('class', object_class).to_sp():
+            for x in context.recall(op1, object_class).to_sp():
                 print(x)
                 k += 1
                 node = 'node: %s: %s' % (max_node_idx, k)
-                context.learn(op1, node, x)
+                context.learn(op2, node, x)
             node = 'node: %s: *' % max_node_idx
             value = '#%s#' % object_class.label
-            context.learn(op2, node, value)
+            context.learn(op3, node, value)
 
     except Exception as e:
         print('class-to-if-then-machine[pattern, then] exception:', e)
