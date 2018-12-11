@@ -16,6 +16,8 @@ is-valid-brother |*> #=> is-mbr(|_self>, class |male name>)
 is-valid-brothers |*> #=> is-subset(clean words-to-list |_self>, class |male name>)
 is-valid-birth-sign |*> #=> is-mbr(to-lower |_self>, class |birth sign>)
 is-valid-number |*> #=> is-subset(clean split[""] |_self>, class |digit>)
+is-valid-season |*> #=> is-subset(clean split[""] |_self>, class |digit>)
+is-valid-episode |*> #=> is-subset(clean split[""] |_self>, class |digit>)
 
 
 -- our simple parser rules:
@@ -78,12 +80,14 @@ rule |50> => |## is #first#, #second#, #third# and #fourth#.>
 rule |51> => |## is #first#, #second#, #third#, #fourth# and #fifth#.>
 
 rule |52> => |this should be #buggy#.>
-rule |53> => |The ## sat on the #sat-on#, and turned into a #turned-into-a#.>
-rule |54> => |The ## sat on the #sat-on#, and turned into an #turned-into-an#.>
+rule |53> => |The ## sat on the #sat-on# and turned into a #turned-into-a#.>
+rule |54> => |The ## sat on the #sat-on# and turned into an #turned-into-an#.>
 
 rule |55> => |##'s email address is #email-name#@#email-domain#>
 rule |56> => |##'s email address is #email-name# -at- #email-domain#>
 
 rule |57> => |## S#season#E#episode#>
+rule |58> => |## S#season#E#episode# #trailing-text#>
+rule |59> => |The #dog-adjective# dog>
 
 p |*> #=> process[rule] |_self>

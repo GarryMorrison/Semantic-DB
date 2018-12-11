@@ -10066,14 +10066,25 @@ def sixth_process(one, context, op):
             print('target:', target)
 
             # now learn the first matching rule:
-            for idx, parsed_text in new_matching_text.items():
-                for text in parsed_text:
-                    for k, rule_op in enumerate(operators[idx]):
-                        if rule_op != '':
-                            value = words_to_sp(ket(text[k]))
-                            context.add_learn(rule_op, target, value)
+            if target is not None:
+                for idx, parsed_text in new_matching_text.items():
+                    for text in parsed_text:
+                        for k, rule_op in enumerate(operators[idx]):
+                            if rule_op != '':
+                                value = words_to_sp(ket(text[k]))
+                                context.add_learn(rule_op, target, value)
+                        break
                     break
-                break
+
+            else:  # if no target, then treat it as a class:
+                for idx, parsed_text in new_matching_text.items():
+                    for text in parsed_text:
+                        for k, rule_op in enumerate(operators[idx]):
+                            if rule_op != '':
+                                # value = words_to_sp(ket(text[k]))
+                                value = text[k]
+                                context.add_learn('class', rule_op, value)
+
         return ket('process')
 
     except Exception as e:
