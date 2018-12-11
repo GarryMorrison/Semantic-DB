@@ -9992,18 +9992,23 @@ def sixth_process(one, context, op):
     try:
         rules = {}
         operators = {}
-        # learn our rules:
+        # learn our rules and operators:
         for idx in context.relevant_kets(op):
             rule = context.recall(op, idx).to_ket().label
             extracted_rule = extract_rule_text(rule)
             extracted_ops = extract_rule_text(rule, on=False)
-            print(extracted_rule)
             rules[idx.label] = extracted_rule
             operators[idx.label] = extracted_ops
+            print(extracted_rule)
+            # print(extracted_ops)
+        print('\nrules:')
         print(rules)
+        print('\noperators:')
         print(operators)
 
         for sentence in one:
+            # print('sentence:', sentence.label)
+            print()
             print(sentence.label)
             matching_text = {}
             min_len = math.inf
@@ -10011,10 +10016,10 @@ def sixth_process(one, context, op):
                 # print(rule)
                 parsed_text = split_string(sentence.label, rule)
                 if len(parsed_text) > 0:
-                    print(len(parsed_text))
+                    print('len parsed_text:', len(parsed_text))
                     print_parsed_text(parsed_text)
                     matching_text[idx] = parsed_text
-                    new_min_len = min( len(''.join(text)) for text in parsed_text)
+                    new_min_len = min(len(''.join(text)) for text in parsed_text)
                     min_len = min(min_len, new_min_len)
             print('min_len:', min_len)
 
@@ -10024,20 +10029,19 @@ def sixth_process(one, context, op):
             for idx, parsed_text in matching_text.items():
                 for text in parsed_text:
                     valid = True
-                    if text[0] == '':       # just a hack for now to remove preceding and trailing ''
+                    if text[0] == '':       # remove preceding and trailing ''
                         text = text[1:]
                     if text[-1] == '':
                         text = text[:-1]
-                    if len(text) != len(operators[idx]): # check text and operators are the same length
+                    if len(text) != len(operators[idx]):  # check text and operators are the same length
                         print('bug!')
                         valid = False
-                    if len(''.join(text)) == min_len:  # filter to those of min_len
-
-                        for k, rule_op in enumerate(operators[idx]):
+                    if len(''.join(text)) == min_len:                 # filter to those of min_len
+                        for k, rule_op in enumerate(operators[idx]):  # filter to those of valid type
                             if rule_op != '':
                                 value = ket(text[k])
-                                test_op = value.apply_op(context, 'is-valid-' + rule_op).to_ket().label # may want to switch this off
-                                if len(test_op) > 0 and test_op != 'yes':  # filter to those of valid type
+                                test_op = value.apply_op(context, 'is-valid-' + rule_op).to_ket().label  # may want to switch this off
+                                if len(test_op) > 0 and test_op != 'yes':
                                     valid = False
                                     break
                         if valid:
@@ -10085,7 +10089,40 @@ def sixth_process(one, context, op):
                                 value = text[k]
                                 context.add_learn('class', rule_op, value)
 
-        return ket('process')
-
     except Exception as e:
         print('process[rule] exception:', e)
+
+    return ket('process')
+
+
+compound_table['class-to-if-then-machine'] = ['apply_naked_fn', 'class_to_if_then', 'context']
+def class_to_if_then(context, op1, op2):
+    try:
+        max_node_idx = 0
+        for node in context.relevant_kets(op1):
+            if node.label.startswith('node: '):
+                try:
+                    node_idx = node.label[6:].split(': ')[0]
+                    node_idx = int(node_idx)
+                    max_node_idx = max(max_node_idx, node_idx)
+                except:
+                    continue
+        print('max node idx:', max_node_idx)
+        context.learn(op2, '*', stored_rule('|_self>'))
+        for object_class in context.relevant_kets('class'):
+            print('object class:', object_class.label)
+            max_node_idx += 1
+            k = 0
+            for x in context.recall('class', object_class).to_sp():
+                print(x)
+                k += 1
+                node = 'node: %s: %s' % (max_node_idx, k)
+                context.learn(op1, node, x)
+            node = 'node: %s: *' % max_node_idx
+            value = '#%s#' % object_class.label
+            context.learn(op2, node, value)
+
+    except Exception as e:
+        print('class-to-if-then-machine[pattern, then] exception:', e)
+
+    return ket('class-to-if-then-machine')

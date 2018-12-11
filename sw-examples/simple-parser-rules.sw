@@ -88,6 +88,12 @@ rule |56> => |##'s email address is #email-name# -at- #email-domain#>
 
 rule |57> => |## S#season#E#episode#>
 rule |58> => |## S#season#E#episode# #trailing-text#>
+
 rule |59> => |The #dog-adjective# dog>
+rule |60> => |The #adjective# ## sat upon the #sat-on#.>
+rule |61> => |The #adjective#, #adjective# ## sat upon the #sat-on#.>
+rule |62> => |The #adjective#, #adjective#, #adjective# ## sat upon the #sat-on#.>
+
+rule |63> => |The ## list is #list-of#>
 
 p |*> #=> process[rule] |_self>
