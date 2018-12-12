@@ -4,13 +4,13 @@ class |MOVEMENT> => |moved>
 class |PLACE> => |bathroom>
 
 -- our seed statements:
-seed-statement |0> => |Mary moved back to the bathroom>
-seed-statement |1> => |Mary moved to the bathroom>
+seed-statement |0> => |Mary moved to the bathroom>
+seed-statement |1> => |Mary moved back to the bathroom>
 
 -- classes to if-then machines:
 |null> => class-to-if-then-machine[class, pattern, then] |>
 
--- process our statements:
+-- process our seed statements:
 process-a-statement |*> #=> smerge[" "] then explain[pattern] ssplit[" "] seed-statement |_self>
 
 -- now apply it:
@@ -30,5 +30,5 @@ statement |9> => |John went back to the garden>
 statement |10> => |John moved to the bedroom>
 
 -- now auto learn classes:
-|null> => process[processed-statement] statement rel-kets[statement] |>
+|null> => process[processed-statement, class] statement rel-kets[statement] |>
 

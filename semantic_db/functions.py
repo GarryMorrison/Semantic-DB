@@ -9937,7 +9937,7 @@ def fifth_process(one, context, op):
 
 
 compound_table['process'] = ['apply_sp_fn', 'sixth_process', 'context']
-def sixth_process(one, context, op):
+def sixth_process(one, context, op, class_op='class'):
 
     def extract_rule_text(t, on=True):
         s = ''
@@ -10034,7 +10034,7 @@ def sixth_process(one, context, op):
                     if text[-1] == '':
                         text = text[:-1]
                     if len(text) != len(operators[idx]):  # check text and operators are the same length
-                        print('bug!')
+                        # print('bug!')
                         valid = False
                     if len(''.join(text)) == min_len:                 # filter to those of min_len
                         for k, rule_op in enumerate(operators[idx]):  # filter to those of valid type
@@ -10087,7 +10087,7 @@ def sixth_process(one, context, op):
                             if rule_op != '':
                                 # value = words_to_sp(ket(text[k]))
                                 value = text[k]
-                                context.add_learn('class', rule_op, value)
+                                context.add_learn(class_op, rule_op, value)
 
     except Exception as e:
         print('process[rule] exception:', e)
@@ -10096,10 +10096,10 @@ def sixth_process(one, context, op):
 
 
 compound_table['class-to-if-then-machine'] = ['apply_naked_fn', 'class_to_if_then', 'context']
-def class_to_if_then(context, op1, op2, op3):
+def class_to_if_then(context, class_op, pattern_op, then_op):
     try:
         max_node_idx = 0
-        for node in context.relevant_kets(op2):
+        for node in context.relevant_kets(pattern_op):
             if node.label.startswith('node: '):
                 try:
                     node_idx = node.label[6:].split(': ')[0]
@@ -10108,19 +10108,19 @@ def class_to_if_then(context, op1, op2, op3):
                 except:
                     continue
         print('max node idx:', max_node_idx)
-        context.learn(op3, '*', stored_rule('|_self>'))
-        for object_class in context.relevant_kets(op1):
+        context.learn(then_op, '*', stored_rule('|_self>'))
+        for object_class in context.relevant_kets(class_op):
             print('object class:', object_class.label)
             max_node_idx += 1
             k = 0
-            for x in context.recall(op1, object_class).to_sp():
+            for x in context.recall(class_op, object_class).to_sp():
                 print(x)
                 k += 1
                 node = 'node: %s: %s' % (max_node_idx, k)
-                context.learn(op2, node, x)
+                context.learn(pattern_op, node, x)
             node = 'node: %s: *' % max_node_idx
             value = '#%s#' % object_class.label
-            context.learn(op3, node, value)
+            context.learn(then_op, node, value)
 
     except Exception as e:
         print('class-to-if-then-machine[pattern, then] exception:', e)
