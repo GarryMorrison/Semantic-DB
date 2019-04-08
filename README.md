@@ -1,4 +1,4 @@
-The Semantic DB is an experimental/toy language that borrows the idea of [kets, superpositions and operators](https://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation) from quantum mechanics and makes something of 
+The Semantic DB is an experimental language that borrows the idea of [kets, superpositions and operators](https://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation) from quantum mechanics and makes something of 
 a programming language out of it. In its current form it is not a general purpose programming language, but may have relevance in the domain of the 
 [semantic web](https://en.wikipedia.org/wiki/Semantic_Web). Our [sw files](http://semantic-db.org/sw/) make great little packages of [knowledge](https://en.wikipedia.org/wiki/Knowledge_representation_and_reasoning) that are easy to pass around the internet. 
 
