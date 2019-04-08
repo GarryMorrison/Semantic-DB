@@ -54,6 +54,7 @@ There is much more to this experimental language, which we call mumble lang. Som
  * [Our usage info for the predict operator](http://semantic-db.org/docs/usage/function-operators/predict.html).
  * [Our worked example for the if-then machine, a simple model of a neuron](http://semantic-db.org/docs/usage/worked-examples/if-then-machines.html).
  * [Our worked example 'active logic' using if-then machines](http://semantic-db.org/docs/usage/worked-examples/active-logic.html).
+ * [Our worked example 'walking ant'](http://semantic-db.org/docs/usage/worked-examples/walking-ant.html).
  * [Our current collection of documentation for operators, sw examples, and worked examples](http://semantic-db.org/docs/usage/).
 
 To run the code, simply:  
