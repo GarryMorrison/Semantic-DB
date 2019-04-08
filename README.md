@@ -49,6 +49,8 @@ There is much more to this experimental language, which we call mumble lang. Som
  * [A collection of rules that define plurals and their inverse](http://semantic-db.org/docs/usage/sw-examples/plural.sw).
  * [A collection of rules that define a family tree](http://semantic-db.org/docs/usage/sw-examples/family.sw).
  * [A collection of rules that can conclude family structures using that family tree](http://semantic-db.org/docs/usage/sw-examples/family-relations.sw).
+ * [Our usage info for the similar-input operator](http://semantic-db.org/docs/usage/function-operators/similar-input.html).
+ * [Our usage info for the find-topic operator](http://semantic-db.org/docs/usage/function-operators/find-topic.html).
  * [Our worked example for the if-then machine, a simple model of a neuron](http://semantic-db.org/docs/usage/worked-examples/if-then-machines.html).
  * [Our worked example 'active logic' using if-then machines](http://semantic-db.org/docs/usage/worked-examples/active-logic.html).
  * [Our current collection of documentation for operators, sw examples, and worked examples](http://semantic-db.org/docs/usage/).
