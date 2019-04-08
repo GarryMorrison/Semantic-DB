@@ -46,11 +46,11 @@ Or the first few digits of Pi:
 
 
 There is much more to this experimental language, which we call mumble lang. Some for examples:
- * A collection of rules that define plurals and their inverse: http://semantic-db.org/docs/usage/sw-examples/plural.sw
- * A collection of rules that define a family tree: http://semantic-db.org/docs/usage/sw-examples/family.sw
- * A collection of rules that can conclude family structures using that family tree: http://semantic-db.org/docs/usage/sw-examples/family-relations.sw
- * Our worked example for the if-then machine, a simple model of a neuron: http://semantic-db.org/docs/usage/worked-examples/if-then-machines.html
- * Our current collection of documentation for operators, sw examples, and worked examples: http://semantic-db.org/docs/usage/
+ * [A collection of rules that define plurals and their inverse](http://semantic-db.org/docs/usage/sw-examples/plural.sw).
+ * [A collection of rules that define a family tree](http://semantic-db.org/docs/usage/sw-examples/family.sw).
+ * [A collection of rules that can conclude family structures using that family tree](http://semantic-db.org/docs/usage/sw-examples/family-relations.sw).
+ * [Our worked example for the if-then machine, a simple model of a neuron](http://semantic-db.org/docs/usage/worked-examples/if-then-machines.html).
+ * [Our current collection of documentation for operators, sw examples, and worked examples](http://semantic-db.org/docs/usage/).
 
 To run the code, simply:  
 `$ ./sdb-console.py`
