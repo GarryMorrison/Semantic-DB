@@ -19,12 +19,12 @@ The power of our superpositions is that they can flexibly represent a variety of
 Briefly we will mention sequences. They are a time ordered sequence of superpositions. For example, "sp1 . sp2 . sp3" represents the time evolution of superpositon sp1, followed by superposition sp2, followed by superposition sp3. For example, the spelling of the name "Fred" or `|Fred>` is `|F> . |r> . |e> . |d>`. The first few digits of Pi are `|3> . |.> . |1> . |4> . |1> . |5>`. And so on. We can represent many things using only superpositions, but sometimes we need a notion of time, or order, and that is when we use sequences. Again though, the fundamental element in a sequence is the ket.
 
 The next component in mumble is the operator. The simplest type of operator is linear, and maps one ket to another ket. If we consider a graph with nodes and directed labelled links between those nodes, then in our notation nodes are kets, and directed links are operators. For example if we have the node `|Fred>` and the node `|47>` in a graph, with a directed arrow labelled "age" linking them, then we call "age" an operator. We define an operator using the notation:  
-`age |Fred> => |47>`
+`age |Fred> => |47>`  
 If that didn't make sense, visually this is: 
 ![Fred age 47](https://raw.githubusercontent.com/GarryMorrison/Semantic-DB/master/graph-examples/fred.png)
 
 Further, the right hand side can also be a superposition, in this case a list of Fred's friends:  
-`friends |Fred> => |Sam> + |Mary> + |Matt> + |Sarah>`
+`friends |Fred> => |Sam> + |Mary> + |Matt> + |Sarah>`  
 Which visually is this:
 ![Fred's friends](https://raw.githubusercontent.com/GarryMorrison/Semantic-DB/master/graph-examples/fred-friends.png)
 
@@ -137,11 +137,11 @@ sa: table[person, mother, father] the-list-of |people>
 ```
 
 Now we have a couple of comments to make on this. First is the idea of context. It often happens that knowledge changes depending on context, so we needed some way to handle that. And hence the special context learn rule:  
-`|context> => |context: some context>`
+`|context> => |context: some context>`  
 This defines the context for the learn rules that follow it. And all rules in one context are fully independent of learn rules in all other contexts. Anyway, just a neat way to partition knowledge into domains.
 
 Next comment is that, if you missed it, operators can be composed into operator sequences. For example we just gave the example of the mother of Sally's father is:  
-`mother father |sally>`
+`mother father |sally>`  
 Another example might be the question "Who are the friends of the friends of Fred?", in the console would simply be:  
 `sa: friend friend |Fred>`   
 Or "What are the ages of the friends of Fred?", in the console would be:  
@@ -205,12 +205,10 @@ Further, a feline is a mammal, and a mammal is an animal:
 `sa: inherit |mammal> => |animal>`
 
 Now learn some facts about animals, such as they have fur, teeth, 2 eyes and 4 legs:  
-```
-sa: has-fur |animal> => |yes>
-sa: has-teeth |animal> => |yes>
-sa: has-2-eyes |animal> => |yes>
-sa: has-4-legs |animal> => |yes>
-```
+`sa: has-fur |animal> => |yes>`  
+`sa: has-teeth |animal> => |yes>`  
+`sa: has-2-eyes |animal> => |yes>`  
+`sa: has-4-legs |animal> => |yes>`
 
 Now learn that feline's have pointy ears:  
 `sa: has-pointy-ears |feline> => |yes>`
@@ -243,11 +241,11 @@ has-4-legs |animal> => |yes>
 ----------------------------------------
 ```
 
-Now we use the inherit operator to ask a bunch of questions:
-Does Trudy have teeth?
-Has pointy ears?
-Has fur?
-Has 2 eyes?
+Now we use the inherit operator to ask a bunch of questions:  
+Does Trudy have teeth?  
+Has pointy ears?  
+Has fur?  
+Has 2 eyes?  
 Has 4 legs?
 
 ```
@@ -269,67 +267,3 @@ sa: inherit[has-4-legs] |trudy>
 Which returns the expected answers.
 
 There is much, much more to mumble, but this will serve as an introduction.
-
-
-
-
-
-
-
-
-
-
-
-
-
-Operators have the useful property that they can be composed. We call these things operator sequences, and are similar to how the pipe works on the unix command line. For example, "the friends of the friends of Fred" 
- 
-
-We mentioned our operators defined this way are linear. What do we mean by that?
-Consider this knowledge:
-age |Fred> => |47>
-age |Sam> => |33>
-age |Emma> => |29>
-age |Liz> => |33>
-
-Then if we ask:
-age (|Fred> + |Sam> + |Emma> + |Liz)
-this evaluates to:
-age |Fred> + age |Sam> + age |Emma> + age |Liz>
-which evaluates to:
-|47> + |33> + |29> + |33>
-which evaluates to:
-|47> + 2|33> + |29>
-
-Or more generally:
-op |x> => sp1
-op |y> => sp2
-op |z> => sp3
-Then:
-op (|x> + |y> + |z>)
-evaluates to:
-sp1 + sp2 + sp3
-
-
-operator sequences
-using the console
-is-a, exp[]
-context,
-inherit,
-similar-input,
-
-
-In semantic web terms this is essentially a semantic triple. For example, "Bob knows John" in RDF can be represented as:
-http://example.name#BobSmith12 http://xmlns.com/foaf/0.1/knows http://example.name#JohnDoe34
-In our more compact notation:
-knows |Bob> => |John>
-
-
-But further, our notation is more flexible than RDF in that the right hand side can also be a superposition or sequence:
-friends |Bob> => |John> + |Rob> + |Emma> + |Liz>
-spelling |Bob> => |B> . |o> . |b>
-This is more difficult to represent using more traditional notation for semantic triples.
-And in the context of graphs:
-friends |Bob> => |John> + |Rob> + |Emma> + |Liz>
-is a series of directed links, labelled with "friends" that link the node |Bob> with |John>, |Rob>, |Emma> and |Liz>.
-
