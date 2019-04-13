@@ -157,7 +157,7 @@ sa: reset
 
   Gone ...
 ```
-Set the sw directory:
+Set the sw directory:  
 `sa: cd sw-examples`
 
 Now load our knowledge of plurals:
@@ -190,8 +190,7 @@ And so on.
 
 
 The final idea I want to demonstrate is the inherit operator. The idea is that you can define an object to inherit properties from a parent object.
-Let's work through a simple example. Consider our favourite cat Trudy, who is so old she lost her teeth, but otherwise is a standard cat.  
-Let's define our context as "Trudy the cat":  
+Let's work through a simple example. Consider our favourite cat Trudy, who is so old she lost her teeth, but otherwise is a standard cat. Let's define our context as "Trudy the cat":  
 `sa: |context> => |context: Trudy the cat>`
 
 Let's say Trudy is a type of cat:  
