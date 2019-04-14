@@ -1,9 +1,14 @@
+The Semantic DB
+===============
+
 The Semantic DB is an experimental language that borrows the idea of [kets, superpositions and operators](https://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation) from quantum mechanics and makes something of a programming language out of it. In its current form it is not a general purpose programming language, but may have relevance in the domain of the [semantic web](https://en.wikipedia.org/wiki/Semantic_Web). Our [sw files](http://semantic-db.org/sw/) make great little packages of [knowledge](https://en.wikipedia.org/wiki/Knowledge_representation_and_reasoning) that are easy to pass around the internet.
 
 The central idea of our language, which we call mumble-lang, is to reduce everything down to kets and operators. Don't be afraid though, no knowledge of quantum mechanics is required to understand mumble! Ket's may initially look strange, but they are really just float, string pairs combined with a few mathematical properties. The advantage of kets is their ability to represent nodes, sets, lists, vectors, superpositions, sequences all with the same notation.
 
+## Kets
 A string, or object, or node in a graph such as "Fred" is simply the ket `|Fred>`. Likewise, "Sam Roberts" is the ket `|Sam Roberts>`. Indeed, the so called ket label can be any string that does not contain the `| < >` characters. But a ket is slightly more general than a string label, it also has an associated coefficient. For example the tuple `(3, "apple")` in our notation is the ket `3|apple>`, which in the context of a shopping list corresponds to 3 apples, naturally enough. While the tuple `(0.2, "hungry")`, has the corresponding ket `0.2|hungry>`, which can be interpreted as 20% hungry, or "a little bit hungry". That is all a ket is, a notation to represent a float, string pair, that looks a little bit like quantum mechanics.
 
+## Superpositions
 They get more interesting when we build "superpositions" of them, where a superposition is a linear combination of kets. That is, our kets add in a natural way. It is not immediately clear what addition means for tuples of float, string pairs, using kets it is more obvious. For example `(3, "apple") + (2, "apple")` is not as intuitive as `3|apple> + 2|apple>` equals `5|apple>`. And `(1, "Sam") + (1, "Mary") + (1, "Matt") + (1, "Sarah")` is not as concise as `|Sam> + |Mary> + |Matt> + |Sarah>`.
 
 The power of our superpositions is that they can flexibly represent a variety of things such as:  
@@ -16,8 +21,10 @@ The power of our superpositions is that they can flexibly represent a variety of
  * "a little bit hungry, very tired, and somewhat upset" as `0.2|hungry> + 0.9|tired> + 0.5|upset>`
  * Or something more abstract such as the superposition: `|a> + 0.5|b> + 2.2|c> + |d>`
 
+## Sequences
 Briefly we will mention sequences. They are a time ordered sequence of superpositions. For example, "sp1 . sp2 . sp3" represents the time evolution of superpositon sp1, followed by superposition sp2, followed by superposition sp3. For example, the spelling of the name "Fred" or `|Fred>` is `|F> . |r> . |e> . |d>`. The first few digits of Pi are `|3> . |.> . |1> . |4> . |1> . |5>`. And so on. We can represent many things using only superpositions, but sometimes we need a notion of time, or order, and that is when we use sequences. Again though, the fundamental element in a sequence is the ket.
 
+## Operators
 The next component in mumble is the operator. The simplest type of operator is linear, and maps one ket to another ket. If we consider a graph with nodes and directed labelled links between those nodes, then in our notation nodes are kets, and directed links are operators. For example if we have the node `|Fred>` and the node `|47>` in a graph, with a directed arrow labelled "age" linking them, then we call "age" an operator. We define an operator using the notation:  
 `age |Fred> => |47>`  
 If that didn't make sense, visually this is: 
@@ -46,6 +53,7 @@ father |mike> => |mark>
 Which directly maps to this graph:
 ![mother father graph](https://raw.githubusercontent.com/GarryMorrison/Semantic-DB/master/graph-examples/mother-father.dot.png)
 
+## The SDB Console
 
 Now we have a little bit of knowledge, what can we do with it? Well, we have a console where we can type in or load .sw files, and then enter queries:
 ```
@@ -136,10 +144,12 @@ sa: table[person, mother, father] the-list-of |people>
 +--------+--------+--------+
 ```
 
+## Context
 Now we have a couple of comments to make on this. First is the idea of context. It often happens that knowledge changes depending on context, so we needed some way to handle that. And hence the special context learn rule:  
 `|context> => |context: some context>`  
 This defines the context for the learn rules that follow it. And all rules in one context are fully independent of learn rules in all other contexts. Anyway, just a neat way to partition knowledge into domains.
 
+## Operator sequences
 Next comment is that, if you missed it, operators can be composed into operator sequences. For example we just gave the example of the mother of Sally's father is:  
 `mother father |sally>`  
 Another example might be the question "Who are the friends of the friends of Fred?", in the console would simply be:  
@@ -147,7 +157,7 @@ Another example might be the question "Who are the friends of the friends of Fre
 Or "What are the ages of the friends of Fred?", in the console would be:  
 `sa: age friend |Fred>`
 
-
+# Plurals
 While still in the console, let's demonstrate loading a .sw file. Consider our [sw file of plurals](https://github.com/GarryMorrison/Semantic-DB/blob/master/sw-examples/plural.sw).
 First reset the console back to an empty state:
 ```
@@ -188,7 +198,7 @@ sa: inverse-plural |mice>
 ```
 And so on.
 
-
+## Inherit operator
 The final idea I want to demonstrate is the inherit operator. The idea is that you can define an object to inherit properties from a parent object.
 Let's work through a simple example. Consider our favourite cat Trudy, who is so old she lost her teeth, but otherwise is a standard cat. Let's define our context as "Trudy the cat":  
 `sa: |context> => |context: Trudy the cat>`
@@ -265,4 +275,39 @@ sa: inherit[has-4-legs] |trudy>
 ```
 Which returns the expected answers.
 
-There is much, much more to mumble, but this will serve as an introduction.
+## Conclusion
+There is much, much more to mumble, but this will serve as an introduction. The goal of mumble is to be a concise language that contributes towards creating a [Giant Global Graph](https://en.wikipedia.org/wiki/Giant_Global_Graph), with nodes passing around, and processing [sw files](https://github.com/GarryMorrison/Semantic-DB/tree/master/sw-examples), in a distributed semantic computation. Or more speculatively, a mathematical notation for describing (simple) neural circuits, where the ket label is a label for a neuron or synapse, the coefficient corresponds to the activity of that neuron or synapse over some small time window, superpositions represent the currently active neurons/synapses, and operators change the state of the neural circuit.
+
+## Further reading
+ * [A collection of rules that define plurals and their inverse](http://semantic-db.org/docs/usage/sw-examples/plural.sw).
+ * [A collection of rules that define a family tree](http://semantic-db.org/docs/usage/sw-examples/family.sw).
+ * [A collection of rules that can conclude family structures using that family tree](http://semantic-db.org/docs/usage/sw-examples/family-relations.sw).
+ * [Our usage info for the similar-input operator](http://semantic-db.org/docs/usage/function-operators/similar-input.html).
+ * [Our usage info for the find-topic operator](http://semantic-db.org/docs/usage/function-operators/find-topic.html).
+ * [Our usage info for the predict operator](http://semantic-db.org/docs/usage/function-operators/predict.html).
+ * [Our worked example for the if-then machine, a simple model of a neuron](http://semantic-db.org/docs/usage/worked-examples/if-then-machines.html).
+ * [Our worked example 'active logic' using if-then machines](http://semantic-db.org/docs/usage/worked-examples/active-logic.html).
+ * [Our worked example 'walking ant'](http://semantic-db.org/docs/usage/worked-examples/walking-ant.html).
+ * [Our current collection of documentation for operators, sw examples, and worked examples](http://semantic-db.org/docs/usage/).
+
+## Some mathematical properties of superpositions
+1) they have `|>`, the empty ket, or the don't know ket, as the identity element, so that `|> + sp == sp + |> == sp`, for any superposition sp.
+2) they add.  
+eg: `(3|a> + 0.2|b> + |c>) + (|a> + 0.5|b> + 2.2|c> + |d>) == 4|a> + 0.7|b> + 3.2|c> + |d>`
+3) ket's commute, ie the addition is Abelian.  
+So `|a> + |b> + |c> == |b> + |c> + |a>`
+4) they can be multiplied by a scalar.  
+eg: `7 (3|a> + 0.2|b> + |c>) == 21|a> + 1.4|b> + 7|c>`
+5) you can add a ket with coefficient 0 without changing the "meaning" of a superposition.  
+eg: `meaning(sp1) == meaning(sp1 + 0 sp2)`  
+eg: `meaning(3|a> + 2|b> + |c> + 0|x> + 0|y> + 0|z>) == meaning(3|a> + 2|b> + |c>)`
+6) we can take the union of them.  
+eg: `union(|a> + 2|b> + 3|c>, 3|a> + 2|b>, |c>) == 3|a> + 2|b> + 3|c>`
+7) we can find the intersection.  
+eg: `intersection(|a> + 2|b> + 3|c>, 3|a> + 2|b>, |c>) == |a> + 2|b> + |c>`  
+where union is term by term max of coefficients, and intersection is term by term min of coefficients.
+8) we can find the similarity of them. 1 for identical, 0 for completely different, values in between otherwise.  
+eg: `simm(8|a> + 2.2|b>, 8|a> + 2.2|b>) == |simm>`  
+eg: `simm(|b>, |a> + |b> + |c>) == 0.3333|simm>`  
+eg: `simm(|a> + |b> + |c>, |x> + |y> + |z>) == 0|simm>`
+
