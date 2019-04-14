@@ -153,9 +153,9 @@ This defines the context for the learn rules that follow it. And all rules in on
 Next comment is that, if you missed it, operators can be composed into operator sequences. For example we just gave the example of the mother of Sally's father is:  
 `mother father |sally>`  
 Another example might be the question "Who are the friends of the friends of Fred?", in the console would simply be:  
-`sa: friend friend |Fred>`   
+`sa: friends friends |Fred>`   
 Or "What are the ages of the friends of Fred?", in the console would be:  
-`sa: age friend |Fred>`
+`sa: age friends |Fred>`
 
 # Plurals
 While still in the console, let's demonstrate loading a .sw file. Consider our [sw file of plurals](https://github.com/GarryMorrison/Semantic-DB/blob/master/sw-examples/plural.sw).
