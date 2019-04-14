@@ -150,12 +150,16 @@ Now we have a couple of comments to make on this. First is the idea of context. 
 This defines the context for the learn rules that follow it. And all rules in one context are fully independent of learn rules in all other contexts. Anyway, just a neat way to partition knowledge into domains.
 
 ## Operator sequences
-Next comment is that, if you missed it, operators can be composed into operator sequences. For example we just gave the example of the mother of Sally's father is:  
+Next comment is that, if you missed it, operators can be composed into operator sequences. An operator sequence is simply a sequence of operators separated by a space. For example we just gave the example of the mother of Sally's father is:  
 `mother father |sally>`  
 Another example might be the question "Who are the friends of the friends of Fred?", in the console would simply be:  
 `sa: friends friends |Fred>`   
 Or "What are the ages of the friends of Fred?", in the console would be:  
-`sa: age friends |Fred>`
+`sa: age friends |Fred>`  
+Or "What are the work-places of the friends of Fred?", in the console would be:  
+`sa: work-place friends |Fred>`  
+Or "What is North, North, North-West of the current location?", in the console would be:  
+`sa: NW N N current |location>`
 
 # Plurals
 While still in the console, let's demonstrate loading a .sw file. Consider our [sw file of plurals](https://github.com/GarryMorrison/Semantic-DB/blob/master/sw-examples/plural.sw).
