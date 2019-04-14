@@ -161,6 +161,25 @@ Or "What are the work-places of the friends of Fred?", in the console would be:
 Or "What is North, North, North-West of the current location?", in the console would be:  
 `sa: NW N N current |location>`
 
+# Linearity of operators
+At this point I should expand on my comment above that operators defined by a learn rule are linear (note though that not all operators in mumble are linear). This means that under the cover they are essentially matrices. Indeed, we have the [matrix operator](http://semantic-db.org/docs/usage/function-operators/matrix.html) that demonstrates this connection. If we consider the above mother/father relations, we can ask the console to display the corresponding matrices:
+```
+sa: matrix[mother]
+[ gina  ] = [  0  0  1  0  0  0  ] [ erica ]
+[ mary  ]   [  0  1  0  0  0  0  ] [ mike  ]
+[ ruth  ]   [  0  0  0  0  1  0  ] [ ruth  ]
+[ sarah ]   [  0  0  0  0  0  1  ] [ sally ]
+[ trude ]   [  1  0  0  1  0  0  ] [ tom   ]
+                                   [ trude ]
+
+sa: matrix[father]
+[ mark ] = [  0  1  0  0  0  ] [ erica ]
+[ mike ]   [  0  0  0  1  0  ] [ mike  ]
+[ sam  ]   [  0  0  0  0  1  ] [ sally ]
+[ tom  ]   [  1  0  1  0  0  ] [ tom   ]
+                               [ trude ]
+```
+
 # Plurals
 While still in the console, let's demonstrate loading a .sw file. Consider our [sw file of plurals](https://github.com/GarryMorrison/Semantic-DB/blob/master/sw-examples/plural.sw).
 First reset the console back to an empty state:
