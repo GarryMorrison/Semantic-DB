@@ -2016,6 +2016,7 @@ class NewContext(object):
     def create_inverse_op(self, op):
         if type(op) is ket:
             op = op.label[4:]
+        result_context = NewContext('result context')
         for label in self.ket_rules_dict:
             if op in self.ket_rules_dict[label]:
                 rule = self.ket_rules_dict[label][op]
@@ -2023,11 +2024,18 @@ class NewContext(object):
                     for sp in rule:
                         for x in sp:
                             if x.label != "":
-                                self.add_learn("inverse-" + op, x, label)
+                                result_context.add_learn("inverse-" + op, x, label)
                 elif type(rule) in [ket, superposition]:  # don't learn inverse for stored_rules.
                     for x in rule:
                         if x.label != "":
-                            self.add_learn("inverse-" + op, x, label)
+                            result_context.add_learn("inverse-" + op, x, label)
+        for label in result_context.ket_rules_dict:
+            if label != 'context':
+                for op in result_context.ket_rules_dict[label]:
+                    if op != 'supported-ops':
+                        rule = result_context.ket_rules_dict[label][op]
+                        self.learn(op, label, rule)
+
 
     # do we need unlearn stuff?
     # unlearn rule, unlearn everything to do with a ket, and so on??
