@@ -222,7 +222,7 @@ sa: inverse-plural |mice>
 And so on.
 
 ## Inherit operator
-The final idea I want to demonstrate is the inherit operator. The idea is that you can define an object to inherit properties from a parent object.
+The next idea I want to demonstrate is the inherit operator. The idea is that you can define an object to inherit properties from a parent object.
 Let's work through a simple example. Consider our favourite cat Trudy, who is so old she lost her teeth, but otherwise is a standard cat. Let's define our context as "Trudy the cat":  
 `sa: |context> => |context: Trudy the cat>`
 
@@ -297,6 +297,106 @@ sa: inherit[has-4-legs] |trudy>
 |yes>
 ```
 Which returns the expected answers.
+
+## Superposition similarity measure
+The next component of our project is we have a similarity measure that works with arbitrary superpositions, and is trivally extended to sequences. This measure has the very nice property of returning 1 for identical superpositions, 0 for completely disjoint superpositions, and values in between otherwise. A for example, we can find the similarity of Fred and Sam's friends. Given this knowledge:  
+`sa: friends |Fred> => |Mary> + |Max> + |Rob> + |Eric> + |Liz>`  
+`sa: friends |Sam> => |Liz> + |Rob> + |Emma> + |Jane> + |Bella> + |Bill>`  
+We can now ask:  
+`sa: simm( friends |Fred>, friends |Sam> )`  
+`0.333|simm>`  
+That is, 33.3% similarity. The power of our simm is that it works with any superposition or sequence.
+
+## Similar-input operator
+In this section we put our similarity measure to use, by way of our `similar-input[]` operator. First, let's generate some data so we can do a worked example, by using the [frequences of female and male names](https://github.com/GarryMorrison/Semantic-DB/blob/master/sw-examples/female-male-names.sw) from a US census. Then we use the [make-friends.sw](https://github.com/GarryMorrison/Semantic-DB/blob/master/sw-examples/make-friends.sw) file to generate 10 people with 8 random friends each. Here is one result from running:  
+`$ ./sdb-console.py -i sw-examples/female-male-names.sw sw-examples/make-friends.sw`
+
+```
+friends |camila> => |kaleigh> + |margarito> + |marietta> + |king> + |fredericka> + |gail> + |carson> + |mertie>
+friends |lamar> => |marshall> + |edison> + |marietta> + |leland> + |craig> + |anya> + |danae> + |jaqueline>
+friends |latia> => |gail> + |bethann> + |lanette> + |erline> + |keith> + |colette> + |marshall> + |robyn>
+friends |craig> => |carmen> + |catina> + |jaime> + |lizzette> + |manual> + |esteban> + |erline> + |lamar>
+friends |rudolph> => |barbra> + |luana> + |son> + |solomon> + |luther> + |preston> + |hollis> + |fred>
+friends |solomon> => |tasia> + |keith> + |edison> + |kaleigh> + |cristopher> + |marlon> + |preston> + |deloras>
+friends |leslie> => |kaleigh> + |chad> + |marshall> + |angle> + |forest> + |edison> + |lita> + |ivelisse>
+friends |marietta> => |terrell> + |jaime> + |margarito> + |consuelo> + |jeremy> + |darin> + |fredericka> + |edison>
+friends |mertie> => |dee> + |erline> + |chad> + |jordan> + |eddie> + |nigel> + |lupe> + |alex>
+friends |luther> => |dorthy> + |vashti> + |king> + |zada> + |fredericka> + |rudolph> + |asa> + |rigoberto>
+
+```
+Now we have this data we can ask who has similar friends to, let's say, Camila? Simply enough:
+```
+sa: similar-input[friends] friends |camila>
+|camila> + 0.25|marietta> + 0.25|luther> + 0.125|lamar> + 0.125|latia> + 0.125|solomon> + 0.125|leslie>
+```
+Or who has similar friends to Craig?
+```
+sa: similar-input[friends] friends |craig>
+|craig> + 0.125|latia> + 0.125|marietta> + 0.125|mertie>
+```
+Or of course in a nice table:
+```
+sa: table[person, coeff] 100 similar-input[friends] friends |camila>
++----------+-------+
+| person   | coeff |
++----------+-------+
+| camila   | 100   |
+| marietta | 25    |
+| luther   | 25    |
+| lamar    | 12.5  |
+| latia    | 12.5  |
+| solomon  | 12.5  |
+| leslie   | 12.5  |
++----------+-------+
+```
+The general form of our `similar-input[]` operator is:  
+`similar-input[op] sp`  
+What this does is, it finds all objects that have `op` defined (in the above case the `friends` operator), and then compares their right hand side superposition to the input superposition `sp` (in the above case the input superposition is `friends |camila>`). Because superpositions are so versatile in representing objects, and because simm works with arbitrary superpositions, or sequences, we in turn can measure similarities of a large variety of objects. All we need is a mapping from an object to a superposition. We could perhaps find similar shopping baskets, similar disease symptoms, similar actors based on what movies they have been, or similar movies based on what actors star in them, and so on.
+
+Here for example are the top 15 actors that have been in movies with Tom Cruise:
+```
++------------------+---------+
+| actor            | coeff   |
++------------------+---------+
+| Tom Cruise       | 100.000 |
+| Nicole Kidman    | 11.940  |
+| William Mapother | 8.065   |
+| Steven Spielberg | 8.065   |
+| Ving Rhames      | 6.579   |
+| Brad Pitt        | 6.061   |
+| John Travolta    | 5.634   |
+| Ron (I) Dean     | 4.839   |
+| Dale Dye         | 4.839   |
+| Cuba Gooding Jr. | 4.839   |
+| Michael G. Kehoe | 4.839   |
+| Simon Pegg       | 4.839   |
+| Sydney Pollack   | 4.839   |
+| Jeremy Renner    | 4.839   |
+| George C. Scott  | 4.839   |
++------------------+---------+
+```
+And here are the top 15 movies that are similar to "Star Trek: The Motion Picture (1979)":
+```
++---------------------------------+---------+
+| movie                           | coeff   |
++---------------------------------+---------+
+| The Motion Picture (1979)       | 100.000 |
+| The Voyage Home (1986)          | 15.625  |
+| The Search for Spock (1984)     | 15.625  |
+| The Undiscovered Country (1991) | 15.625  |
+| The Final Frontier (1989)       | 10.938  |
+| The Wrath of Khan (1982)        | 10.938  |
+| Road Trek 2011 (2012)           | 10.938  |
+| Star Trek Adventure (1991)      | 10.938  |
+| To Be Takei (2014)              | 7.812   |
+| Generations (1994)              | 5.797   |
+| Trekkies (1997)                 | 5.670   |
+| Trek Nation (2010)              | 4.688   |
+| The Other Movie (1981)          | 4.688   |
+| The Captains (2011)             | 4.688   |
+| Backyard Blockbusters (2012)    | 4.545   |
++---------------------------------+---------+
+```
 
 ## Conclusion
 There is much, much more to mumble, but this will serve as an introduction. The goal of mumble is to be a concise language that contributes towards creating a [Giant Global Graph](https://en.wikipedia.org/wiki/Giant_Global_Graph), with nodes passing around, and processing [sw files](https://github.com/GarryMorrison/Semantic-DB/tree/master/sw-examples), in a distributed semantic computation. Or more speculatively, a mathematical notation for describing (simple) neural circuits, where the ket label is a label for a neuron or synapse, the coefficient corresponds to the activity of that neuron or synapse over some small time window, superpositions represent the currently active neurons/synapses, and operators change the state of the neural circuit.
