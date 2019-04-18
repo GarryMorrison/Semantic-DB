@@ -308,7 +308,7 @@ We can now ask:
 That is, 33.3% similarity. The power of our simm is that it works with any superposition or sequence.
 
 ## Similar-input operator
-In this section we put our similarity measure to use, by way of our `similar-input[]` operator. First, let's generate some data so we can do a worked example, by using the [frequences of female and male names](https://github.com/GarryMorrison/Semantic-DB/blob/master/sw-examples/female-male-names.sw) from a US census. Then we use the [make-friends.sw](https://github.com/GarryMorrison/Semantic-DB/blob/master/sw-examples/make-friends.sw) file to generate 10 people with 8 random friends each. Here is one result from running:  
+In this section we put our similarity measure to use, by way of our `similar-input[]` operator. First, let's generate some data so we can do a worked example, by using the [frequencies of female and male names](https://github.com/GarryMorrison/Semantic-DB/blob/master/sw-examples/female-male-names.sw) from a US census. Then we use the [make-friends.sw](https://github.com/GarryMorrison/Semantic-DB/blob/master/sw-examples/make-friends.sw) file to generate 10 people with 8 random friends each. Here is one result from running:  
 `$ ./sdb-console.py -i sw-examples/female-male-names.sw sw-examples/make-friends.sw`
 
 ```
