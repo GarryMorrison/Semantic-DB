@@ -298,7 +298,7 @@ sa: inherit[has-4-legs] |trudy>
 ```
 Which returns the expected answers.
 
-## Superposition similarity measure
+## Similarity measure
 The next component of our project is we have a similarity measure that works with arbitrary superpositions, and is trivally extended to sequences. This measure has the very nice property of returning 1 for identical superpositions, 0 for completely disjoint superpositions, and values in between otherwise. A for example, we can find the similarity of Fred and Sam's friends. Given this knowledge:  
 `sa: friends |Fred> => |Mary> + |Max> + |Rob> + |Eric> + |Liz>`  
 `sa: friends |Sam> => |Liz> + |Rob> + |Emma> + |Jane> + |Bella> + |Bill>`  
