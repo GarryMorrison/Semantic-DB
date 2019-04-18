@@ -222,7 +222,7 @@ sa: inverse-plural |mice>
 And so on.
 
 ## Inherit operator
-The final idea I want to demonstrate is the inherit operator. The idea is that you can define an object to inherit properties from a parent object.
+The next idea I want to demonstrate is the inherit operator. The idea is that you can define an object to inherit properties from a parent object.
 Let's work through a simple example. Consider our favourite cat Trudy, who is so old she lost her teeth, but otherwise is a standard cat. Let's define our context as "Trudy the cat":  
 `sa: |context> => |context: Trudy the cat>`
 
@@ -297,6 +297,203 @@ sa: inherit[has-4-legs] |trudy>
 |yes>
 ```
 Which returns the expected answers.
+
+## Similarity measure
+The next component of our project is we have a similarity measure that works with arbitrary superpositions, and is trivally extended to sequences. This measure has the very nice property of returning 1 for identical superpositions, 0 for completely disjoint superpositions, and values in between otherwise. A for example, we can find the similarity of Fred and Sam's friends. Given this knowledge:  
+`sa: friends |Fred> => |Mary> + |Max> + |Rob> + |Eric> + |Liz>`  
+`sa: friends |Sam> => |Liz> + |Rob> + |Emma> + |Jane> + |Bella> + |Bill>`  
+We can now ask:  
+`sa: simm( friends |Fred>, friends |Sam> )`  
+`0.333|simm>`  
+That is, 33.3% similarity. The power of our simm is that it works with any superposition or sequence.
+
+## Similar-input operator
+In this section we put our similarity measure to use, by way of our `similar-input[]` operator. First, let's generate some data so we can do a worked example, by using the [frequencies of female and male names](https://github.com/GarryMorrison/Semantic-DB/blob/master/sw-examples/female-male-names.sw) from a US census. Then we use the [make-friends.sw](https://github.com/GarryMorrison/Semantic-DB/blob/master/sw-examples/make-friends.sw) file to generate 10 people with 8 random friends each. Here is one result from running:  
+```
+$ ./sdb-console.py -i sw-examples/female-male-names.sw sw-examples/make-friends.sw
+sa: dump rel-kets[friends]
+friends |camila> => |kaleigh> + |margarito> + |marietta> + |king> + |fredericka> + |gail> + |carson> + |mertie>
+friends |lamar> => |marshall> + |edison> + |marietta> + |leland> + |craig> + |anya> + |danae> + |jaqueline>
+friends |latia> => |gail> + |bethann> + |lanette> + |erline> + |keith> + |colette> + |marshall> + |robyn>
+friends |craig> => |carmen> + |catina> + |jaime> + |lizzette> + |manual> + |esteban> + |erline> + |lamar>
+friends |rudolph> => |barbra> + |luana> + |son> + |solomon> + |luther> + |preston> + |hollis> + |fred>
+friends |solomon> => |tasia> + |keith> + |edison> + |kaleigh> + |cristopher> + |marlon> + |preston> + |deloras>
+friends |leslie> => |kaleigh> + |chad> + |marshall> + |angle> + |forest> + |edison> + |lita> + |ivelisse>
+friends |marietta> => |terrell> + |jaime> + |margarito> + |consuelo> + |jeremy> + |darin> + |fredericka> + |edison>
+friends |mertie> => |dee> + |erline> + |chad> + |jordan> + |eddie> + |nigel> + |lupe> + |alex>
+friends |luther> => |dorthy> + |vashti> + |king> + |zada> + |fredericka> + |rudolph> + |asa> + |rigoberto>
+```
+Now we have this data we can ask who has similar friends to, let's say, Camila? Simply enough:
+```
+sa: similar-input[friends] friends |camila>
+|camila> + 0.25|marietta> + 0.25|luther> + 0.125|lamar> + 0.125|latia> + 0.125|solomon> + 0.125|leslie>
+```
+Or who has similar friends to Craig?
+```
+sa: similar-input[friends] friends |craig>
+|craig> + 0.125|latia> + 0.125|marietta> + 0.125|mertie>
+```
+Or of course in a nice table:
+```
+sa: table[person, coeff] 100 similar-input[friends] friends |camila>
++----------+-------+
+| person   | coeff |
++----------+-------+
+| camila   | 100   |
+| marietta | 25    |
+| luther   | 25    |
+| lamar    | 12.5  |
+| latia    | 12.5  |
+| solomon  | 12.5  |
+| leslie   | 12.5  |
++----------+-------+
+```
+The general form of our `similar-input[]` operator is:  
+`similar-input[op] sp`  
+What this does is, it finds all objects that have `op` defined (in the above case the `friends` operator), and then compares their right hand side superposition to the input superposition `sp` (in the above case the input superposition is `friends |camila>`). Because superpositions are so versatile in representing objects, and because simm works with arbitrary superpositions, or sequences, we in turn can measure similarities of a large variety of objects. All we need is a mapping from an object to a superposition. We could perhaps find similar shopping baskets, similar disease symptoms, similar actors based on what movies they have been, or similar movies based on what actors star in them, and so on.
+
+Here for example are the top 15 actors that have been in movies with Tom Cruise:
+```
++------------------+---------+
+| actor            | coeff   |
++------------------+---------+
+| Tom Cruise       | 100.000 |
+| Nicole Kidman    | 11.940  |
+| William Mapother | 8.065   |
+| Steven Spielberg | 8.065   |
+| Ving Rhames      | 6.579   |
+| Brad Pitt        | 6.061   |
+| John Travolta    | 5.634   |
+| Ron (I) Dean     | 4.839   |
+| Dale Dye         | 4.839   |
+| Cuba Gooding Jr. | 4.839   |
+| Michael G. Kehoe | 4.839   |
+| Simon Pegg       | 4.839   |
+| Sydney Pollack   | 4.839   |
+| Jeremy Renner    | 4.839   |
+| George C. Scott  | 4.839   |
++------------------+---------+
+```
+And here are the top 15 movies that are similar to "Star Trek: The Motion Picture (1979)":
+```
++---------------------------------+---------+
+| movie                           | coeff   |
++---------------------------------+---------+
+| The Motion Picture (1979)       | 100.000 |
+| The Voyage Home (1986)          | 15.625  |
+| The Search for Spock (1984)     | 15.625  |
+| The Undiscovered Country (1991) | 15.625  |
+| The Final Frontier (1989)       | 10.938  |
+| The Wrath of Khan (1982)        | 10.938  |
+| Road Trek 2011 (2012)           | 10.938  |
+| Star Trek Adventure (1991)      | 10.938  |
+| To Be Takei (2014)              | 7.812   |
+| Generations (1994)              | 5.797   |
+| Trekkies (1997)                 | 5.670   |
+| Trek Nation (2010)              | 4.688   |
+| The Other Movie (1981)          | 4.688   |
+| The Captains (2011)             | 4.688   |
+| Backyard Blockbusters (2012)    | 4.545   |
++---------------------------------+---------+
+```
+
+## If-then machines
+If-then machines are simple models of neurons that make use of our similarity measure, and our similar-input operator. The core idea is that each if-then machine has a series of patterns, encoded as superpositions, and if any one of them is matched then it "triggers", and outputs a superposition. But because we are using our similarity measure, it is not binary yes/no match, we have degrees of match. That is, our if-then machines are "fuzzy". Indeed, we can dial up or down the fuzzyness by adding in the `drop-below[t]` operator. If we want 75% match or better we would use `drop-below[0.75]`. If we want more traditional logic, with 98% match or better, then we would use `drop-below[0.98]`.
+
+The general structure for an if-then machine is:
+```
+pattern |node: 1: 1> => sp1
+pattern |node: 1: 2> => sp2
+pattern |node: 1: 3> => sp3
+...
+pattern |node: 1: n> => spn
+then |node: 1: *> => result-sp
+```
+
+If any of the superpositions `{sp1, sp2, sp3, ..., spn}` are matched, then the output will be `result-sp`.
+
+For example, we can encode:
+```
+if (A and B and C) then D
+if (A or B or C) then E
+```
+using two if-then machines:
+```
+pattern |node: 1: 1> => |A> + |B> + |C>
+then |node: 1: *> => |D>
+
+pattern |node: 2: 1> => |A>
+pattern |node: 2: 2> => |B>
+pattern |node: 2: 3> => |C>
+then |node: 2: *> => |E>
+```
+And our corresponding fuzzy `if-then` operator:  
+`fuzzy-if-then |*> #=> then similar-input[pattern] words-to-list |_self>`  
+And our corresponding strict `if-then` operator:  
+`strict-if-then |*> #=> drop-below[0.98] then similar-input[pattern] words-to-list |_self>`
+
+Which we can display in a table:
+```
+sa: table[input, fuzzy-if-then, strict-if-then] (|A> + |B> + |C> + |A and B> + |A and C> + |B and C> + |A, B and C>)
++------------+---------------+----------------+
+| input      | fuzzy-if-then | strict-if-then |
++------------+---------------+----------------+
+| A          | E, 0.33 D     | E              |
+| B          | E, 0.33 D     | E              |
+| C          | E, 0.33 D     | E              |
+| A and B    | 0.67 D, E     | E              |
+| A and C    | 0.67 D, E     | E              |
+| B and C    | 0.67 D, E     | E              |
+| A, B and C | D, E          | D, E           |
++------------+---------------+----------------+
+```
+
+Note, this is just a toy example for demonstration purposes. With not much work, we can extend it to multiple "layers" of if-then machines. Here is a 2-layer example:  
+`if ((A and B) or (C and D and E) or F) then J`  
+Implemented using these if-then machines:
+```
+pattern |node: 1: 1> => |A> + |B>
+then |node: 1: *> => |J1>
+
+pattern |node: 2: 1> => |C> + |D> + |E>
+then |node: 2: *> => |J2>
+
+pattern |node: 3: 1> => |F>
+then |node: 3: *> => |J3>
+
+pattern |node: 4: 1> => |J1>
+pattern |node: 4: 2> => |J2>
+pattern |node: 4: 3> => |J3>
+then |node: 4: *> => |J>
+```
+And these operators:
+```
+fuzzy-if-then |*> #=> then similar-input[pattern] words-to-list |_self>
+fuzzy-if-then-2 |*> #=> (then similar-input[pattern])^2 words-to-list |_self>
+
+strict-if-then |*> #=> drop-below[0.98] then similar-input[pattern] words-to-list |_self>
+strict-if-then-2 |*> #=> (drop-below[0.98] then similar-input[pattern])^2 words-to-list |_self>
+```
+Producing this table:
+```
+sa: table[input, fuzzy-if-then, fuzzy-if-then-2, strict-if-then, strict-if-then-2] (|A> + |B> + |C> + |D> + |E> + |F> + |A and B> + |C and D> + |C and E> + |D and E> + |C, D and E>)
++------------+---------------+-----------------+----------------+------------------+
+| input      | fuzzy-if-then | fuzzy-if-then-2 | strict-if-then | strict-if-then-2 |
++------------+---------------+-----------------+----------------+------------------+
+| A          | 0.50 J1       | 0.50 J          |                |                  |
+| B          | 0.50 J1       | 0.50 J          |                |                  |
+| C          | 0.33 J2       | 0.33 J          |                |                  |
+| D          | 0.33 J2       | 0.33 J          |                |                  |
+| E          | 0.33 J2       | 0.33 J          |                |                  |
+| F          | J3            | J               | J3             | J                |
+| A and B    | J1            | J               | J1             | J                |
+| C and D    | 0.67 J2       | 0.67 J          |                |                  |
+| C and E    | 0.67 J2       | 0.67 J          |                |                  |
+| D and E    | 0.67 J2       | 0.67 J          |                |                  |
+| C, D and E | J2            | J               | J2             | J                |
++------------+---------------+-----------------+----------------+------------------+
+```
+Anyway, that is just a taste of what is possible with if-then machines.
 
 ## Conclusion
 There is much, much more to mumble, but this will serve as an introduction. The goal of mumble is to be a concise language that contributes towards creating a [Giant Global Graph](https://en.wikipedia.org/wiki/Giant_Global_Graph), with nodes passing around, and processing [sw files](https://github.com/GarryMorrison/Semantic-DB/tree/master/sw-examples), in a distributed semantic computation. Or more speculatively, a mathematical notation for describing (simple) neural circuits, where the ket label is a label for a neuron or synapse, the coefficient corresponds to the activity of that neuron or synapse over some small time window, superpositions represent the currently active neurons/synapses, and operators change the state of the neural circuit.
