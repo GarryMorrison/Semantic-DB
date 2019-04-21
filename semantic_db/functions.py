@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 8/12/2018
+# Update: 21/4/2019
 # Copyright: GPLv3
 #
 # A collection of functions that apply to kets, superpositions and sequences.
@@ -7273,7 +7273,7 @@ def day_of_the_week(one):
             return ket()
     day_list = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     the_day = day_list[datetime.date(year, month, day).weekday()]
-    return ket("day: " + the_day)
+    return ket("day: " + the_day, one.value)
 
 
 # set invoke method:
