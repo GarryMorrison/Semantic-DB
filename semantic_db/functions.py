@@ -2374,7 +2374,8 @@ def rescaled_list_simm(w, f, g):
 #  print("result:",result)
 #  return result
 
-def rescaled_superposition_simm(A, B):
+# def rescaled_superposition_simm(A, B):
+def superposition_simm(A, B):
     if len(A) == 0 or len(B) == 0:
         return 0
     if len(A) == 1 and len(B) == 1:
@@ -2419,7 +2420,8 @@ def rescaled_superposition_simm(A, B):
         print("rescaled_superposition_simm exception reason: %s" % e)
 
 
-def superposition_simm(A, B):  # unscaled version
+# def superposition_simm(A, B):  # unscaled version
+def unscaled_superposition_simm(A, B):
     if len(A) == 0 or len(B) == 0:
         return 0
 
