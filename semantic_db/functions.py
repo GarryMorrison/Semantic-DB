@@ -2503,6 +2503,79 @@ def aligned_simm_value(one, two):
         r += superposition_simm(one[k], two[k])
     return r / len(one)
 
+def seqn_simm_value(one, two):
+    min_len = min(len(one), len(two))
+    r = 1
+    for k in range(min_len):
+        if one[k].to_ket().label == "*" or two[k].to_ket().label == "*":
+            break
+        r *= superposition_simm(one[k], two[k])
+        if r == 0:
+            return 0
+    for k in range(-1, - min_len - 1, -1):
+        if one[k].to_ket().label == "*" or two[k].to_ket().label == "*":
+            break
+        r *= superposition_simm(one[k], two[k])
+        if r == 0:
+            return 0
+    return r
+
+
+# set invoke method:
+whitelist_table_2['seqn-simm'] = 'seqn_simm'
+# set usage info:
+sequence_functions_usage['seqn-simm'] = """
+    description:
+        seqn-simm(seq, seq)
+
+    examples:
+
+    see also: 
+"""
+def seqn_simm(input_seq, one, two):
+    return ket('seqn-simm', seqn_simm_value(one, two))
+
+# set invoke method:
+whitelist_table_2['subseqn-extract'] = 'subseqn_extract'
+# set usage info:
+sequence_functions_usage['subseqn-extract'] = """
+    description:
+        subseqn-extract(seq, seq)
+
+    examples:
+
+    see also: 
+"""
+def subseqn_extract(input_seq, one, two):
+    min_len = min(len(one), len(two))
+    r = 1
+    start_k = None
+    stop_k = None
+    for k in range(min_len):
+        # remove symmetry. one is now the template, two is the sentence to extract from.
+        # if one[k].to_ket().label == "*" or two[k].to_ket().label == "*":
+        if one[k].to_ket().label == "*":
+            start_k = k
+            break
+        r *= superposition_simm(one[k], two[k])
+        if r == 0:
+            return ket()
+    for k in range(-1, - min_len - 1, -1):
+        # if one[k].to_ket().label == "*" or two[k].to_ket().label == "*":
+        if one[k].to_ket().label == "*":
+            stop_k = k + 1
+            break
+        r *= superposition_simm(one[k], two[k])
+        if r == 0:
+            return ket()
+    seq = sequence([])
+    if stop_k == 0:              # is there a cleaner way to handle stop_k == 0?
+        seq.data = two.data[start_k:]
+    else:
+        seq.data = two.data[start_k:stop_k]
+    return seq.multiply(r)
+
+
 
 # set invoke method:
 # compound_table['predict'] = ".apply_seq_fn(predict_next, context, \"{0}\")"
