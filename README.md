@@ -13,6 +13,7 @@ They get more interesting when we build "superpositions" of them, where a superp
 
 The power of our superpositions is that they can flexibly represent a variety of things such as:  
  * "a 50/50 chance of yes or no" as `0.5|yes> + 0.5|no>`
+ * "33% chance of 'a', 16% chance of 'b', 48% chance of 'c' and 3% chance of 'd'" as `0.33|a> + 0.16|b> + 0.48|c> + 0.03|d>`
  * The list ["Sam", "Mary", "Matt", "Sarah"] as `|Sam> + |Mary> + |Matt> + |Sarah>`.
  * The set {a,b,c,d,e} as `|a> + |b> + |c> + |d> + |e>`.
  * The vector [0.2, 0.5, 1.7, 9, 3.5] as `0.2|x: 1> + 0.5|x: 2> + 1.7|x: 3> + 9|x: 4> + 3.5|x: 5>`
