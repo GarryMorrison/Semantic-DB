@@ -4,7 +4,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2018
-# Update: 21/4/2019
+# Update: 12/5/2019
 # Copyright: GPLv3
 #
 # Usage: 
@@ -2215,11 +2215,11 @@ class NewContext(object):
             logger.info("failed to load: %s\nReason: %s" % (filename, e))
 
     def load(self, filename):
-        try:
-            inside_multi_line = False
-            s = ''
-            with open(filename, 'r') as f:
-                for line in f:
+        inside_multi_line = False
+        s = ''
+        with open(filename, 'r') as f:
+            for line in f:
+                try:
                     line = line.rstrip('\n')
                     if line.startswith('exit sw'):  # stop processing a .sw file
                         return
@@ -2240,9 +2240,10 @@ class NewContext(object):
                         line = ''
                     if line != '' and not inside_multi_line:
                         process_sw_file(self, line)
-        except Exception as e:
-            logger.info("NewContext failed to load: " + filename)
-            logger.info('reason: %s' % e)
+                except Exception as e:
+                    logger.info("NewContext failed to load: " + filename)
+                    logger.info('reason: %s' % e)
+                    continue
 
     # 3/12/2015: new feature context.print_universe() and context.print_multiverse()
     def print_universe(self, exact_dump=False):
@@ -2432,11 +2433,12 @@ class ContextList(object):
             logger.info("ContextList failed to load: %s\nreason: %s" % (filename, e))
 
     def load(self, filename):
-        try:
-            inside_multi_line = False
-            s = ''
-            with open(filename, 'r') as f:
-                for line in f:
+
+        inside_multi_line = False
+        s = ''
+        with open(filename, 'r') as f:
+            for line in f:
+                try:
                     line = line.rstrip('\n')
                     if line.startswith('exit sw'):  # stop processing a .sw file
                         return
@@ -2457,9 +2459,9 @@ class ContextList(object):
                         line = ''
                     if line != '' and not inside_multi_line:
                         process_sw_file(self, line)
-        except Exception as e:
-            logger.info("ContextList failed to load: " + filename)
-            logger.info('reason: %s' % e)
+                except Exception as e:
+                    logger.info("ContextList found parse error in: " + filename)
+                    logger.info('reason: %s' % e)
 
     # 3/12/2015: new feature context.print_universe() and context.print_multiverse()
     def print_universe(self, exact_dump=False):
