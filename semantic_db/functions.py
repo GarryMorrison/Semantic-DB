@@ -5720,6 +5720,105 @@ def Gaussian(one, sigma, dx=1):
     return ket()
 
 
+# set invoke method:
+compound_table['propagate'] = ['apply_fn', 'propagate', '']
+# set usage info:
+function_operators_usage['propagate'] = """
+    description:
+        propagate[k] ket
+        propagate[k, dx] ket
+        implement a cosine propagate function
+        if dx is not specified, it defaults to 1
+        k is the frequency of the wave
+
+    the algorithm:
+        cos(2*Pi*k * ED(X, X + dx))    
+
+    examples:
+        -- 1D version:
+        -- 2D version:
+
+    see also:
+
+"""
+def propagate(one, k, dx, width):
+    def ED(x, y):  # the Euclidean distance function
+        if len(x) != len(y):
+            return 0
+        r = sum((x[k] - y[k]) ** 2 for k in range(len(x)))
+        return math.sqrt(r)
+
+    def cosine(x, y, k):
+        r = 2 * math.pi * k * ED(x, y)
+        return math.cos(r)
+
+    def find_gauss_width(sigma):  # given sigma, find the width of the Gaussian
+        return 9 * sigma ** 2
+
+    one = one.to_sp()
+    values = one.label.split(': ')[::-1]
+    print('one:', one)
+    print('k:', k)
+    print('dx:', dx)
+    # return ket('propagate')
+
+    # x_values = []
+    # for x in values:
+    #     if x.isdigit():
+    #         x_values.append(float(x))
+    #     else:
+    #         break
+    try:
+        x_values = [float(x) for x in values]
+    except:
+        return ket()
+    # print('x-values:', x_values)
+    # return ket('propagate')
+
+    if len(x_values) == 0:
+        return ket()
+
+    # category = values[len(x_values):]
+    # print('category:', category)
+    # cat = ''
+    # if len(category) > 0:
+    #     cat = ': '.join(category) + ': '
+
+    # width = find_gauss_width(sigma)
+    # print('width:', width)
+
+    if len(x_values) == 1:
+        x = x_values[0]
+        start = x - width
+        finish = x + width
+        r = superposition()
+        for y in float_range(start, finish, dx):
+            value = cosine([x], [y], k)
+            # print('%s: %s' % (y, value))
+            r.add(float_to_int(y), value * one.value)
+        return r
+
+    elif len(x_values) == 2:
+        x1, x2 = x_values
+
+        start1 = math.ceil((x1 - width) / dx) * dx
+        finish1 = math.floor((x1 + width) / dx) * dx
+        start2 = math.ceil((x2 - width) / dx) * dx
+        finish2 = math.floor((x2 + width) / dx) * dx
+
+        r = superposition()
+        for y1 in float_range(start1, finish1, dx):
+            for y2 in float_range(start2, finish2, dx):
+                value = Gauss([x1, x2], [y1, y2], sigma)
+                # print('%s: %s' % (y, value))
+                r.add(cat + float_to_int(y1) + ': ' + float_to_int(y2),
+                      value * one.value)  # need to verify order of y1 vs y2
+                # r.add(cat + float_to_int(y2) + ': ' + float_to_int(y1), value * one.value)
+        return r
+
+    return ket()
+
+
 # 23/5/2014:
 # let's implement a map function (since we can't have multi-line for loops, this will have to do!)
 # eg: map[op] (|x> + |y>)
@@ -5804,7 +5903,7 @@ def map(one, context, *op):
 
 
 # 4/5/2015:
-# a new version of map. This one puts results in a temporary store while doing the calculatoin, then copies the result back after.
+# a new version of map. This one puts results in a temporary store while doing the calculation, then copies the result back after.
 # Basically to stop the code eating its own tail. eg, mapping a grid to a grid, you need a temporary grid.
 def copy_map(one, context, *op):
     try:
@@ -5824,6 +5923,45 @@ def copy_map(one, context, *op):
     #  context.delete_op(op-tmp)         # need to implement this function.
     context.move_op(op_tmp, op)
     return ket("copy-map")
+
+
+# set invoke method:
+compound_table['smap-window'] = ['apply_seq_fn', 'smap_window', 'context']
+# set usage info:
+function_operators_usage['smap-window'] = """
+    description:
+        smap-window[op, w] seq
+        cuts seq into width w n-grams, and applies op to them
+        eg: smap-window[op, 3] (|a> . |b> . |c> . |d> . |e>)
+        runs:
+        op (|a> . |b> . |c>)
+        op (|b> . |c> . |d>)
+        op (|c> . |d> . |e>)
+        op (|d> . |e>)
+        op (|e>)
+
+    examples:
+        merge-3 (*) #=> learn(|op: merged>, sselect[1,1] |_self>, sselect[1,1] |_self> __ sselect[2,2] |_self> __ sselect[3,3] |_self>)
+        smap-window[merge-3, 3] ssplit |abcde>
+        dump
+            merged |a> => |a b c>
+            merged |b> => |b c d>
+            merged |c> => |c d e>
+            merged |d> => |d e>
+            merged |e> => |e>
+
+    see also:
+        map
+"""
+def smap_window(one, context, op, width):
+    seq = sequence([])
+    for i in range(len(one) - width + 1):
+        seq.data = one.data[i:i + width]
+        seq.apply_op(context, op)
+    for i in range(len(one) - width + 1, len(one)):
+        seq.data = one.data[i:]
+        seq.apply_op(context, op)
+    return ket("smap-window")
 
 
 # set invoke method:
@@ -7277,9 +7415,9 @@ def sp_coeffs_to_column(one):
 # usage: sp-propagate[op,k] "" |list>
 # op is an operator, k is the number of iterations.
 # set invoke method:
-compound_table['propagate'] = ['apply_sp_fn', 'sp_propagate', 'context']
+compound_table['sp-propagate'] = ['apply_sp_fn', 'sp_propagate', 'context']
 # set usage info:
-function_operators_usage['propagate'] = """
+function_operators_usage['sp-propagate'] = """
     description:
         the propagate function
         takes an initial superposition and an operator, and applies it repeatedly.
@@ -8834,6 +8972,37 @@ def faster_normed_frequency_class(e, X):
 def ket_normed_frequency_class(e, X):
     result = normed_frequency_class(e, X)
     return ket("nfc", result)
+
+
+# set invoke method:
+whitelist_table_2['apply-normed-frequency-class'] = 'apply_normed_frequency_class'
+# set usage info:
+sequence_functions_usage['apply-normed-frequency-class'] = """
+    description:
+        apply-normed-frequency-class(e, X)
+        finds the normed frequency class of e in X,
+        then returns ket(e.label, nfc(e, X))
+
+    the algorithm:
+        drop all elements <= 0 from X
+        smallest = the min coeff in X
+        largest = the max coeff in X
+        f = the value of e.label in X
+
+        if largest <= 0 or f <= 0:
+            return 0
+        fc_max = math.floor(0.5 - math.log(smallest / largest, 2)) + 1
+        return 1 - math.floor(0.5 - math.log(f / largest, 2)) / fc_max
+
+    examples:
+
+    see also:
+        normed-frequency-class        
+"""
+def apply_normed_frequency_class(input_seq, e, X):
+    e = e.to_ket()
+    value = normed_frequency_class_value(e, X)
+    return ket(e.label, value)
 
 
 
