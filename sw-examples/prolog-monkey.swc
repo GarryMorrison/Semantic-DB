@@ -8,6 +8,7 @@ set-up-initial-state |*> #=>
     at |box> => |b>
     at |bananas> => |c>
     status |bananas> => |hanging>
+    |state initiated>
 
 test-for-goal-state |*> #=>
     goal-state |count> => |null>
@@ -17,6 +18,16 @@ test-for-goal-state |*> #=>
     goal-state |count> +=> is-equal(at |box>, |c>)
     goal-state |count> +=> is-equal(at |bananas>, |c>)
     goal-state |count> +=> is-equal(status |bananas>, |grabbed>)
+    if(drop-below[0.95] is-equal(goal-state |count>, |null> + 6|yes>), |reached goal state!>, |not reached goal state>)
+
+print-current-state |*> #=>
+    print (|monkey is on> __ on |monkey>)
+    print (|monkey is at> __ at |monkey>)
+    print (|box is on> __ on |box>)
+    print (|box is at> __ at |box>)
+    print (|bananas are at> __ at |bananas>)
+    print (|banana status is> __ status |bananas>)
+    |>
 
 go (*,*) #=>
     precondition |count> => |null>
@@ -27,6 +38,10 @@ go (*,*) #=>
 
 process |go action A> #=>
     at |monkey> => next |location>
+    |monkey moved to> __ next |location>
+
+process |go action B> #=>
+    |monkey failed to move to> __ next |location>
 
 push (*,*,*) #=>
     precondition |count> => |null>
@@ -41,6 +56,10 @@ push (*,*,*) #=>
 process |push action A> #=>
     at |monkey> => next |location>
     at the |object> => next |location>
+    |monkey pushed> __ the |object> __ |to> __ next |location>
+
+process |push action B> #=>
+    |monkey failed to push> __ the |object> __ |to> __ next |location>
 
 climb-on (*) #=>
     precondition |count> => |null>
@@ -52,6 +71,10 @@ climb-on (*) #=>
 
 process |climb-on action A> #=>
     on |monkey> => the |object>
+    |monkey climbed on> __ the |object>
+
+process |climb-on action B> #=>
+    |monkey failed to climb on> __ the |object>
 
 grab (*) #=>
     precondition |count> => |null>
@@ -63,4 +86,8 @@ grab (*) #=>
 
 process |grab action A> #=>
     status the |object> => |grabbed>
+    |monkey grabbed> __ the |object>
+
+process |grab action B> #=>
+    |monkey failed to grab> __ the |object>
 
