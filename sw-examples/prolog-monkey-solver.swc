@@ -65,24 +65,47 @@ process |grab failed> #=>
 the-list-of |operators> => |op: apply-go> + |op: apply-push> + |op: apply-climb-on> + |op: apply-grab>
 not |yes> => |no>
 not |no> => |yes>
+drop-null |null> #=> |>
+drop-null |*> #=> |_self>
+
+reset |*> #=>
+    the-list-of |operators> => |op: apply-go> + |op: apply-push> + |op: apply-climb-on> + |op: apply-grab>
+    the-list-of |used operators> => |null>
+    the-list-of |tried operators> => |null>
+    the |plan> => |null>
+    set-up-initial-state
 
 
 find-plan |*> #=>
     the |plan length> => show-many the |plan>
-    the |operator> => pick-elt the-list-of |operators>
+    the |operator> => pick-elt drop (the-list-of |operators> - the-list-of |used operators> - the-list-of |tried operators>)
     apply(the |operator>, |>)
     added-to-the |plan> => not is-equal(show-many the |plan>, the |plan length>)
     process if(added-to-the |plan>, |added to plan>, |didn't add to plan>)
 
 process |added to plan> #=>
+    the-list-of |tried operators> => |null>
+    the-list-of |used operators> +=> the |operator>
     process if(has-prefix["reached goal "] test-for-goal-state |>, |finished>, |not finished>)
 
 process |didn't add to plan> #=>
+    the-list-of |tried operators> +=> the |operator>
+    remaining-operator |count> => how-many drop (the-list-of |operators> - the-list-of |used operators> - the-list-of |tried operators>)
+    process if(is-equal[0] remaining-operator |count>, |don't have remaining operators>, |have remaining operators>)
+
+process |don't have remaining operators> #=>
+    print |here is the failed plan:>
+    print sdrop drop-null the |plan>
+    print |------------------------>
+    reset
+    find-plan
+
+process |have remaining operators> #=>
     find-plan
 
 process |finished> #=>
     print |here is the plan:>
-    the |plan>
+    sdrop drop-null the |plan>
 
 process |not finished> #=>
     find-plan
