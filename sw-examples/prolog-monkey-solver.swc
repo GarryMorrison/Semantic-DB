@@ -1,0 +1,90 @@
+-- try to solve the monkey banana problem
+-- it has no intelligence, just random selection of operators
+
+
+|null> => set-up-initial-state |>
+
+the |locations> => at rel-kets[at] |>
+the |objects> => rel-kets[at] |>
+
+apply-go |*> #=>
+    move |to> => pick-elt drop (the |locations> - at |monkey>)
+    previously-at |monkey> => at |monkey>
+    the |result> => go(at |monkey>, move |to>)
+    process if(has-prefix["monkey moved "] the |result>, |go worked>, |go failed>)
+
+process |go worked> #=>
+    the |plan> .=> |fn: go> + previously-at |monkey> + move |to>
+    the |result>
+
+process |go failed> #=>
+    the |result>
+
+
+apply-push |*> #=>
+    push |object> => pick-elt drop (the |objects> - |monkey>)
+    previously-at |monkey> => at |monkey>
+    move |to> => pick-elt drop (the |locations> - at |monkey>)
+    the |result> => push(push |object>, at |monkey>, move |to>)
+    process if(has-prefix["monkey pushed "] the |result>, |push worked>, |push failed>)
+
+process |push worked> #=>
+    the |plan> .=> |fn: push> + push |object> + previously-at |monkey> +  move |to>
+    the |result>
+
+process |push failed> #=>
+    the |result>
+
+
+apply-climb-on |*> #=>
+    climb |object> => pick-elt drop (the |objects> - |monkey>)
+    the |result> => climb-on(climb |object>)
+    process if(has-prefix["monkey climbed "] the |result>, |climb-on worked>, |climb-on failed>)
+
+process |climb-on worked> #=>
+    the |plan> .=> |fn: climb-on> + climb |object>
+    the |result>
+
+process |climb-on failed> #=>
+    the |result>
+
+
+apply-grab |*> #=>
+    the-grab |object> => pick-elt drop (the |objects> - |monkey>)
+    the |result> => grab(the-grab |object>)
+    process if(has-prefix["monkey grabbed "] the |result>, |grab worked>, |grab failed>)
+
+process |grab worked> #=>
+    the |plan> .=> |fn: grab> + the-grab |object>
+    the |result>
+
+process |grab failed> #=>
+    the |result>
+
+
+the-list-of |operators> => |op: apply-go> + |op: apply-push> + |op: apply-climb-on> + |op: apply-grab>
+not |yes> => |no>
+not |no> => |yes>
+
+
+find-plan |*> #=>
+    the |plan length> => show-many the |plan>
+    the |operator> => pick-elt the-list-of |operators>
+    apply(the |operator>, |>)
+    added-to-the |plan> => not is-equal(show-many the |plan>, the |plan length>)
+    process if(added-to-the |plan>, |added to plan>, |didn't add to plan>)
+
+process |added to plan> #=>
+    process if(has-prefix["reached goal "] test-for-goal-state |>, |finished>, |not finished>)
+
+process |didn't add to plan> #=>
+    find-plan
+
+process |finished> #=>
+    print |here is the plan:>
+    the |plan>
+
+process |not finished> #=>
+    find-plan
+
+
