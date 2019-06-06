@@ -14,7 +14,7 @@ apply-go |*> #=>
     process if(has-prefix["monkey moved "] the |result>, |go worked>, |go failed>)
 
 process |go worked> #=>
-    the |plan> .=> |fn: go> + previously-at |monkey> + move |to>
+    the |plan> .=> |go(> _ previously-at |monkey> _ |, > _ move |to> _ |)>
     the |result>
 
 process |go failed> #=>
@@ -29,7 +29,7 @@ apply-push |*> #=>
     process if(has-prefix["monkey pushed "] the |result>, |push worked>, |push failed>)
 
 process |push worked> #=>
-    the |plan> .=> |fn: push> + push |object> + previously-at |monkey> +  move |to>
+    the |plan> .=> |push(> _ push |object> _ |, > _ previously-at |monkey> _ |, > _ move |to> _|)>
     the |result>
 
 process |push failed> #=>
@@ -42,7 +42,7 @@ apply-climb-on |*> #=>
     process if(has-prefix["monkey climbed "] the |result>, |climb-on worked>, |climb-on failed>)
 
 process |climb-on worked> #=>
-    the |plan> .=> |fn: climb-on> + climb |object>
+    the |plan> .=> |climb-on(> _ climb |object> _ |)>
     the |result>
 
 process |climb-on failed> #=>
@@ -55,7 +55,7 @@ apply-grab |*> #=>
     process if(has-prefix["monkey grabbed "] the |result>, |grab worked>, |grab failed>)
 
 process |grab worked> #=>
-    the |plan> .=> |fn: grab> + the-grab |object>
+    the |plan> .=> |grab(> _ the-grab |object> _ |)>
     the |result>
 
 process |grab failed> #=>
@@ -95,7 +95,7 @@ process |didn't add to plan> #=>
 
 process |don't have remaining operators> #=>
     print |here is the failed plan:>
-    print sdrop drop-null the |plan>
+    print smerge[" "] sdrop drop-null the |plan>
     print |------------------------>
     reset
     find-plan
@@ -105,7 +105,7 @@ process |have remaining operators> #=>
 
 process |finished> #=>
     print |here is the plan:>
-    sdrop drop-null the |plan>
+    smerge[" "] sdrop drop-null the |plan>
 
 process |not finished> #=>
     find-plan
