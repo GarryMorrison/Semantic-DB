@@ -96,6 +96,9 @@ process |didn't add to plan> #=>
 process |don't have remaining operators> #=>
     print |here is the failed plan:>
     print smerge[" "] sdrop drop-null the |plan>
+    print
+    print |here are the tried operators:>
+    print smerge[", "] sp2seq extract-value drop-null the-list-of |tried operators>
     print |------------------------>
     reset
     find-plan
