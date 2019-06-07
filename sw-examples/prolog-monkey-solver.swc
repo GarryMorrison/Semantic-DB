@@ -99,9 +99,9 @@ process |don't have remaining operators> #=>
     print
     print |here are the tried operators:>
     print smerge[", "] sp2seq extract-value drop-null the-list-of |tried operators>
-    print |------------------------>
-    reset
-    |>
+    -- print |------------------------>
+    -- reset
+    -- |>
     -- find-plan
 
 process |have remaining operators> #=>
@@ -111,19 +111,34 @@ process |finished> #=>
     print |here is the plan:>
     print smerge[" "] sdrop drop-null the |plan>
     the |final plan> => sdrop drop-null the |plan>
-    print |------------------------>
-    reset
-    |>
+    is |finished> => |yes>
+    -- print |------------------------>
+    -- reset
+    -- |>
 
 process |not finished> #=>
     find-plan
 
 
-max |attempts> => |20>
+find-plan-wrapper |*> #=>
+    process if(is |finished>, |wrapper finished>, |wrapper not finished>)
+
+process |wrapper finished> #=>
+    |>
+
+process |wrapper not finished> #=>
+    find-plan
+    reset
+    print |------------------------>
+
+
+max |attempts> => |100>
 
 find-final-plan |*> #=>
-    find-plan range(|1>, max |attempts>)
+    is |finished> => |no>
+    find-plan-wrapper range(|1>, max |attempts>)
     print
+    print |Here is our plan:>
     smerge[" "] the |final plan>
 
 
