@@ -101,16 +101,29 @@ process |don't have remaining operators> #=>
     print smerge[", "] sp2seq extract-value drop-null the-list-of |tried operators>
     print |------------------------>
     reset
-    find-plan
+    |>
+    -- find-plan
 
 process |have remaining operators> #=>
     find-plan
 
 process |finished> #=>
     print |here is the plan:>
-    smerge[" "] sdrop drop-null the |plan>
+    print smerge[" "] sdrop drop-null the |plan>
+    the |final plan> => sdrop drop-null the |plan>
+    print |------------------------>
+    reset
+    |>
 
 process |not finished> #=>
     find-plan
+
+
+max |attempts> => |20>
+
+find-final-plan |*> #=>
+    find-plan range(|1>, max |attempts>)
+    print
+    smerge[" "] the |final plan>
 
 
