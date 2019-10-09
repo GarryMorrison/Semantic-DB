@@ -7,7 +7,7 @@ In this tutorial we will go through the steps of building up a knowledge base ab
 
 ## The Semantic DB console
 Before we start, we need to introduce the Semantic DB console. This is where we enter knowledge, either by typing it in, or loading from a file, and then ask questions. Once you have it installed, simply run:
-
+```
 $ ./sdb-console.py
 Welcome to version 2.0 of the Semantic DB!
 Last updated 22 May, 2019
@@ -22,33 +22,33 @@ To see usage docs, visit:
 
 
 sa:
-
+```
 
 Here are some of the features of the console to get you started:
 To get help in the console:
-sa: help
+`sa: help`
 
 To get usage information for the operator "op":
-sa: usage op
+`sa: usage op`
 
 To change file directory:
-sa: cd sw-examples
+`sa: cd sw-examples`
 
 To load files:
-sa: load family.sw
-sa: load family-relations.sw
+`sa: load family.sw`
+`sa: load family-relations.sw`
 
 To save files:
-sa: save my-results.sw
+`sa: save my-results.sw`
 
 To see what is currently known:
-sa: dump
+`sa: dump`
 
 To load files at run time, and then enter "interactive" mode:
-$ ./sdb-console.py -i sw-examples/family.sw sw-examples/family-relations.sw
+`$ ./sdb-console.py -i sw-examples/family.sw sw-examples/family-relations.sw`
 
 To exit the console:
-sa: exit
+`sa: exit`
 
 
 
