@@ -127,10 +127,10 @@ OK, but we can do a little better than this, in a more compact and visually clea
 `sa: (mother + father) |Sally>`  
 `|Trude> + |Tom>`  
 Nice, but we can go one step further and promote this to a general rule: a parent is always a mother + father independent of who we apply it to (and if needed, we can later over-write general rules with specific exceptions, but that is outside the scope of this tutorial). In our notation this is:  
-`parent |*> #=> (mother + father) |_self>`
+`parent |*> #=> (mother + father) |_self>`  
 We have a bit to unpack here!  
 `|*>` means the "parent" operator is defined with respect to all kets  
-`#=>` means calculate the answer at invoke time not definition time, and is appropriately called a "stored rule". For comparison "=>" means calculate at defintion time. If that doesn't make sense, don't worry about it for now, just know we need it.
+`#=>` means calculate the answer at invoke time not definition time, and is appropriately called a "stored rule". For comparison `=>` means calculate at defintion time. If that doesn't make sense, don't worry about it for now, just know we need it.
 `|_self>` is the location where we substitute in who the operator is being applied to. For example, "Who is the parent of Erica?" is:  
 `parent |Erica>`  
 which expands to (since we have replaced `|_self>` with `|Erica>`):  
@@ -158,70 +158,70 @@ In an identical fashion we can next define the "child" operator as "son" + "daug
 
 
 ## The Sibling Operator
-How would we go about defining the "sibling" operator? This is a little bit more involved, but the outline is we find your parents children, and then exclude or subtract yourself. Let's start by considering Sally, and then generalize later. We already know her parents:
-sa: parent |Sally>
-|Trude> + |Tom>
+How would we go about defining the "sibling" operator? This is a little bit more involved, but the outline is we find your parents children, and then exclude or subtract yourself. Let's start by considering Sally, and then generalize later. We already know her parents:  
+`sa: parent |Sally>`  
+`|Trude> + |Tom>`
 
 And in turn, we know Trude's and Tom's children (NB: they are only the same because there are no step-kids in this example):
-sa: child |Trude>
-|Sally> + |Erica>
+`sa: child |Trude>`  
+`|Sally> + |Erica>`
 
-sa: child |Tom>
-|Sally> + |Erica>
+`sa: child |Tom>`  
+`|Sally> + |Erica>`
 
-One of the properties of operators is we can chain them in sequences by separating them by the space character. In this example, consider the operator sequence "child parent" applied to |Sally>:
-sa: child parent |Sally>
-2|Sally> + 2|Erica>
+One of the properties of operators is we can chain them in sequences by separating them by the space character. In this example, consider the operator sequence "child parent" applied to `|Sally>`:
+`sa: child parent |Sally>`  
+`2|Sally> + 2|Erica>`
 
-Let's explain what is going on, and why there are those coefficients of 2 in there! (short version is because Sally has two parents).
-child parent |Sally>
-expands to (we evaluate operator sequences right to left):
-child (|Trude> + |Tom>)
-expands to, due to operator linearity:
-child |Trude> + child |Tom>
-expands to:
-(|Sally> + |Erica>) + (|Sally> + |Erica>)
-expands to, using the addition property of kets:
-2|Sally> + 2|Erica>
+Let's explain what is going on, and why there are those coefficients of 2 in there! (short version is because Sally has two parents).  
+`child parent |Sally>`  
+expands to (we evaluate operator sequences right to left):  
+`child (|Trude> + |Tom>)`  
+expands to, due to operator linearity:  
+`child |Trude> + child |Tom>`  
+expands to:  
+`(|Sally> + |Erica>) + (|Sally> + |Erica>)`  
+expands to, using the addition property of kets:  
+`2|Sally> + 2|Erica>`
 
-We don't want those 2's in there as they complicate subtracting out |Sally> in our "sibling" operator. To solve this we have a collection of built-in "sigmoids" that only modify ket coefficients, not ket labels. In network terms, sigmoids modify how active nodes are, but not which nodes are active. In this case we need the "clean" sigmoid which has the property that if the coefficient is less than or equal to zero the new coefficient is zero, otherwise the new coefficient is set to 1. It produces what we call "clean" superpositions, where all coefficients are either 0 or 1. Which now gives us:
-sa: clean child parent |Sally>
-|Sally> + |Erica>
+We don't want those 2's in there as they complicate subtracting out `|Sally>` in our "sibling" operator. To solve this we have a collection of built-in "sigmoids" that only modify ket coefficients, not ket labels. In network terms, sigmoids modify how active nodes are, but not which nodes are active. In this case we need the "clean" sigmoid which has the property that if the coefficient is less than or equal to zero the new coefficient is zero, otherwise the new coefficient is set to 1. It produces what we call "clean" superpositions, where all coefficients are either 0 or 1. Which now gives us:  
+`sa: clean child parent |Sally>`  
+`|Sally> + |Erica>`
 
 But Sally is not a sibling of herself, so let's subtract her:
-sa: clean child parent |Sally> - |Sally>
-0|Sally> + |Erica>
+`sa: clean child parent |Sally> - |Sally>`  
+`0|Sally> + |Erica>`
 
-Then finaly to remove her from the superposition, we use the built-in "drop" operator, which removes all kets from a superposition with coefficients less than or equal to zero:
-sa: drop (clean child parent |Sally> - |Sally>)
-|Erica>
+Then finaly to remove her from the superposition, we use the built-in "drop" operator, which removes all kets from a superposition with coefficients less than or equal to zero:  
+`sa: drop (clean child parent |Sally> - |Sally>)`  
+`|Erica>`
 
-Finally, tidy this a little:
-sa: drop (clean child parent - 1) |Sally>
-|Erica>
+Finally, tidy this a little:  
+`sa: drop (clean child parent - 1) |Sally>`  
+`|Erica>`
 
-We are now ready to promote this to a general rule:
-sibling |*> #=> drop (clean child parent - 1) |_self>
+We are now ready to promote this to a general rule:  
+`sibling |*> #=> drop (clean child parent - 1) |_self>`
 
-When we ask "Who is the sibling of Sally?" and "Who is the sibling of Erica?" we get the expected answers:
-sa: sibling |Sally>
-|Erica>
+When we ask "Who is the sibling of Sally?" and "Who is the sibling of Erica?" we get the expected answers:  
+`sa: sibling |Sally>`  
+`|Erica>`
 
-sa: sibling |Erica>
-|Sally>
+`sa: sibling |Erica>`  
+`|Sally>`
 
-In a similar fashion we can also define the "brother" and "sister" operators:
-brother |*> #=> drop (clean son parent - 1) |_self>
-sister |*> #=> drop (clean daughter parent - 1) |_self>
+In a similar fashion we can also define the "brother" and "sister" operators:  
+`brother |*> #=> drop (clean son parent - 1) |_self>`  
+`sister |*> #=> drop (clean daughter parent - 1) |_self>`
 
-And the "brother-and-sister" operator can be defined either as brother + sister, or more simply as an alias for the sibling operator:
-brother-and-sister |*> #=> sibling |_self>
-Indeed, this is the general pattern for defining "op2" as an alias for "op1":
-op2 |*> #=> op1 |_self>
+And the "brother-and-sister" operator can be defined either as brother + sister, or more simply as an alias for the sibling operator:  
+`brother-and-sister |*> #=> sibling |_self>`  
+Indeed, this is the general pattern for defining "op2" as an alias for "op1":  
+`op2 |*> #=> op1 |_self>`
 
-Finally in this section, we can even define half-brother and half-sister operators, but the explanation for how they work is beyond the scope of this tutorial:
-half-brother |*> #=> drop son (mother - father) |_self> + drop son (father - mother) |_self>
-half-sister |*> #=> drop daughter (mother - father) |_self> + drop daughter (father - mother) |_self>
+Finally in this section, we can even define half-brother and half-sister operators, but the explanation for how they work is beyond the scope of this tutorial:  
+`half-brother |*> #=> drop son (mother - father) |_self> + drop son (father - mother) |_self>`  
+`half-sister |*> #=> drop daughter (mother - father) |_self> + drop daughter (father - mother) |_self>`
 
 
 
