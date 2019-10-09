@@ -513,21 +513,22 @@ sa: table[person, have-a-brother, have-a-sister, have-a-wife, have-a-husband] (|
 ```
 
 ## The how-many operator
-The how-many operator counts how many kets are in a superposition. Some examples:
-sa: how-many |>
-|number: 0>
+The how-many operator counts how many kets are in a superposition. Some examples:  
+`sa: how-many |>`  
+`|number: 0>`
 
-sa: how-many (|a> + |b>)
-|number: 2>
+`sa: how-many (|a> + |b>)`  
+`|number: 2>`
 
-sa: how-many (|a> + |b> + |c> + |d> + |e>)
-|number: 5>
+`sa: how-many (|a> + |b> + |c> + |d> + |e>)`  
+`|number: 5>`
 
-This allows us to create another collection of operators. Eg, we can ask: "How many children does Trude have?":
-sa: how-many child |Trude>
-|number: 2>
+This allows us to create another collection of operators. Eg, we can ask: "How many children does Trude have?":  
+`sa: how-many child |Trude>`  
+`|number: 2>`
 
 In a similar manner we can now define:
+```
 how-many-children |*> #=> how-many child |_self>
 how-many-grand-children |*> #=> how-many child^2 |_self>
 how-many-great-grand-children |*> #=> how-many child^3 |_self>
@@ -538,8 +539,7 @@ how-many-aunts |*> #=> how-many aunt |_self>
 how-many-cousins |*> #=> how-many cousin |_self>
 how-many-nieces |*> #=> how-many niece |_self>
 how-many-nephews |*> #=> how-many nephew |_self>
-
-
+```
 
 ## Asking and replying in short sentences
 Now we have some knowledge, we can define simple question and answer pairs. We already have most of the required pieces, we just need to know how to merge ket labels. '_' merges ket labels with no space, and '__' merges ket labels with a separating space. So for example: |fish> _ |soup> becomes |fishsoup> and |fish> __ |soup> becomes |fish soup>. Now let's define some operators:
