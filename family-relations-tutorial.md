@@ -162,14 +162,14 @@ How would we go about defining the "sibling" operator? This is a little bit more
 `sa: parent |Sally>`  
 `|Trude> + |Tom>`
 
-And in turn, we know Trude's and Tom's children (NB: they are only the same because there are no step-kids in this example):
+And in turn, we know Trude's and Tom's children (NB: they are only the same because there are no step-kids in this example):  
 `sa: child |Trude>`  
 `|Sally> + |Erica>`
 
 `sa: child |Tom>`  
 `|Sally> + |Erica>`
 
-One of the properties of operators is we can chain them in sequences by separating them by the space character. In this example, consider the operator sequence "child parent" applied to `|Sally>`:
+One of the properties of operators is we can chain them in sequences by separating them by the space character. In this example, consider the operator sequence "child parent" applied to `|Sally>`:  
 `sa: child parent |Sally>`  
 `2|Sally> + 2|Erica>`
 
@@ -227,6 +227,7 @@ Finally in this section, we can even define half-brother and half-sister operato
 
 ## Operator Composition and Operator Sequences
 One of the powers of the operator notation over other triple notation is the ease with which we can compose operators. For example your grand-parent's are the parent's of your parent's. Your grand-mother is your parent's mother. Your grand-son is your child's son. And so on. This is demonstrated in the following general rules:
+```
 grand-parent |*> #=> parent parent |_self>
 grand-mother |*> #=> mother parent |_self>
 grand-father |*> #=> father parent |_self>
@@ -239,19 +240,20 @@ great-grand-daughter |*> #=> daughter child child |_self>
 great-grand-parent |*> #=> parent parent parent |_self>
 great-grand-mother |*> #=> mother parent parent |_self>
 great-grand-father |*> #=> father parent parent |_self>
-
+```
 So we can now ask:
-"Who are Sally's grand-parents, grand-mothers and grand-fathers?"
-sa: grand-parent |Sally>
-|Sara> + |Sam> + |Ruth> + |Mike>
+"Who are Sally's grand-parents, grand-mothers and grand-fathers?"  
+`sa: grand-parent |Sally>`  
+`|Sara> + |Sam> + |Ruth> + |Mike>`
 
-sa: grand-mother |Sally>
-|Sara> + |Ruth>
+`sa: grand-mother |Sally>`  
+`|Sara> + |Ruth>`
 
-sa: grand-father |Sally>
-|Sam> + |Mike>
+`sa: grand-father |Sally>`  
+`|Sam> + |Mike>`
 
 Similarly we can define the following general rules:
+```
 uncle |*> #=> brother parent |_self> 
 aunt |*> #=> sister parent |_self>
 aunt-and-uncle |*> #=> (aunt + uncle) |_self>
@@ -268,8 +270,7 @@ sister-in-law |*> #=> (sister wife + sister husband + wife brother) |_self>
 mother-in-law |*> #=> mother (wife + husband) |_self>
 father-in-law |*> #=> father (wife + husband) |_self>
 spouse |*> #=> (wife + husband) |_self>
-
-
+```
 
 ## The don't know ket, and the do-you-know operator
 Let's take a side-step. What happens if you ask a question but we don't know the answer?
