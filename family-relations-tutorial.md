@@ -450,7 +450,7 @@ is-a-sister |*> #=> and(is-a-female |_self>, do-you-know sibling |_self>)
 
 ## The is-in-range[] operator
 We have come a long way! All of the above operators have been derived from knowing this initial set of operators:
-`{mother, father, son, daughter, wife, husband}`. If we include the age operator we can define yet more. But first, we need to introduce the `is-in-range[a, b]` operator. Consider the statement:  
+`{mother, father, son, daughter, wife, husband}`. If we include the `age` operator we can define yet more. But first, we need to introduce the `is-in-range[a, b]` operator. Consider the statement:  
 `is-in-range[x, y] |z>`  
 which has the property that if "z" can't be cast to a float, then return the don't know ket `|>`  
 If `x <= z <= y` then return `|yes>`  
@@ -485,8 +485,9 @@ is-a-girl |*> #=> and(is-a-female |_self>, is-a-child |_self>)
 
 
 ## The have-a-x operators
-Recall from above the don't know ket |> and the "do-you-know" operator. Which has the property that "do-you-know" applied to |> returns |no>, and for everything else, "do-you-know" returns |yes>. Hence we can ask if an operator is defined for an object. 
+Recall from above the don't know ket `|>` and the `do-you-know` operator. Which has the property that `do-you-know` applied to `|>` returns `|no>`, and for everything else, `do-you-know` returns `|yes>`. Hence we can ask if an operator is defined for an object. 
 In particular, this collection of have-a-x operators:
+```
 have-a-child |*> #=> do-you-know child |_self>
 have-a-brother |*> #=> do-you-know brother |_self>
 have-a-sister |*> #=> do-you-know sister |_self>
@@ -497,8 +498,9 @@ have-an-aunt |*> #=> do-you-know aunt |_self>
 have-a-cousin |*> #=> do-you-know cousin |_self>
 have-a-niece |*> #=> do-you-know niece |_self>
 have-a-nephew |*> #=> do-you-know nephew |_self>
-
+```
 More concretly, here are some of them in action in table form:
+```
 sa: table[person, have-a-brother, have-a-sister, have-a-wife, have-a-husband] (|Sally> + |Erica> + |Trude> + |Tom>)
 +--------+----------------+---------------+-------------+----------------+
 | person | have-a-brother | have-a-sister | have-a-wife | have-a-husband |
@@ -508,8 +510,7 @@ sa: table[person, have-a-brother, have-a-sister, have-a-wife, have-a-husband] (|
 | Trude  | no             | no            | no          | yes            |
 | Tom    | no             | no            | yes         | no             |
 +--------+----------------+---------------+-------------+----------------+
-
-
+```
 
 ## The how-many operator
 The how-many operator counts how many kets are in a superposition. Some examples:
