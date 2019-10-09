@@ -450,18 +450,20 @@ is-a-sister |*> #=> and(is-a-female |_self>, do-you-know sibling |_self>)
 
 ## The is-in-range[] operator
 We have come a long way! All of the above operators have been derived from knowing this initial set of operators:
-{mother, father, son, daughter, wife, husband}. If we include the age operator we can define yet more. But first, we need to introduce the is-in-range[a, b] operator. Consider the statement:
-is-in-range[x, y] |z>
-which has the property that if "z" can't be cast to a float, then return the don't know ket |>
-If x <= z <= y then return |yes>
-Otherwise, return |no>
+`{mother, father, son, daughter, wife, husband}`. If we include the age operator we can define yet more. But first, we need to introduce the `is-in-range[a, b]` operator. Consider the statement:  
+`is-in-range[x, y] |z>`  
+which has the property that if "z" can't be cast to a float, then return the don't know ket `|>`  
+If `x <= z <= y` then return `|yes>`  
+Otherwise, return `|no>`
 
 Now we can apply this to the age of our subject in these general rules:
+```
 is-a-child |*> #=> is-in-range[0,17] age |_self>
 is-a-teenager |*> #=> is-in-range[13,19] age |_self>
 is-an-adult |*> #=> not is-in-range[0,17] age |_self>
-
+```
 Using our table operator we can see the result:
+```
 sa: table[person, age, is-a-child, is-a-teenager, is-an-adult] (|Sally> + |Erica> + |Trude> + |Tom>)
 +--------+-----+------------+---------------+-------------+
 | person | age | is-a-child | is-a-teenager | is-an-adult |
@@ -471,14 +473,15 @@ sa: table[person, age, is-a-child, is-a-teenager, is-an-adult] (|Sally> + |Erica
 | Trude  | 38  | no         | no            | yes         |
 | Tom    | 40  | no         | no            | yes         |
 +--------+-----+------------+---------------+-------------+
-
+```
 Finally, we can derive a couple more operators:
+```
 is-a-man |*> #=> and(is-a-male |_self>, is-an-adult |_self>)
 is-a-boy |*> #=> and(is-a-male |_self>, is-a-child |_self>)
 
 is-a-woman |*> #=> and(is-a-female |_self>, is-an-adult |_self>)
 is-a-girl |*> #=> and(is-a-female |_self>, is-a-child |_self>)
-
+```
 
 
 ## The have-a-x operators
