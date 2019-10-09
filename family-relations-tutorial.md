@@ -130,7 +130,7 @@ Nice, but we can go one step further and promote this to a general rule: a paren
 `parent |*> #=> (mother + father) |_self>`  
 We have a bit to unpack here!  
 `|*>` means the "parent" operator is defined with respect to all kets  
-`#=>` means calculate the answer at invoke time not definition time, and is appropriately called a "stored rule". For comparison `=>` means calculate at defintion time. If that doesn't make sense, don't worry about it for now, just know we need it.
+`#=>` means calculate the answer at invoke time not definition time, and is appropriately called a "stored rule". For comparison `=>` means calculate at defintion time. If that doesn't make sense, don't worry about it for now, just know we need it.  
 `|_self>` is the location where we substitute in who the operator is being applied to. For example, "Who is the parent of Erica?" is:  
 `parent |Erica>`  
 which expands to (since we have replaced `|_self>` with `|Erica>`):  
@@ -374,7 +374,7 @@ It often happens to be useful to display the answers to questions in table form,
 So we introduce the table operator. It has the form:  
 `table[label, op1, op2, ..., opn] sp`  
 where `label` is the label for the first column  
-`op1, op2, ..., opn` are operators that are applied to the objects in the first column (NB: it is often useful to use aliases here).  
+`op1, op2, ..., opn` are operators that are applied to the objects in the first column (NB: it is often useful to use aliases here depending on what you want the column headings to be).  
 `sp` is a superposition/list of objects that we want to apply the operators to.
 
 For example, using the operators defined in the above section, we can display the answers to 16 questions at once:  
@@ -576,7 +576,7 @@ Whew! I hope you made it this far! The above tutorial serves as something of an 
  * [Minimalistic usage for our operators](http://semantic-db.org/docs/usage/)  
  * [The Semantic DB](https://github.com/GarryMorrison/Semantic-DB)
 
-Where we borrowed the notation from (NB: borrowed. Ie, there are many differences!):  
+Where we borrowed the notation from (NB: borrowed, there are many differences!):  
  * [bra-kets](https://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation)  
  * [operators](https://en.wikipedia.org/wiki/Operator_(physics))
 
