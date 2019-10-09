@@ -1,10 +1,11 @@
 Representing family relations using the Semantic DB
+===================================================
 
-Introduction:
+## Introduction
 In this tutorial we will go through the steps of building up a knowledge base about a family in particular, and family relations in general. We will be using the Semantic DB which uses an experimental language that borrows some notation from quantum mechanics and converts it into a knowledge representation language. The goal of the project is to reduce everything down to either kets or operators. Kets are then used to represent the state of a system, and operators act to change the state of that system. In simplest terms, a ket is just a string label with an associated real valued coefficient (usually positive).
 
 
-The Semantic DB console:
+## The Semantic DB console
 Before we start, we need to introduce the Semantic DB console. This is where we enter knowledge, either by typing it in, or loading from a file, and then ask questions. Once you have it installed, simply run:
 
 $ ./sdb-console.py
@@ -51,8 +52,7 @@ sa: exit
 
 
 
-Simple Networks:
-
+## Simple Networks
 Today we are going to be building some knowledge about a multi-generational family.
 We will start by considering "Sally", which we represent in our notation as the ket |Sally>.
 More generally, ket's can contain almost arbitrary strings, excluding the '<' '|' and '>' characters. 
@@ -75,8 +75,7 @@ At this point it is important to recognise we are actually talking about a netwo
 
 
 
-Semantic Triples:
-
+## Semantic Triples
 Now we have our notation for semantic triples,
  we can quickly learn some more knowledge about this family:
 Sally's father is Tom
@@ -119,8 +118,7 @@ Note that I snuck in there our first example of a superposition. When the daught
 |Sally> + |Erica>.
 
 
-The Parent Operator:
-
+## The Parent Operator
 OK, so we have notation for triples, but everyone has triples. We need to compose some more interesting operators. How about we consider the definition of parents? Parents are simply our mother plus our father. We can do that in the console:
 sa: mother |Sally> + father |Sally>
 |Trude> + |Tom>
@@ -158,8 +156,7 @@ child |*> #=> (son + daughter) |_self>
 
 
 
-The Sibling Operator:
-
+## The Sibling Operator
 How would we go about defining the "sibling" operator? This is a little bit more involved, but the outline is we find your parents children, and then exclude or subtract yourself. Let's start by considering Sally, and then generalize later. We already know her parents:
 sa: parent |Sally>
 |Trude> + |Tom>
@@ -227,8 +224,7 @@ half-sister |*> #=> drop daughter (mother - father) |_self> + drop daughter (fat
 
 
 
-Operator Composition and Operator Sequences:
-
+## Operator Composition and Operator Sequences
 One of the powers of the operator notation over other triple notation is the ease with which we can compose operators. For example your grand-parent's are the parent's of your parent's. Your grand-mother is your parent's mother. Your grand-son is your child's son. And so on. This is demonstrated in the following general rules:
 grand-parent |*> #=> parent parent |_self>
 grand-mother |*> #=> mother parent |_self>
@@ -274,8 +270,7 @@ spouse |*> #=> (wife + husband) |_self>
 
 
 
-The don't know ket, and the do-you-know operator:
-
+## The don't know ket, and the do-you-know operator
 Let's take a side-step. What happens if you ask a question but we don't know the answer?
 For example, consider the spouse operator, we just defined:
 spouse |*> #=> (wife + husband) |_self>
@@ -336,8 +331,7 @@ And as a bonus our operator sequences are reading like simple English sentences.
 
 
 
-is-mbr and the is-a-x operators:
-
+## is-mbr and the is-a-x operators
 It is now time to look at the is-a-x operators, but first we need to introduce the is-mbr(ket, sp) function. This function returns |yes> if 'ket' is a member of the superposition 'sp', otherwise |no>.
 This is how we ask: is "b" in the set {"a", "b", "c"}:
 sa: is-mbr(|b>, |a> + |b> + |c>)
@@ -373,8 +367,7 @@ is-a-son |*> #=> is-mbr(|_self>, clean son parent |_self>)
 
 
 
-The table operator:
-
+## The table operator
 It often happens to be useful to display the answers to questions in table form, instead of asking them one at a time.
 So we introduce the table operator. It has the form:
 table[label, op1, op2, ..., opn] sp
@@ -395,8 +388,7 @@ sa: table[person, is-a-son, is-a-daughter, is-a-mother, is-a-father] (|Sally> + 
 
 
 
-Exponentiating Operators:
-
+## Exponentiating Operators
 Applying operators is kind of like a form of multiplication. Indeed sometimes operators are matrices, and sometimes operators are literally numbers, where it is clear they are acting as multiplication. In this spirit, we can exponentiate operators. So op^n expands to the operator sequence op op ... op, where op is repeated n times. In particular, child^2 is a short-cut for the operator sequence "child child". child^3 is short-cut for "child child child", and so on. Hence, with minimal explanation we introduce these operators:
 is-a-parent |*> #=> do-you-know child |_self>
 
@@ -410,8 +402,7 @@ is-a-great-grand-parent |*> #=> do-you-know child^3 |_self>
 
 
 
-The or() and the and() functions:
-
+## The or() and the and() functions
 These work in the obvious way, really. Simply enough we have:
 sa: or(|no>, |no>)
 |no>
@@ -454,8 +445,7 @@ is-a-sister |*> #=> and(is-a-female |_self>, do-you-know sibling |_self>)
 
 
 
-The is-in-range[] operator:
-
+## The is-in-range[] operator
 We have come a long way! All of the above operators have been derived from knowing this initial set of operators:
 {mother, father, son, daughter, wife, husband}. If we include the age operator we can define yet more. But first, we need to introduce the is-in-range[a, b] operator. Consider the statement:
 is-in-range[x, y] |z>
@@ -488,8 +478,7 @@ is-a-girl |*> #=> and(is-a-female |_self>, is-a-child |_self>)
 
 
 
-The have-a-x operators:
-
+## The have-a-x operators
 Recall from above the don't know ket |> and the "do-you-know" operator. Which has the property that "do-you-know" applied to |> returns |no>, and for everything else, "do-you-know" returns |yes>. Hence we can ask if an operator is defined for an object. 
 In particular, this collection of have-a-x operators:
 have-a-child |*> #=> do-you-know child |_self>
@@ -516,8 +505,7 @@ sa: table[person, have-a-brother, have-a-sister, have-a-wife, have-a-husband] (|
 
 
 
-The how-many operator:
-
+## The how-many operator
 The how-many operator counts how many kets are in a superposition. Some examples:
 sa: how-many |>
 |number: 0>
@@ -546,8 +534,7 @@ how-many-nephews |*> #=> how-many nephew |_self>
 
 
 
-Asking and replying in short sentences:
-
+## Asking and replying in short sentences
 Now we have some knowledge, we can define simple question and answer pairs. We already have most of the required pieces, we just need to know how to merge ket labels. '_' merges ket labels with no space, and '__' merges ket labels with a separating space. So for example: |fish> _ |soup> becomes |fishsoup> and |fish> __ |soup> becomes |fish soup>. Now let's define some operators:
 sa: Who-is-the-mother-of |*> #=> |The mother of> __ |_self> __ |is> __ mother |_self> _ |.>
 sa: Who-is-the-father-of |*> #=> |_self> _ |'s> __ |father is> __ father |_self> _ |.>
@@ -570,12 +557,11 @@ But to be honest, these simple question/answer pairs are quite restricted in wha
 
 
 
-Conclusion:
-
+## Conclusion
 Whew! I hope you made it this far! The above tutorial serves as something of an introduction to the ket/operator model. The goal was to start with an initial set of operators {mother, father, son, daughter, wife, husband, age} and go on to compose consequences of that knowledge, and build a set of operators that apply to all family tree's, not just Sally's. And that the ket/operator model is a more powerful model than a typical triple store. A side observation is that operator sequences often read like simple English sentences. Indeed, we might even go on to claim that the ket/operator model is a good notation to represent brains, where ket's correspond to synapses, and operators to neural circuits. The question then becomes what is the set of interesting and useful operators?
 
 
-Further reading:
+## Further reading
 Sally's full family tree: http://semantic-db.org/docs/usage/sw-examples/family.sw
 The full family-relations sw file: http://semantic-db.org/docs/usage/sw-examples/family-relations.sw
 The Semantic DB readme file: https://github.com/GarryMorrison/Semantic-DB/blob/master/README.md
