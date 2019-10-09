@@ -65,9 +65,9 @@ This is done using the following "learn rule":
 Or in the console (note the "sa:" prompt indicates we are working in the console):  
 `sa: mother |Sally> => |Trude>`  
 This is of course the familiar predicate-subject-object triple:  
-"mother" "Sally" "Trude"  
+`"mother" "Sally" "Trude"`  
 Though it should be noted, our notation goes well beyond simple triples, as we will see below.
-Given this learn rule entered into the console, we can ask the console the simple question: "Who is the mother of Sally?":
+Given this learn rule entered into the console, we can ask the console the simple question: "Who is the mother of Sally?":  
 `sa: mother |Sally>`  
 `|Trude>`  
 At this point it is important to recognise we are actually talking about a network here. A very simple one, but a network nonetheless. We have an abstract network with only one node active, the `|Sally>` node, and we change the state of the network by applying the "mother" operator, and we now have a network with only the `|Trude>` node active. Later we will have more general network states with more than one node active at a time, and those nodes having degrees of activation (the coefficients of kets). We call these states "superpositions". More on them later.
@@ -77,6 +77,7 @@ At this point it is important to recognise we are actually talking about a netwo
 ## Semantic Triples
 Now we have our notation for semantic triples,
  we can quickly learn some more knowledge about this family:
+```
 Sally's father is Tom
 Sally is 16
 Erica's mother is (also) Trude
@@ -92,8 +93,9 @@ Tom's father is Mike
 Tom's wife is Trude
 Tom's daughter are Sally and Erica
 Tom is 40
-
+```
 in our notation becomes:
+```
 father |Sally> => |Tom>
 age |Sally> => |16>
 
@@ -112,9 +114,9 @@ father |Tom> => |Mike>
 wife |Tom> => |Trude>
 daughter |Tom> => |Sally> + |Erica>
 age |Tom> => |40>
-
-Note that I snuck in there our first example of a superposition. When the daughter operator is applied to either |Trude> or |Tom> the resultant network state is both |Sally> and |Erica> active at the same time. In our notation this is represented as a sum of the kets: 
-|Sally> + |Erica>.
+```
+Note that I snuck in there our first example of a superposition. When the daughter operator is applied to either `|Trude>` or `|Tom>` the resultant network state is both `|Sally>` and `|Erica>` active at the same time. In our notation this is represented as a sum of the kets: 
+`|Sally> + |Erica>`.
 
 
 ## The Parent Operator
