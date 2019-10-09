@@ -334,38 +334,38 @@ And as a bonus our operator sequences are reading like simple English sentences.
 
 
 ## is-mbr and the is-a-x operators
-It is now time to look at the is-a-x operators, but first we need to introduce the is-mbr(ket, sp) function. This function returns |yes> if 'ket' is a member of the superposition 'sp', otherwise |no>.
-This is how we ask: is "b" in the set {"a", "b", "c"}:
-sa: is-mbr(|b>, |a> + |b> + |c>)
-|yes>
+It is now time to look at the is-a-x operators, but first we need to introduce the `is-mbr(ket, sp)` function. This function returns `|yes>` if `ket` is a member of the superposition `sp`, otherwise `|no>`.  
+This is how we ask: `is "b" in the set {"a", "b", "c"}`:  
+`sa: is-mbr(|b>, |a> + |b> + |c>)`  
+`|yes>`
 
-Likewise: is "x" in the set {"a", "b", "c"}:
-sa: is-mbr(|x>, |a> + |b> + |c>)
-|no>
+Likewise: `is "x" in the set {"a", "b", "c"}`:  
+`sa: is-mbr(|x>, |a> + |b> + |c>)`  
+`|no>`
 
-We can then use this to construct a collection of operators. Let's try to build the "is-a-daughter" operator first. Once again, consider Sally. Who are Sally's parents?
-sa: parent |Sally>
-|Trude> + |Tom>
+We can then use this to construct a collection of operators. Let's try to build the "is-a-daughter" operator first. Once again, consider Sally. Who are Sally's parents?  
+`sa: parent |Sally>`  
+`|Trude> + |Tom>`
 
-Who are their daughter's?
-sa: daughter parent |Sally>
-2|Sally> + 2|Erica>
+Who are their daughter's?  
+`sa: daughter parent |Sally>`  
+`2|Sally> + 2|Erica>`
 
-Who are their daughter's, cleaned:
-sa: clean daughter parent |Sally>
-|Sally> + |Erica>
+Who are their daughter's, cleaned:  
+`sa: clean daughter parent |Sally>`  
+`|Sally> + |Erica>`
 
-Now finally we want to ask is "Sally" in the set {"Sally", "Erica"}? Ie, we want to use the is-mbr() function:
-sa: is-mbr(|Sally>, |Sally> + |Erica>)
-|yes>
+Now finally we want to ask is "Sally" in the set {"Sally", "Erica"}? Ie, we want to use the is-mbr() function:  
+`sa: is-mbr(|Sally>, |Sally> + |Erica>)`  
+`|yes>`
 
-Then putting it all together, we define the general rule:
-is-a-daughter |*> #=> is-mbr(|_self>, clean daughter parent |_self>)
+Then putting it all together, we define the general rule:  
+`is-a-daughter |*> #=> is-mbr(|_self>, clean daughter parent |_self>)`
 
-Using an identical structure we can similarly define:
-is-a-father |*> #=> is-mbr(|_self>, clean father child |_self>)
-is-a-mother |*> #=> is-mbr(|_self>, clean mother child |_self>)
-is-a-son |*> #=> is-mbr(|_self>, clean son parent |_self>)
+Using an identical structure we can similarly define:  
+`is-a-father |*> #=> is-mbr(|_self>, clean father child |_self>)`  
+`is-a-mother |*> #=> is-mbr(|_self>, clean mother child |_self>)`  
+`is-a-son |*> #=> is-mbr(|_self>, clean son parent |_self>)`
 
 
 
