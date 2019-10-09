@@ -53,24 +53,24 @@ To exit the console:
 
 ## Simple Networks
 Today we are going to be building some knowledge about a multi-generational family.
-We will start by considering "Sally", which we represent in our notation as the ket |Sally>.
-More generally, ket's can contain almost arbitrary strings, excluding the '<' '|' and '>' characters. 
-If we consider some abstract network, |Sally> is simply a node in that network.
-To start filling out that network, let's next consider Sally's mother Trude, and introduce the |Trude> node.
+We will start by considering "Sally", which we represent in our notation as the ket `|Sally>`.
+More generally, ket's can contain almost arbitrary strings, excluding the `'<'` `'|'` and `'>'` characters. 
+If we consider some abstract network, `|Sally>` is simply a node in that network.
+To start filling out that network, let's next consider Sally's mother Trude, and introduce the `|Trude>` node.
 The question becomes how do we notate network structure, such as Trude is the mother of Sally?
 For that we need to introduce the second component of our notation, operators. 
-In this case we want to define the "mother" operator applied to the |Sally> node to result in the |Trude> node.
-This is done using the following "learn rule":
-mother |Sally> => |Trude>
-Or in the console (note the "sa:" prompt indicates we are working in the console):
-sa: mother |Sally> => |Trude>
-This is of course the familiar predicate-subject-object triple:
-"mother" "Sally" "Trude"
+In this case we want to define the "mother" operator applied to the `|Sally>` node to result in the `|Trude>` node.
+This is done using the following "learn rule":  
+`mother |Sally> => |Trude>`  
+Or in the console (note the "sa:" prompt indicates we are working in the console):  
+`sa: mother |Sally> => |Trude>`  
+This is of course the familiar predicate-subject-object triple:  
+"mother" "Sally" "Trude"  
 Though it should be noted, our notation goes well beyond simple triples, as we will see below.
 Given this learn rule entered into the console, we can ask the console the simple question: "Who is the mother of Sally?":
-sa: mother |Sally>
-|Trude>
-At this point it is important to recognise we are actually talking about a network here. A very simple one, but a network nonetheless. We have an abstract network with only one node active, the |Sally> node, and we change the state of the network by applying the "mother" operator, and we now have a network with only the |Trude> node active. Later we will have more general network states with more than one node active at a time, and those nodes having degrees of activation (the coefficients of kets). We call these states "superpositions". More on them later.
+`sa: mother |Sally>`  
+`|Trude>`  
+At this point it is important to recognise we are actually talking about a network here. A very simple one, but a network nonetheless. We have an abstract network with only one node active, the `|Sally>` node, and we change the state of the network by applying the "mother" operator, and we now have a network with only the `|Trude>` node active. Later we will have more general network states with more than one node active at a time, and those nodes having degrees of activation (the coefficients of kets). We call these states "superpositions". More on them later.
 
 
 
