@@ -513,7 +513,7 @@ sa: table[person, have-a-brother, have-a-sister, have-a-wife, have-a-husband] (|
 ```
 
 ## The how-many operator
-The how-many operator counts how many kets are in a superposition. Some examples:  
+The `how-many` operator counts how many kets are in a superposition. Some examples:  
 `sa: how-many |>`  
 `|number: 0>`
 
@@ -542,25 +542,26 @@ how-many-nephews |*> #=> how-many nephew |_self>
 ```
 
 ## Asking and replying in short sentences
-Now we have some knowledge, we can define simple question and answer pairs. We already have most of the required pieces, we just need to know how to merge ket labels. '_' merges ket labels with no space, and '__' merges ket labels with a separating space. So for example: |fish> _ |soup> becomes |fishsoup> and |fish> __ |soup> becomes |fish soup>. Now let's define some operators:
-sa: Who-is-the-mother-of |*> #=> |The mother of> __ |_self> __ |is> __ mother |_self> _ |.>
-sa: Who-is-the-father-of |*> #=> |_self> _ |'s> __ |father is> __ father |_self> _ |.>
-sa: How-old-is |*> #=> |_self> __ |is> __ age |_self> __ |years old.>
+Now we have some knowledge, we can define simple question and answer pairs. We already have most of the required pieces, we just need to know how to merge ket labels. `'_'` merges ket labels with no space, and `'__'` merges ket labels with a separating space. 
+So for example: `|fish> _ |soup>` becomes `|fishsoup>` and `|fish> __ |soup>` becomes `|fish soup>`. Now let's define some operators:  
+`sa: Who-is-the-mother-of |*> #=> |The mother of> __ |_self> __ |is> __ mother |_self> _ |.>`  
+`sa: Who-is-the-father-of |*> #=> |_self> _ |'s> __ |father is> __ father |_self> _ |.>`  
+`sa: How-old-is |*> #=> |_self> __ |is> __ age |_self> __ |years old.>`
 
-And now we can ask:
-sa: Who-is-the-mother-of |Sally>
-|The mother of Sally is Trude.>
+And now we can ask:  
+`sa: Who-is-the-mother-of |Sally>`  
+`|The mother of Sally is Trude.>`
 
-sa: Who-is-the-father-of |Trude>
-|Trude's father is Sam.>
+`sa: Who-is-the-father-of |Trude>`  
+`|Trude's father is Sam.>`
 
-sa: How-old-is |Erica>
-|Erica is 12 years old.>
+`sa: How-old-is |Erica>`  
+`|Erica is 12 years old.>`
 
-sa: How-old-is |Trude>
-|Trude is 38 years old.>
+`sa: How-old-is |Trude>`  
+`|Trude is 38 years old.>`
 
-But to be honest, these simple question/answer pairs are quite restricted in what they can do. With a little work it is possible to reply to questions by selecting a reply template from a list of templates, similar to what we have in the greetings worked example (http://semantic-db.org/docs/usage/worked-examples/greetings.html). With a lot more work we could possibly handle sentences with more than one subject of interest, but that is well beyond the scope of this tutorial. And of course, answering questions with any degree of intelligence is unfortunately a long way off.
+But to be honest, these simple question/answer pairs are quite restricted in what they can do. With a little work it is possible to reply to questions by selecting a reply template from a list of templates, similar to what we have in the [greetings worked example](http://semantic-db.org/docs/usage/worked-examples/greetings.html). With a lot more work we could possibly handle sentences with more than one subject of interest, but that is well beyond the scope of this tutorial. And of course, answering questions with any degree of intelligence is unfortunately a long way off.
 
 
 
