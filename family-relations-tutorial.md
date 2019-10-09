@@ -120,40 +120,40 @@ Note that I snuck in there our first example of a superposition. When the daught
 
 
 ## The Parent Operator
-OK, so we have notation for triples, but everyone has triples. We need to compose some more interesting operators. How about we consider the definition of parents? Parents are simply our mother plus our father. We can do that in the console:
-sa: mother |Sally> + father |Sally>
-|Trude> + |Tom>
-OK, but we can do a little better than this, in a more compact and visually cleaner way:
-sa: (mother + father) |Sally>
-|Trude> + |Tom>
-Nice, but we can go one step further and promote this to a general rule: a parent is always a mother + father independent of who we apply it to (and if needed, we can later over-write general rules with specific exceptions, but that is outside the scope of this tutorial). In our notation this is:
-parent |*> #=> (mother + father) |_self>
-We have a bit to unpack here!
-|*> means the "parent" operator is defined with respect to all kets
-#=> means calculate the answer at invoke time not definition time, and is appropriately called a "stored rule". For comparison "=>" means calculate at defintion time. If that doesn't make sense, don't worry about it for now, just know we need it.
-|_self> is the location where we substitute in who the operator is being applied to. For example, "Who is the parent of Erica?" is:
-parent |Erica>
-which expands to (since we have replaced |_self> with |Erica>):
-(mother + father) |Erica>
-which expands to:
-|Trude> + |Tom>
+OK, so we have notation for triples, but everyone has triples. We need to compose some more interesting operators. How about we consider the definition of parents? Parents are simply our mother plus our father. We can do that in the console:  
+`sa: mother |Sally> + father |Sally>`  
+`|Trude> + |Tom>`  
+OK, but we can do a little better than this, in a more compact and visually cleaner way:  
+`sa: (mother + father) |Sally>`  
+`|Trude> + |Tom>`  
+Nice, but we can go one step further and promote this to a general rule: a parent is always a mother + father independent of who we apply it to (and if needed, we can later over-write general rules with specific exceptions, but that is outside the scope of this tutorial). In our notation this is:  
+`parent |*> #=> (mother + father) |_self>`
+We have a bit to unpack here!  
+`|*>` means the "parent" operator is defined with respect to all kets  
+`#=>` means calculate the answer at invoke time not definition time, and is appropriately called a "stored rule". For comparison "=>" means calculate at defintion time. If that doesn't make sense, don't worry about it for now, just know we need it.
+`|_self>` is the location where we substitute in who the operator is being applied to. For example, "Who is the parent of Erica?" is:  
+`parent |Erica>`  
+which expands to (since we have replaced `|_self>` with `|Erica>`):  
+`(mother + father) |Erica>`  
+which expands to:  
+`|Trude> + |Tom>`
 
-Since we have the "parent" operator defined with respect to |*>, it will work when applied to everyone. We can now ask, for example, who are the parents of Sally, Erica, Trude or Tom:
-sa: parent |Sally>
-|Trude> + |Tom>
+Since we have the "parent" operator defined with respect to `|*>`, it will work when applied to everyone. We can now ask, for example, who are the parents of Sally, Erica, Trude or Tom:  
+`sa: parent |Sally>`  
+`|Trude> + |Tom>`
 
-sa: parent |Erica>
-|Trude> + |Tom>
+`sa: parent |Erica>`  
+`|Trude> + |Tom>`
 
-sa: parent |Trude>
-|Sara> + |Sam>
+`sa: parent |Trude>`  
+`|Sara> + |Sam>`
 
-sa: parent |Tom>
-|Ruth> + |Mike>
+`sa: parent |Tom>`  
+`|Ruth> + |Mike>`
 
 
-In an identical fashion we can next define the "child" operator as "son" + "daughter":
-child |*> #=> (son + daughter) |_self>
+In an identical fashion we can next define the "child" operator as "son" + "daughter":  
+`child |*> #=> (son + daughter) |_self>`
 
 
 
