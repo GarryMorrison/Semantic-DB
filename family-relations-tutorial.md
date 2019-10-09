@@ -23,31 +23,30 @@ To see usage docs, visit:
 
 sa:
 ```
-
-Here are some of the features of the console to get you started:
-To get help in the console:
+Here are some of the features of the console to get you started:  
+To get help in the console:  
 `sa: help`
 
-To get usage information for the operator "op":
-`sa: usage op`
+To get usage information for the operator "op":  
+`sa: usage op`  
 
-To change file directory:
+To change file directory:  
 `sa: cd sw-examples`
 
-To load files:
-`sa: load family.sw`
+To load files:  
+`sa: load family.sw`  
 `sa: load family-relations.sw`
 
-To save files:
+To save files:  
 `sa: save my-results.sw`
 
-To see what is currently known:
+To see what is currently known:  
 `sa: dump`
 
-To load files at run time, and then enter "interactive" mode:
+To load files at run time, and then enter "interactive" mode:  
 `$ ./sdb-console.py -i sw-examples/family.sw sw-examples/family-relations.sw`
 
-To exit the console:
+To exit the console:  
 `sa: exit`
 
 
