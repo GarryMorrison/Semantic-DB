@@ -188,7 +188,7 @@ We don't want those 2's in there as they complicate subtracting out `|Sally>` in
 `sa: clean child parent |Sally>`  
 `|Sally> + |Erica>`
 
-But Sally is not a sibling of herself, so let's subtract her:
+But Sally is not a sibling of herself, so let's subtract her:  
 `sa: clean child parent |Sally> - |Sally>`  
 `0|Sally> + |Erica>`
 
@@ -274,61 +274,61 @@ spouse |*> #=> (wife + husband) |_self>
 
 ## The don't know ket, and the do-you-know operator
 Let's take a side-step. What happens if you ask a question but we don't know the answer?
-For example, consider the spouse operator, we just defined:
-spouse |*> #=> (wife + husband) |_self>
-And then ask the spouse of Sally, Erica, Trude and Tom:
-sa: spouse |Sally>
-|>
+For example, consider the spouse operator, we just defined:  
+`spouse |*> #=> (wife + husband) |_self>`  
+And then ask the spouse of Sally, Erica, Trude and Tom:  
+`sa: spouse |Sally>`  
+`|>`
 
-sa: spouse |Erica>
-|>
+`sa: spouse |Erica>`  
+`|>`
 
-sa: spouse |Trude>
-|Tom>
+`sa: spouse |Trude>`  
+`|Tom>`
 
-sa: spouse |Tom>
-|Trude>
+`sa: spouse |Tom>`  
+`|Trude>`
 
-So, what is this |>? It is the empty ket, otherwise known as the "I don't know" ket. Anytime the system doesn't know the answer, it returns |>. Mathematically, the empty ket is the identity element for superposition addition, but that is outside the scope of this tutorial. Usefully however, we have a built-in operator called "do-you-know" that returns |no> when applied to |>, and |yes> otherwise.
-Some examples:
-sa: do-you-know |>
-|no>
+So, what is this `|>`? It is the empty ket, otherwise known as the "I don't know" ket. Anytime the system doesn't know the answer, it returns `|>`. Mathematically, the empty ket is the identity element for superposition addition, but that is outside the scope of this tutorial. Usefully however, we have a built-in operator called "do-you-know" that returns `|no>` when applied to `|>`, and `|yes>` otherwise.
+Some examples:  
+`sa: do-you-know |>`  
+`|no>`
 
-sa: do-you-know spouse |Sally>
-|no>
+`sa: do-you-know spouse |Sally>`  
+`|no>`
 
-sa: do-you-know spouse |Erica>
-|no>
+`sa: do-you-know spouse |Erica>`  
+`|no>`
 
-sa: do-you-know spouse |Trude>
-|yes>
+`sa: do-you-know spouse |Trude>`  
+`|yes>`
 
-sa: do-you-know spouse |Tom>
-|yes>
+`sa: do-you-know spouse |Tom>`  
+`|yes>`
 
-Which allows us to define the is-married operator:
-is-married |*> #=> do-you-know spouse |_self>
+Which allows us to define the is-married operator:  
+`is-married |*> #=> do-you-know spouse |_self>`
 
-And if we define the meaning of the "not" operator:
-not |yes> => |no>
-not |no> => |yes>
-not |don't know> => |don't know>
+And if we define the meaning of the "not" operator:  
+`not |yes> => |no>`  
+`not |no> => |yes>`  
+`not |don't know> => |don't know>`
 
-We can then define the is-not-married operator:
-is-not-married |*> #=> not do-you-know spouse |_self>
+We can then define the is-not-married operator:  
+`is-not-married |*> #=> not do-you-know spouse |_self>`
 
-Which returns the expected results:
-sa: is-not-married |Sally>
-|yes>
+Which returns the expected results:  
+`sa: is-not-married |Sally>`  
+`|yes>`
 
-sa: is-not-married |Erica>
-|yes>
+`sa: is-not-married |Erica>`  
+`|yes>`
 
-sa: is-not-married |Trude>
-|no>
+`sa: is-not-married |Trude>`  
+`|no>`
 
-sa: is-not-married |Tom>
-|no>
+`sa: is-not-married |Tom>`  
+`|no>`  
 And as a bonus our operator sequences are reading like simple English sentences.
 
 
