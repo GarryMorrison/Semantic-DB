@@ -377,7 +377,7 @@ where `label` is the label for the first column
 `op1, op2, ..., opn` are operators that are applied to the objects in the first column (NB: it is often useful to use aliases here).  
 `sp` is a superposition/list of objects that we want to apply the operators to.
 
-For example, using the operators defined in the above section, we can display the answer to 16 questions at once:  
+For example, using the operators defined in the above section, we can display the answers to 16 questions at once:  
 ```
 sa: table[person, is-a-son, is-a-daughter, is-a-mother, is-a-father] (|Sally> + |Erica> + |Trude> + |Tom>)
 +--------+----------+---------------+-------------+-------------+
@@ -391,7 +391,8 @@ sa: table[person, is-a-son, is-a-daughter, is-a-mother, is-a-father] (|Sally> + 
 ```
 
 ## Exponentiating Operators
-Applying operators is kind of like a form of multiplication. Indeed sometimes operators are matrices, and sometimes operators are literally numbers, where it is clear they are acting as multiplication. In this spirit, we can exponentiate operators. So op^n expands to the operator sequence op op ... op, where op is repeated n times. In particular, child^2 is a short-cut for the operator sequence "child child". child^3 is short-cut for "child child child", and so on. Hence, with minimal explanation we introduce these operators:
+Applying operators is kind of like a form of multiplication. Indeed sometimes operators are matrices, and sometimes operators are literally numbers, where it is clear they are acting as multiplication. In this spirit, we can exponentiate operators. So `op^n` expands to the operator sequence `op op ... op`, where `op` is repeated n times. In particular, `child^2` is a short-cut for the operator sequence `child child`. `child^3` is short-cut for `child child child`, and so on. Hence, with minimal explanation we introduce these operators:
+```
 is-a-parent |*> #=> do-you-know child |_self>
 
 is-a-grand-mother |*> #=> is-mbr(|_self>, clean mother parent child^2 |_self>)
@@ -401,7 +402,7 @@ is-a-grand-parent |*> #=> do-you-know child^2 |_self>
 is-a-great-grand-mother |*> #=> is-mbr(|_self>, clean mother parent^2 child^3 |_self>)
 is-a-great-grand-father |*> #=> is-mbr(|_self>, clean father parent^2 child^3 |_self>)
 is-a-great-grand-parent |*> #=> do-you-know child^3 |_self>
-
+```
 
 
 ## The or() and the and() functions
