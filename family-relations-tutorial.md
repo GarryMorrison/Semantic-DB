@@ -570,13 +570,13 @@ Whew! I hope you made it this far! The above tutorial serves as something of an 
 
 
 ## Further reading
-[Sally's full family tree](http://semantic-db.org/docs/usage/sw-examples/family.sw)  
-[The full family-relations sw file](http://semantic-db.org/docs/usage/sw-examples/family-relations.sw)  
-[The Semantic DB readme file](https://github.com/GarryMorrison/Semantic-DB/blob/master/README.md)  
-[Minimalistic usage for our operators](http://semantic-db.org/docs/usage/)  
-[The Semantic DB](https://github.com/GarryMorrison/Semantic-DB)
+ * [Sally's full family tree](http://semantic-db.org/docs/usage/sw-examples/family.sw)  
+ * [The full family-relations sw file](http://semantic-db.org/docs/usage/sw-examples/family-relations.sw)  
+ * [The Semantic DB readme file](https://github.com/GarryMorrison/Semantic-DB/blob/master/README.md)  
+ * [Minimalistic usage for our operators](http://semantic-db.org/docs/usage/)  
+ * [The Semantic DB](https://github.com/GarryMorrison/Semantic-DB)
 
 Where we borrowed the notation from (NB: borrowed. Ie, there are many differences!):  
-[bra-kets](https://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation)  
-[operators](https://en.wikipedia.org/wiki/Operator_(physics))
+ * [bra-kets](https://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation)  
+ * [operators](https://en.wikipedia.org/wiki/Operator_(physics))
 
