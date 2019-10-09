@@ -391,7 +391,7 @@ sa: table[person, is-a-son, is-a-daughter, is-a-mother, is-a-father] (|Sally> + 
 ```
 
 ## Exponentiating Operators
-Applying operators is kind of like a form of multiplication. Indeed sometimes operators are matrices, and sometimes operators are literally numbers, where it is clear they are acting as multiplication. In this spirit, we can exponentiate operators. So `op^n` expands to the operator sequence `op op ... op`, where `op` is repeated n times. In particular, `child^2` is a short-cut for the operator sequence `child child`. `child^3` is short-cut for `child child child`, and so on. Hence, with minimal explanation we introduce these operators:
+Applying operators is kind of like a form of multiplication. Indeed sometimes operators are matrices, and sometimes operators are literally numbers, where it is clear they are acting as multiplication. In this spirit, we can exponentiate operators. So `op^n` expands to the operator sequence `op op ... op`, where `op` is repeated `n` times. In particular, `child^2` is a short-cut for the operator sequence `child child`. `child^3` is short-cut for `child child child`, and so on. Hence, with minimal explanation we introduce these operators:
 ```
 is-a-parent |*> #=> do-you-know child |_self>
 
@@ -406,34 +406,35 @@ is-a-great-grand-parent |*> #=> do-you-know child^3 |_self>
 
 
 ## The or() and the and() functions
-These work in the obvious way, really. Simply enough we have:
-sa: or(|no>, |no>)
-|no>
+These work in the obvious way, really. Simply enough we have:  
+`sa: or(|no>, |no>)`  
+`|no>`
 
-sa: or(|no>, |yes>)
-|yes>
+`sa: or(|no>, |yes>)`  
+`|yes>`
 
-sa: or(|yes>, |no>)
-|yes>
+`sa: or(|yes>, |no>)`  
+`|yes>`
 
-sa: or(|yes>, |yes>)
-|yes>
+`sa: or(|yes>, |yes>)`  
+`|yes>`
 
 
-sa: and(|no>, |no>)
-|no>
+`sa: and(|no>, |no>)`  
+`|no>`
 
-sa: and(|no>, |yes>)
-|no>
+`sa: and(|no>, |yes>)`  
+`|no>`
 
-sa: and(|yes>, |no>)
-|no>
+`sa: and(|yes>, |no>)`  
+`|no>`
 
-sa: and(|yes>, |yes>)
-|yes>
+`sa: and(|yes>, |yes>)`  
+`|yes>`
 
 
 Allowing us to define the following set of is-a-x operators:
+```
 is-a-male |*> #=> or(is-a-son |_self>, is-a-father |_self>)
 is-a-female |*> #=> or(is-a-daughter |_self>, is-a-mother |_self>)
 
@@ -445,8 +446,7 @@ is-a-wife |*> #=> and(is-a-female |_self>, do-you-know husband |_self>)
 
 is-a-brother |*> #=> and(is-a-male |_self>, do-you-know sibling |_self>)
 is-a-sister |*> #=> and(is-a-female |_self>, do-you-know sibling |_self>)
-
-
+```
 
 ## The is-in-range[] operator
 We have come a long way! All of the above operators have been derived from knowing this initial set of operators:
