@@ -566,17 +566,17 @@ But to be honest, these simple question/answer pairs are quite restricted in wha
 
 
 ## Conclusion
-Whew! I hope you made it this far! The above tutorial serves as something of an introduction to the ket/operator model. The goal was to start with an initial set of operators {mother, father, son, daughter, wife, husband, age} and go on to compose consequences of that knowledge, and build a set of operators that apply to all family tree's, not just Sally's. And that the ket/operator model is a more powerful model than a typical triple store. A side observation is that operator sequences often read like simple English sentences. Indeed, we might even go on to claim that the ket/operator model is a good notation to represent brains, where ket's correspond to synapses, and operators to neural circuits. The question then becomes what is the set of interesting and useful operators?
+Whew! I hope you made it this far! The above tutorial serves as something of an introduction to the ket/operator model. The goal was to start with an initial set of operators `{mother, father, son, daughter, wife, husband, age}` and go on to compose consequences of that knowledge, and build a set of operators that apply to all family tree's, not just Sally's. And that the ket/operator model is a more powerful model than a typical triple store. A side observation is that operator sequences often read like simple English sentences. Indeed, we might even go on to claim that the ket/operator model is a good notation to represent brains, where ket's correspond to synapses, and operators to neural circuits. The question then becomes what is the set of interesting and useful operators?
 
 
 ## Further reading
-Sally's full family tree: http://semantic-db.org/docs/usage/sw-examples/family.sw
-The full family-relations sw file: http://semantic-db.org/docs/usage/sw-examples/family-relations.sw
-The Semantic DB readme file: https://github.com/GarryMorrison/Semantic-DB/blob/master/README.md
-Minimalistic usage for our operators: http://semantic-db.org/docs/usage/
-The Semantic DB: https://github.com/GarryMorrison/Semantic-DB
+[Sally's full family tree](http://semantic-db.org/docs/usage/sw-examples/family.sw)  
+[The full family-relations sw file](http://semantic-db.org/docs/usage/sw-examples/family-relations.sw)  
+[The Semantic DB readme file](https://github.com/GarryMorrison/Semantic-DB/blob/master/README.md)  
+[Minimalistic usage for our operators](http://semantic-db.org/docs/usage/)  
+[The Semantic DB](https://github.com/GarryMorrison/Semantic-DB)
 
-Where we borrowed the notation from (NB: borrowed. Ie, there are many differences!):
-https://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
-https://en.wikipedia.org/wiki/Operator_(physics)
+Where we borrowed the notation from (NB: borrowed. Ie, there are many differences!):  
+[bra-kets](https://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation)  
+[operators](https://en.wikipedia.org/wiki/Operator_(physics))
 
