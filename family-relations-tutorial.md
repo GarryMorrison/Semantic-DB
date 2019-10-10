@@ -573,7 +573,7 @@ Whew! I hope you made it this far! The above tutorial serves as something of an 
  * [Sally's full family tree](http://semantic-db.org/docs/usage/sw-examples/family.sw)  
  * [The full family-relations sw file](http://semantic-db.org/docs/usage/sw-examples/family-relations.sw)  
  * [The Semantic DB readme file](https://github.com/GarryMorrison/Semantic-DB/blob/master/README.md)  
- * [Minimalistic usage for our operators](http://semantic-db.org/docs/usage/)  
+ * [usage for our operators](http://semantic-db.org/docs/usage/)  
  * [The Semantic DB](https://github.com/GarryMorrison/Semantic-DB)
 
 Where we borrowed the notation from (NB: borrowed, there are many differences!):  
