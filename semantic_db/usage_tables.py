@@ -546,6 +546,7 @@ built_in_table_usage['sselect'] = """
         sselect[k1, k2] seq
         select the k1'th to the k2'th elements from the given sequence
         indices start from 1, not 0
+        final element has index -1, 2nd last element -2, and so on.
 
     examples:
         sselect[2,2] ssplit |abcdefgh>
@@ -555,7 +556,10 @@ built_in_table_usage['sselect'] = """
             |c> + |d> . |e>
 
         sselect[4,7] ssplit[" "] |a b c d e f g h>
-            |d> . |e> . |f> . |g>   
+            |d> . |e> . |f> . |g>
+            
+        sselect[3,-3] ssplit[" "] |a b c d e f g h>
+            |c> . |d> . |e> . |f>   
 
     see also:
         sselect

@@ -1480,6 +1480,8 @@ class sequence(object):
         if a >= 0:
             a -= 1
         b = min(b, len(self.data))
+        if b < 0:
+            b = len(self.data) + b + 1
         seq = sequence([])
         seq.data = self.data[a:b]
         return seq
