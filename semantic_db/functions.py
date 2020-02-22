@@ -9828,3 +9828,58 @@ def swrite(input_seq, positions, write_seq):
         except:
             continue
     return seq
+
+
+# set invoke method:
+whitelist_table_2['sread-range'] = 'sread_range'
+# set usage info:
+sequence_functions_usage['sread-range'] = """
+    description:
+        sread-range(start-idx, finish-idx) input-seq
+        the sequence read-range function
+        acts just like sselect[a,b] except a and b are now kets, not constants.
+        is also almost the same as: sread(range(start-idx, finish-idx)) input-seq
+        but there are some differences. eg, sread-range can handle negative indeces too.
+        index values start at 1, not 0. So 1 is the first element, 2 is the 2nd element, and so on.
+        negative index values work too. eg, -1 is the last element in the sequence, -2 is the 2nd last, and so on.
+        if the index value is > length of input-seq, then those index values are ignored
+
+    examples:
+        -- standard usage:
+        sread-range(|2>, |5>) ssplit |abcdefgh>
+            |b> . |c> . |d> . |e>
+        
+        -- with negative index value:
+        sread-range(|2>, |-3>) ssplit |abcdefgh>
+            |b> . |c> . |d> . |e> . |f>
+
+    see also:
+        sread, swrite, swrite-range, sselect
+
+"""
+def sread_range(input_seq, start_idx, finish_idx):
+    try:
+        s_idx = int(start_idx.to_ket().label)
+        f_idx = int(finish_idx.to_ket().label)
+
+        if s_idx >= 1:
+            s_idx -= 1
+        elif s_idx < 0:
+            s_idx = len(input_seq) + s_idx
+
+        if f_idx >= 1:
+            f_idx -= 1
+        elif f_idx < 0:
+            f_idx = len(input_seq) + f_idx
+        positions = list(range(s_idx, f_idx + 1))
+    except Exception as e:
+        # print('sread_range exception reason:', e)
+        return ket()
+    seq = sequence([])
+    for i in positions:
+        try:
+            sp = input_seq.data[i]
+            seq.data.append(sp)
+        except:
+            continue
+    return seq
