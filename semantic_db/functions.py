@@ -9718,7 +9718,7 @@ whitelist_table_1['sread'] = 'sread'
 # set usage info:
 sequence_functions_usage['sread'] = """
     description:
-        sread(positions) seq
+        sread(positions) input-seq
         the sequence read function
         positions can be either superpositions, sequences or mixed
         the resulting sequence will have the same "shape" as positions.
@@ -9754,4 +9754,51 @@ def sread(input_seq, positions):
             except:
                 continue
         seq.data.append(r)
+    return seq
+
+
+# set invoke method:
+whitelist_table_2['swrite'] = 'swrite'
+# set usage info:
+sequence_functions_usage['swrite'] = """
+    description:
+        swrite(positions, write-sp) input-seq
+        the sequence write function
+        positions can be either superpositions, sequences or mixed
+        the resulting sequence will have the given positions over-written with write-sp 
+        if any of the positions are not integers, then they will not change the final sequence
+        if any of the positions are out of range, then they will not change the final sequence
+        index values start at 1, not 0. So 1 is the first element, 2 is the 2nd element, and so on.
+        negative index values work too. eg, -1 is the last element in the sequence, -2 is the 2nd last, and so on.
+
+    examples:
+        -- the superposition case:
+        swrite(|2> + |3> + |5>, |fish>) ssplit |abcdefg>
+            |a> . |fish> . |fish> . |d> . |fish> . |f> . |g>
+
+        -- the sequence case:
+        swrite(|2> . |3> . |5>, |fish>) ssplit |abcdefg>
+            |a> . |fish> . |fish> . |d> . |fish> . |f> . |g>
+
+    see also:
+        sread, sread-range, swrite-range, sselect
+        
+    TODO:
+        implement a version where write-sp can be a sequence instead, and insert in place
+
+"""
+def swrite(input_seq, positions, write_sp):
+    seq = sequence([])
+    seq.data = input_seq.data
+    for sp in positions:
+        for idx in sp:
+            try:
+                i = int(idx.label)
+                if i >= 1:
+                    i -= 1
+                elif i < 0:
+                    i = len(input_seq) + i
+                seq.data[i] = write_sp  # how about a version where write_seq can be a sequence??
+            except:
+                continue
     return seq
