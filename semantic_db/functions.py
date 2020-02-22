@@ -9766,8 +9766,7 @@ sequence_functions_usage['swrite'] = """
         the sequence write function
         positions can be either superpositions, sequences or mixed
         the resulting sequence will have the given positions over-written with write-seq
-        if len(write-seq) > 1 it will be inserted
-        WARNING: this is currently broken if positions are not in order. FIX!
+        if len(write-seq) > 1 it will be inserted, and change the length of the returned sequence
         if any of the positions are not integers, then they will not change the final sequence
         if any of the positions are out of range, then they will not change the final sequence
         index values start at 1, not 0. So 1 is the first element, 2 is the 2nd element, and so on.
@@ -9789,6 +9788,11 @@ sequence_functions_usage['swrite'] = """
         -- writing a sequence:
         swrite(|2> . |4> . |6>, |X> . |Y> . |Z>) ssplit |abcdefg>
             |a> . |X> . |Y> . |Z> . |c> . |X> . |Y> . |Z> . |e> . |X> . |Y> . |Z> . |g>
+            
+        -- writing with negative indeces:
+        swrite(|2> + |-3>, |FISH>) ssplit |abcdefg>
+            |a> . |FISH> . |c> . |d> . |FISH> . |f> . |g>
+
 
     see also:
         sread, sread-range, swrite-range, sselect
@@ -9800,6 +9804,7 @@ def swrite(input_seq, positions, write_seq):
     seq = sequence([])
     seq.data = input_seq.data
     i_delta = 0
+    position_list = []
     for sp in positions:
         for idx in sp:
             try:
@@ -9808,12 +9813,18 @@ def swrite(input_seq, positions, write_seq):
                     i -= 1
                 elif i < 0:
                     i = len(input_seq) + i
-                i += i_delta
-                head_seq = seq.data[0:i]
-                tail_seq = seq.data[i+1:]
-                seq.data = head_seq + write_seq.data + tail_seq
-                if len(write_seq) > 0:
-                    i_delta += len(write_seq) - 1  # this probably breaks if positions are not in the correct order! FIX!
+                position_list.append(i)
             except:
                 continue
+    position_list = sorted(position_list)
+    for i in position_list:
+        try:
+            i += i_delta
+            head_seq = seq.data[0:i]
+            tail_seq = seq.data[i+1:]
+            seq.data = head_seq + write_seq.data + tail_seq
+            if len(write_seq) > 0:
+                i_delta += len(write_seq) - 1
+        except:
+            continue
     return seq
