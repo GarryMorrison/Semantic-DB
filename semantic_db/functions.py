@@ -1624,7 +1624,7 @@ sequence_functions_usage['range'] = """
             |>
         
         -- reverse-range, with step size 2, from 2018 to 2014:
-        range(|year: 2018>, |year: 2014>, - |year: 2>)
+        range(|year: 2018>, |year: 2014>, |year: -2>)
             |year: 2018> + |year: 2016> + |year: 2014>
             
         -- if you need a sequence instead of a superposition, use sp2seq:
@@ -1657,8 +1657,9 @@ def show_range(input_seq, start, finish, step=ket("1")):
     finish = finish.to_sp()
     step = step.to_sp()  # if step is a superposition, cast it to a ket
 
-    if step.value < 0:
-        return show_range(finish, start, ket(step.label)).reverse()
+    step_value = float(extract_value(step).label)
+    if step_value < 0:
+        return show_range(input_seq, finish, start, ket(str(- step_value))).reverse()
 
     start_label = start if type(start) == str else start.label
     finish_label = finish if type(finish) == str else finish.label
