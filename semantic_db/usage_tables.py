@@ -5,7 +5,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 22/2/2018
-# Update: 31/7/2018
+# Update: 22/2/2020
 # Copyright: GPLv3
 #
 # Usage:
@@ -458,6 +458,23 @@ built_in_table_usage['shuffle'] = """
 """
 
 # set invoke method:
+built_in_table['sshuffle'] = 'sshuffle'
+# set usage info:
+built_in_table_usage['sshuffle'] = """
+    description:
+        shuffle seq
+        shuffle the given sequence
+
+    examples:
+        sshuffle ssplit[" "] |a b c d e f>
+            |c> . |b> . |e> . |a> . |d> . |f>
+
+    see also:
+        shuffle
+"""
+
+
+# set invoke method:
 compound_table['absolute-noise'] = ['absolute_noise', '', '']
 # set usage info:
 built_in_table_usage['absolute-noise'] = """
@@ -518,6 +535,7 @@ built_in_table_usage['select'] = """
         select[k1, k2] sp
         select the k1'th to the k2'th elements from the given superposition
         indices start from 1, not 0
+        final element has index -1, 2nd last element -2, and so on.
 
     examples:
         select[2,2] split |a b c d e f g h>
@@ -525,6 +543,13 @@ built_in_table_usage['select'] = """
         
         select[4,7] split |a b c d e f g h>
             |d> + |e> + |f> + |g>
+        
+        select[2,-2] split |a b c d e f g h>
+            |b> + |c> + |d> + |e> + |f> + |g>
+        
+        head (*) #=> select[1,1] |_self>
+        tail (*) #=> select[2,-1] |_self>
+        
             
     see also:
         sselect
@@ -538,6 +563,7 @@ built_in_table_usage['sselect'] = """
         sselect[k1, k2] seq
         select the k1'th to the k2'th elements from the given sequence
         indices start from 1, not 0
+        final element has index -1, 2nd last element -2, and so on.
 
     examples:
         sselect[2,2] ssplit |abcdefgh>
@@ -547,7 +573,10 @@ built_in_table_usage['sselect'] = """
             |c> + |d> . |e>
 
         sselect[4,7] ssplit[" "] |a b c d e f g h>
-            |d> . |e> . |f> . |g>   
+            |d> . |e> . |f> . |g>
+            
+        sselect[3,-3] ssplit[" "] |a b c d e f g h>
+            |c> . |d> . |e> . |f>   
 
     see also:
         sselect

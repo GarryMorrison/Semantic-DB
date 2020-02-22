@@ -1624,7 +1624,7 @@ sequence_functions_usage['range'] = """
             |>
         
         -- reverse-range, with step size 2, from 2018 to 2014:
-        range(|year: 2018>, |year: 2014>, - |year: 2>)
+        range(|year: 2018>, |year: 2014>, |year: -2>)
             |year: 2018> + |year: 2016> + |year: 2014>
             
         -- if you need a sequence instead of a superposition, use sp2seq:
@@ -1657,8 +1657,12 @@ def show_range(input_seq, start, finish, step=ket("1")):
     finish = finish.to_sp()
     step = step.to_sp()  # if step is a superposition, cast it to a ket
 
-    if step.value < 0:
-        return show_range(finish, start, ket(step.label)).reverse()
+    try:
+        step_value = float(extract_value(step).label)
+    except:
+        return ket()
+    if step_value < 0:
+        return show_range(input_seq, finish, start, ket(str(- step_value))).reverse()
 
     start_label = start if type(start) == str else start.label
     finish_label = finish if type(finish) == str else finish.label
@@ -9706,3 +9710,241 @@ def process(one, context, op):
     except Exception as e:
         print('process[rule] exception: %s' % e)
     return ket('process')
+
+
+
+# set invoke method:
+whitelist_table_1['sread'] = 'sread'
+# set usage info:
+sequence_functions_usage['sread'] = """
+    description:
+        sread(positions) input-seq
+        the sequence read function
+        positions can be either superpositions, sequences or mixed
+        the resulting sequence will have the same "shape" as positions.
+        if any of the positions are not integers, then |> will be returned for that slot
+        if any of the positions are out of range, then |> will be returned for that slot
+        index values start at 1, not 0. So 1 is the first element, 2 is the 2nd element, and so on.
+        negative index values work too. eg, -1 is the last element in the sequence, -2 is the 2nd last, and so on.
+
+    examples:
+        -- the superposition case:
+        sread(|2> + |3> + |5>) ssplit |abcdefg>
+        |b> + |c> + |e>
+        
+        -- the sequence case:
+        sread(|2> . |3> . |5>) ssplit |abcdefg>
+        |b> . |c> . |e>
+
+    see also:
+        sread-range, swrite, swrite-range, sselect
+        
+"""
+def sread(input_seq, positions):
+    seq = sequence([])
+    for sp in positions:
+        r = superposition()
+        for idx in sp:
+            try:
+                i = int(idx.label)
+                if i >= 1:
+                    i -= 1
+                idx_sp = input_seq.data[i]
+                r.add_sp(idx_sp)
+            except:
+                continue
+        seq.data.append(r)
+    return seq
+
+
+# set invoke method:
+whitelist_table_2['swrite'] = 'swrite'
+# set usage info:
+sequence_functions_usage['swrite'] = """
+    description:
+        swrite(positions, write-seq) input-seq
+        the sequence write function
+        positions can be either superpositions, sequences or mixed
+        the resulting sequence will have the given positions over-written with write-seq
+        if len(write-seq) > 1 it will be inserted, and change the length of the returned sequence
+        if any of the positions are not integers, then they will not change the final sequence
+        if any of the positions are out of range, then they will not change the final sequence
+        index values start at 1, not 0. So 1 is the first element, 2 is the 2nd element, and so on.
+        negative index values work too. eg, -1 is the last element in the sequence, -2 is the 2nd last, and so on.
+
+    examples:
+        -- the superposition case:
+        swrite(|2> + |3> + |5>, |fish>) ssplit |abcdefg>
+            |a> . |fish> . |fish> . |d> . |fish> . |f> . |g>
+
+        -- the sequence case:
+        swrite(|2> . |3> . |5>, |fish>) ssplit |abcdefg>
+            |a> . |fish> . |fish> . |d> . |fish> . |f> . |g>
+
+        -- writing an empty ket:
+        swrite(|2> . |4> . |6>, |>) ssplit |abcdefg>
+            |a> . |> . |c> . |> . |e> . |> . |g>
+        
+        -- writing a sequence:
+        swrite(|2> . |4> . |6>, |X> . |Y> . |Z>) ssplit |abcdefg>
+            |a> . |X> . |Y> . |Z> . |c> . |X> . |Y> . |Z> . |e> . |X> . |Y> . |Z> . |g>
+            
+        -- writing with negative indices:
+        swrite(|2> + |-3>, |FISH>) ssplit |abcdefg>
+            |a> . |FISH> . |c> . |d> . |FISH> . |f> . |g>
+
+
+    see also:
+        sread, sread-range, swrite-range, sselect
+        
+"""
+def swrite(input_seq, positions, write_seq):
+    if len(write_seq.data) == 0:
+        write_seq = sequence(superposition())
+    seq = sequence([])
+    seq.data = input_seq.data
+    i_delta = 0
+    position_list = []
+    for sp in positions:
+        for idx in sp:
+            try:
+                i = int(idx.label)
+                if i >= 1:
+                    i -= 1
+                elif i < 0:
+                    i = len(input_seq) + i
+                position_list.append(i)
+            except:
+                continue
+    position_list = sorted(position_list)
+    for i in position_list:
+        try:
+            i += i_delta
+            head_seq = seq.data[0:i]
+            tail_seq = seq.data[i+1:]
+            seq.data = head_seq + write_seq.data + tail_seq
+            if len(write_seq) > 0:
+                i_delta += len(write_seq) - 1
+        except:
+            continue
+    return seq
+
+
+# set invoke method:
+whitelist_table_2['sread-range'] = 'sread_range'
+# set usage info:
+sequence_functions_usage['sread-range'] = """
+    description:
+        sread-range(start-idx, finish-idx) input-seq
+        the sequence read-range function
+        acts just like sselect[a,b] except a and b are now kets, not constants.
+        is also almost the same as: sread(range(start-idx, finish-idx)) input-seq
+        but there are some differences. eg, sread-range can handle negative indices too.
+        index values start at 1, not 0. So 1 is the first element, 2 is the 2nd element, and so on.
+        negative index values work too. eg, -1 is the last element in the sequence, -2 is the 2nd last, and so on.
+        if the index value is > length of input-seq, then those index values are ignored
+
+    examples:
+        -- standard usage:
+        sread-range(|2>, |5>) ssplit |abcdefgh>
+            |b> . |c> . |d> . |e>
+        
+        -- with negative index value:
+        sread-range(|2>, |-3>) ssplit |abcdefgh>
+            |b> . |c> . |d> . |e> . |f>
+
+    see also:
+        sread, swrite, swrite-range, sselect
+
+"""
+def sread_range(input_seq, start_idx, finish_idx):
+    try:
+        s_idx = int(start_idx.to_ket().label)
+        f_idx = int(finish_idx.to_ket().label)
+
+        if s_idx >= 1:
+            s_idx -= 1
+        elif s_idx < 0:
+            s_idx = len(input_seq) + s_idx
+
+        if f_idx >= 1:
+            f_idx -= 1
+        elif f_idx < 0:
+            f_idx = len(input_seq) + f_idx
+        positions = list(range(s_idx, f_idx + 1))
+    except Exception as e:
+        # print('sread_range exception reason:', e)
+        return ket()
+    seq = sequence([])
+    for i in positions:
+        try:
+            sp = input_seq.data[i]
+            seq.data.append(sp)
+        except:
+            continue
+    return seq
+
+
+# set invoke method:
+whitelist_table_3['swrite-range'] = 'swrite_range'
+# set usage info:
+sequence_functions_usage['swrite-range'] = """
+    description:
+        swrite-range(start-idx, finish-idx, write-seq) input-seq
+        the sequence write to range function
+        is almost the same as swrite(range(start-idx, finish-idx), write-seq) input-seq
+        but there are some differences. eg, swrite-range can handle negative indices too.
+        index values start at 1, not 0. So 1 is the first element, 2 is the 2nd element, and so on.
+        negative index values work too. eg, -1 is the last element in the sequence, -2 is the 2nd last, and so on.
+
+    examples:
+        -- writing a ket:
+        swrite-range(|2>, |4>, |FISH>) ssplit |abcdefgh>
+            |a> . |FISH> . |FISH> . |FISH> . |e> . |f> . |g> . |h>
+            
+        -- writing an empty ket:
+        swrite-range(|2>, |4>, |>) ssplit |abcdefgh>
+            |a> . |> . |> . |> . |e> . |f> . |g> . |h>
+            
+        -- writing a sequence:
+        swrite-range(|2>, |4>, |X> . |Y> . |Z>) ssplit |abcdefgh>
+            |a> . |X> . |Y> . |Z> . |X> . |Y> . |Z> . |X> . |Y> . |Z> . |e> . |f> . |g> . |h>
+
+    see also:
+        sread, sread-range, swrite, sselect
+
+"""
+def swrite_range(input_seq, start_idx, finish_idx, write_seq):
+    if len(write_seq.data) == 0:
+        write_seq = sequence(superposition())
+    seq = sequence([])
+    seq.data = input_seq.data
+    try:
+        s_idx = int(start_idx.to_ket().label)
+        f_idx = int(finish_idx.to_ket().label)
+
+        if s_idx >= 1:
+            s_idx -= 1
+        elif s_idx < 0:
+            s_idx = len(input_seq) + s_idx
+
+        if f_idx >= 1:
+            f_idx -= 1
+        elif f_idx < 0:
+            f_idx = len(input_seq) + f_idx
+        positions = list(range(s_idx, f_idx + 1))
+    except Exception as e:
+        # print('swrite_range exception reason:', e)
+        return ket()
+    i_delta = 0
+    for i in positions:
+        try:
+            i += i_delta
+            head_seq = seq.data[0:i]
+            tail_seq = seq.data[i + 1:]
+            seq.data = head_seq + write_seq.data + tail_seq
+            if len(write_seq) > 0:
+                i_delta += len(write_seq) - 1
+        except:
+            continue
+    return seq

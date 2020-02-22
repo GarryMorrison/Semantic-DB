@@ -1,0 +1,66 @@
+-- define our expand range operators, superposition, and sequence versions:
+-- NB: if the input isn't "float..float" or "float..float..float" then it returns |>
+-- potentially we want it to return the input instead.
+-- we now have a version that does that.
+-- next, we may want a convention for globals so they don't stomp on the users kets.
+-- eg, instead of "the |range>" maybe "the |__range>"??
+-- though that looks confusing with respect to "|__self>"
+--
+-- expand-range |3..5>
+-- |3> + |4> + |5>
+-- or:
+-- expand-range |2..5..0.5>
+-- |2> + |2.5> + |3> + |3.5> + |4> + |4.5> + |5>
+--
+-- sexpand-range |3..7>
+-- |3> . |4> . |5> . |6> . |7>
+--
+-- sexpand-range |2..4..0.5>
+-- |2> . |2.5> . |3> . |3.5> . |4>
+
+
+-- first version:
+-- expand-range |*> #=>
+--     the |range> => split[".."] |__self>
+--     process-the-range how-many the |range>
+
+-- improved version:
+-- NB: the ugly "|head: > _ " and the "extract-value" are in there as a hack because we can't learn |>
+-- eg: op |some ket> => |>
+-- leaves "op |some ket>" unchanged.
+--
+-- expand-range |*> #=>
+--     the |range> => split[".."] |__self>
+--     the |result> => |head: > _ process-the-range how-many the |range>
+--     if(do-you-know extract-value the |result>, extract-value the |result>, |__self>)
+
+-- improved version 2:
+expand-range |*> #=>
+    the |range> => split[".."] |__self>
+    the |result> => |#EMPTY#>
+    the |result> => process-the-range how-many the |range>
+    if(is-equal(the |result>, |#EMPTY#>), |__self>, the |result>)
+
+
+process-the-range |*> #=> |>
+process-the-range |number: 2> #=> range(select[1,1] the |range>, select[2,2] the |range>)
+process-the-range |number: 3> #=> range(select[1,1] the |range>, select[2,2] the |range>, select[3,3] the |range>)
+
+
+-- first version:
+-- sexpand-range |*> #=>
+--     the |range> => ssplit[".."] |__self>
+--     sprocess-the-range show-many the |range>
+
+-- improved version:
+sexpand-range |*> #=>
+    the |range> => ssplit[".."] |__self>
+    the |result> => |#EMPTY#>
+    the |result> => sprocess-the-range show-many the |range>
+    if(is-equal(the |result>, |#EMPTY#>), |__self>, the |result>)
+
+
+sprocess-the-range |*> #=> |>
+sprocess-the-range |number: 2> #=> sp2seq range(sselect[1,1] the |range>, sselect[2,2] the |range>)
+sprocess-the-range |number: 3> #=> sp2seq range(sselect[1,1] the |range>, sselect[2,2] the |range>, sselect[3,3] the |range>)
+
