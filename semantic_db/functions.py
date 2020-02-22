@@ -9789,7 +9789,7 @@ sequence_functions_usage['swrite'] = """
         swrite(|2> . |4> . |6>, |X> . |Y> . |Z>) ssplit |abcdefg>
             |a> . |X> . |Y> . |Z> . |c> . |X> . |Y> . |Z> . |e> . |X> . |Y> . |Z> . |g>
             
-        -- writing with negative indeces:
+        -- writing with negative indices:
         swrite(|2> + |-3>, |FISH>) ssplit |abcdefg>
             |a> . |FISH> . |c> . |d> . |FISH> . |f> . |g>
 
@@ -9839,7 +9839,7 @@ sequence_functions_usage['sread-range'] = """
         the sequence read-range function
         acts just like sselect[a,b] except a and b are now kets, not constants.
         is also almost the same as: sread(range(start-idx, finish-idx)) input-seq
-        but there are some differences. eg, sread-range can handle negative indeces too.
+        but there are some differences. eg, sread-range can handle negative indices too.
         index values start at 1, not 0. So 1 is the first element, 2 is the 2nd element, and so on.
         negative index values work too. eg, -1 is the last element in the sequence, -2 is the 2nd last, and so on.
         if the index value is > length of input-seq, then those index values are ignored
@@ -9893,7 +9893,7 @@ sequence_functions_usage['swrite-range'] = """
         swrite-range(start-idx, finish-idx, write-seq) input-seq
         the sequence write to range function
         is almost the same as swrite(range(start-idx, finish-idx), write-seq) input-seq
-        but there are some differences. eg, swrite-range can handle negative indeces too.
+        but there are some differences. eg, swrite-range can handle negative indices too.
         index values start at 1, not 0. So 1 is the first element, 2 is the 2nd element, and so on.
         negative index values work too. eg, -1 is the last element in the sequence, -2 is the 2nd last, and so on.
 
