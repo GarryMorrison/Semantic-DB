@@ -1,0 +1,108 @@
+-- map numbers to card label: 
+card-map |*> #=> |_self>
+card-map |1> => |Ace>
+card-map |11> => |Jack>
+card-map |12> => |Queen>
+card-map |13> => |King>
+
+-- the inverse of card-map:
+value |*> #=> |_self>
+value |Ace> => |1>
+value |Jack> => |11>
+value |Queen> => |12>
+value |King> => |13>
+
+
+-- define the Spades:
+pack |Spade> => |Spade:> __ card-map range(|1>, |13>)
+colour |Spade: *> => |black>
+
+-- define the Hearts:
+pack |Heart> => |Heart:> __ card-map range(|1>, |13>)
+colour |Heart: *> => |red>
+
+-- define the Clubs:
+pack |Club> => |Club:> __ card-map range(|1>, |13>)
+colour |Club: *> => |black>
+
+-- define the Diamonds:
+pack |Diamond> => |Diamond:> __ card-map range(|1>, |13>)
+colour |Diamond: *> => |red>
+
+
+-- define a full pack of cards:
+full |deck> => pack (|Spade> + |Heart> + |Club> + |Diamond>)
+
+
+-- define a shuffled working deck of cards:
+-- working |deck> => shuffle full |deck>
+
+-- define a shuffled working deck of cards made of 5 decks of cards:
+working |deck> => shuffle 5 full |deck>
+
+
+-- define the remove-cards operator:
+remove-cards (*,*) #=> drop (-1 |_self1> + |_self2>)
+
+
+-- define the pick-a-card operator:
+-- only makes sense invoked from pick-cards() operator
+pick-a-card |*> #=>
+    tmp |hand> => clean pick-elt tmp |deck>
+    tmp |deck> => remove-cards(tmp |hand>, tmp |deck>)
+    tmp |hand>
+
+-- pick-cards(|7>, some |superposition>)
+-- returns 7 elements from the given superposition
+-- taking into account the coefficients of the objects
+-- an improvement on: pick[7] some |superposition>
+-- NB: broken when the first parameter is less than 1.
+pick-cards (*,*) #=>
+    tmp |deck> => |__self2>
+    pick-a-card range(|1>, |__self1>)
+
+
+-- demo:
+-- draw 5 cards from the working deck, 
+-- and then remove those cards from the working deck:
+-- this version doesn't properly handle elements with coefficient other than 1:
+-- eg, if we define the working deck to be made of say 5 full decks of cards:
+-- working |deck> => shuffle 5 full |deck>
+-- my |hand> => pick[5] working |deck>
+
+-- improved version:
+my |hand> => pick-cards(|5>, working |deck>)
+working |deck> => remove-cards(my |hand>, working |deck>)
+
+
+
+-- the above deck of cards has no order
+-- here we develop a sequence of cards:
+-- one deck of cards:
+-- seq |deck> => sp2seq shuffle full |deck>
+
+-- 4 decks of cards in a sequence:
+seq |deck> => sshuffle (sp2seq . sp2seq . sp2seq . sp2seq) full |deck>
+
+-- pick the card from the top of the deck:
+pick-top-card (*) #=> sselect[1,1] |_self>
+
+remove-top-card (*) #=> sselect[2,-1] |_self>
+
+deal-a-card |*> #=>
+    tmp |hand> => sselect[1,1] tmp |deck>
+    tmp |deck> => sselect[2,-1] tmp |deck>
+    tmp |hand>
+
+deal-cards (*,*) #=>
+    tmp |deck> => |__self2>
+    deal-a-card sp2seq range(|1>, |__self1>)
+
+deal-n-cards-from-seq-deck |*> #=>
+    tmp |deck> => seq |deck>
+    tmp |hand> => deal-a-card sp2seq range(|1>, |__self>)
+    seq |deck> => tmp |deck>
+    tmp |hand>
+
+the |hand> => deal-n-cards-from-seq-deck |5>
+the-sorted |hand> => sp2seq ket-sort seq2sp the |hand>
