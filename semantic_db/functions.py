@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 21/4/2019
+# Update: 22/2/2020
 # Copyright: GPLv3
 #
 # A collection of functions that apply to kets, superpositions and sequences.
@@ -2378,6 +2378,8 @@ def rescaled_list_simm(w, f, g):
 def superposition_simm(A, B):
     if len(A) == 0 or len(B) == 0:
         return 0
+    if A.label == '#STAR#' or B.label == '#STAR#':   # implement simm(|#STAR#>, any-sp) == 1
+        return 1
     if len(A) == 1 and len(B) == 1:
         if A.label != B.label:  # put a.label == '' test in here too?
             return 0
