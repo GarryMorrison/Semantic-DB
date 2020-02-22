@@ -1657,7 +1657,10 @@ def show_range(input_seq, start, finish, step=ket("1")):
     finish = finish.to_sp()
     step = step.to_sp()  # if step is a superposition, cast it to a ket
 
-    step_value = float(extract_value(step).label)
+    try:
+        step_value = float(extract_value(step).label)
+    except:
+        return ket()
     if step_value < 0:
         return show_range(input_seq, finish, start, ket(str(- step_value))).reverse()
 
