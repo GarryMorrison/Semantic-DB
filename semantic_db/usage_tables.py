@@ -458,6 +458,23 @@ built_in_table_usage['shuffle'] = """
 """
 
 # set invoke method:
+built_in_table['sshuffle'] = 'sshuffle'
+# set usage info:
+built_in_table_usage['sshuffle'] = """
+    description:
+        shuffle seq
+        shuffle the given sequence
+
+    examples:
+        sshuffle ssplit[" "] |a b c d e f>
+            |c> . |b> . |e> . |a> . |d> . |f>
+
+    see also:
+        shuffle
+"""
+
+
+# set invoke method:
 compound_table['absolute-noise'] = ['absolute_noise', '', '']
 # set usage info:
 built_in_table_usage['absolute-noise'] = """

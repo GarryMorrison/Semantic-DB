@@ -1503,6 +1503,13 @@ class sequence(object):
         seq.data = list(reversed(self.data))
         return seq
 
+    def sshuffle(self):
+        seq = sequence([])
+        items = list(self.data)
+        random.shuffle(items)
+        seq.data = items
+        return seq
+
     def is_not_empty(self):
         if len(self) == 0:
             return ket("no")
