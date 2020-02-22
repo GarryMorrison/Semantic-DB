@@ -9762,10 +9762,12 @@ whitelist_table_2['swrite'] = 'swrite'
 # set usage info:
 sequence_functions_usage['swrite'] = """
     description:
-        swrite(positions, write-sp) input-seq
+        swrite(positions, write-seq) input-seq
         the sequence write function
         positions can be either superpositions, sequences or mixed
-        the resulting sequence will have the given positions over-written with write-sp 
+        the resulting sequence will have the given positions over-written with write-seq
+        if len(write-seq) > 1 it will be inserted
+        WARNING: this is currently broken if positions are not in order. FIX!
         if any of the positions are not integers, then they will not change the final sequence
         if any of the positions are out of range, then they will not change the final sequence
         index values start at 1, not 0. So 1 is the first element, 2 is the 2nd element, and so on.
@@ -9780,16 +9782,24 @@ sequence_functions_usage['swrite'] = """
         swrite(|2> . |3> . |5>, |fish>) ssplit |abcdefg>
             |a> . |fish> . |fish> . |d> . |fish> . |f> . |g>
 
+        -- writing an empty ket:
+        swrite(|2> . |4> . |6>, |>) ssplit |abcdefg>
+            |a> . |> . |c> . |> . |e> . |> . |g>
+        
+        -- writing a sequence:
+        swrite(|2> . |4> . |6>, |X> . |Y> . |Z>) ssplit |abcdefg>
+            |a> . |X> . |Y> . |Z> . |c> . |X> . |Y> . |Z> . |e> . |X> . |Y> . |Z> . |g>
+
     see also:
         sread, sread-range, swrite-range, sselect
         
-    TODO:
-        implement a version where write-sp can be a sequence instead, and insert in place
-
 """
-def swrite(input_seq, positions, write_sp):
+def swrite(input_seq, positions, write_seq):
+    if len(write_seq.data) == 0:
+        write_seq = sequence(superposition())
     seq = sequence([])
     seq.data = input_seq.data
+    i_delta = 0
     for sp in positions:
         for idx in sp:
             try:
@@ -9798,7 +9808,12 @@ def swrite(input_seq, positions, write_sp):
                     i -= 1
                 elif i < 0:
                     i = len(input_seq) + i
-                seq.data[i] = write_sp  # how about a version where write_seq can be a sequence??
+                i += i_delta
+                head_seq = seq.data[0:i]
+                tail_seq = seq.data[i+1:]
+                seq.data = head_seq + write_seq.data + tail_seq
+                if len(write_seq) > 0:
+                    i_delta += len(write_seq) - 1  # this probably breaks if positions are not in the correct order! FIX!
             except:
                 continue
     return seq
