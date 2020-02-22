@@ -4,7 +4,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2018
-# Update: 12/5/2019
+# Update: 22/2/2020
 # Copyright: GPLv3
 #
 # Usage: 
@@ -189,7 +189,7 @@ class ket(object):
 
     # 5/2/2015: eg: without this: select[1,5] "" |bah> bugs out if "" |bah> is not defined.
     def select_range(self, a, b):
-        if a <= 1 <= b:
+        if a <= 1 <= b:   # how handle select[1,-1] |fred>?
             return ket(self.label, self.value)
         return ket()
 
@@ -770,11 +770,13 @@ class superposition(object):
         else:
             return ket("", 0)
 
-    def select_range(self, a, b):
+    def select_range(self, a, b):  # seems to assume a,b are integers. Console returns |> for select[1.5, 3.6] split |a b c d>, so all good.
         a = max(1, a) - 1
         b = min(b, len(self.dict))
+        if b < 0:
+            b = len(self.dict) + b + 1
         r = superposition()
-        for label, value in list(self.dict.items())[a:b]:
+        for label, value in list(self.dict.items())[a:b]:  # is there a better way of doing this?
             r.add(label, value)
         return r
 
