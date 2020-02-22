@@ -9883,3 +9883,68 @@ def sread_range(input_seq, start_idx, finish_idx):
         except:
             continue
     return seq
+
+
+# set invoke method:
+whitelist_table_3['swrite-range'] = 'swrite_range'
+# set usage info:
+sequence_functions_usage['swrite-range'] = """
+    description:
+        swrite-range(start-idx, finish-idx, write-seq) input-seq
+        the sequence write to range function
+        is almost the same as swrite(range(start-idx, finish-idx), write-seq) input-seq
+        but there are some differences. eg, swrite-range can handle negative indeces too.
+        index values start at 1, not 0. So 1 is the first element, 2 is the 2nd element, and so on.
+        negative index values work too. eg, -1 is the last element in the sequence, -2 is the 2nd last, and so on.
+
+    examples:
+        -- writing a ket:
+        swrite-range(|2>, |4>, |FISH>) ssplit |abcdefgh>
+            |a> . |FISH> . |FISH> . |FISH> . |e> . |f> . |g> . |h>
+            
+        -- writing an empty ket:
+        swrite-range(|2>, |4>, |>) ssplit |abcdefgh>
+            |a> . |> . |> . |> . |e> . |f> . |g> . |h>
+            
+        -- writing a sequence:
+        swrite-range(|2>, |4>, |X> . |Y> . |Z>) ssplit |abcdefgh>
+            |a> . |X> . |Y> . |Z> . |X> . |Y> . |Z> . |X> . |Y> . |Z> . |e> . |f> . |g> . |h>
+
+    see also:
+        sread, sread-range, swrite, sselect
+
+"""
+def swrite_range(input_seq, start_idx, finish_idx, write_seq):
+    if len(write_seq.data) == 0:
+        write_seq = sequence(superposition())
+    seq = sequence([])
+    seq.data = input_seq.data
+    try:
+        s_idx = int(start_idx.to_ket().label)
+        f_idx = int(finish_idx.to_ket().label)
+
+        if s_idx >= 1:
+            s_idx -= 1
+        elif s_idx < 0:
+            s_idx = len(input_seq) + s_idx
+
+        if f_idx >= 1:
+            f_idx -= 1
+        elif f_idx < 0:
+            f_idx = len(input_seq) + f_idx
+        positions = list(range(s_idx, f_idx + 1))
+    except Exception as e:
+        # print('swrite_range exception reason:', e)
+        return ket()
+    i_delta = 0
+    for i in positions:
+        try:
+            i += i_delta
+            head_seq = seq.data[0:i]
+            tail_seq = seq.data[i + 1:]
+            seq.data = head_seq + write_seq.data + tail_seq
+            if len(write_seq) > 0:
+                i_delta += len(write_seq) - 1
+        except:
+            continue
+    return seq
