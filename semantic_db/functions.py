@@ -9710,3 +9710,48 @@ def process(one, context, op):
     except Exception as e:
         print('process[rule] exception: %s' % e)
     return ket('process')
+
+
+
+# set invoke method:
+whitelist_table_1['sread'] = 'sread'
+# set usage info:
+sequence_functions_usage['sread'] = """
+    description:
+        sread(positions) seq
+        the sequence read function
+        positions can be either superpositions, sequences or mixed
+        the resulting sequence will have the same "shape" as positions.
+        if any of the positions are not integers, then |> will be returned for that slot
+        if any of the positions are out of range, then |> will be returned for that slot
+        index values start at 1, not 0. So 1 is the first element, 2 is the 2nd element, and so on.
+        negative index values work too. eg, -1 is the last element in the sequence, -2 is the 2nd last, and so on.
+
+    examples:
+        -- the superposition case:
+        sread(|2> + |3> + |5>) ssplit |abcdefg>
+        |b> + |c> + |e>
+        
+        -- the sequence case:
+        sread(|2> . |3> . |5>) ssplit |abcdefg>
+        |b> . |c> . |e>
+
+    see also:
+        sread-range, swrite, swrite-range, sselect
+        
+"""
+def sread(input_seq, positions):
+    seq = sequence([])
+    for sp in positions:
+        r = superposition()
+        for idx in sp:
+            try:
+                i = int(idx.label)
+                if i >= 1:
+                    i -= 1
+                idx_sp = input_seq.data[i]
+                r.add_sp(idx_sp)
+            except:
+                continue
+        seq.data.append(r)
+    return seq
