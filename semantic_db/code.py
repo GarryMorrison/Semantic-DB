@@ -771,7 +771,12 @@ class superposition(object):
             return ket("", 0)
 
     def select_range(self, a, b):  # seems to assume a,b are integers. Console returns |> for select[1.5, 3.6] split |a b c d>, so all good.
-        a = max(1, a) - 1
+        # a = max(1, a) - 1
+
+        if a >= 1:
+            a -=1
+        elif a < 0:
+            a = len(self.dict) + a
         b = min(b, len(self.dict))
         if b < 0:
             b = len(self.dict) + b + 1
@@ -1477,11 +1482,15 @@ class sequence(object):
 
     def sselect_range(self, a, b):  # tweak so we can do: sselect[1,-2]
         # a = max(1, a) - 1
-        if a >= 0:
-            a -= 1
+
+        if a >= 1:
+            a -=1
+        elif a < 0:
+            a = len(self.data) + a
         b = min(b, len(self.data))
         if b < 0:
             b = len(self.data) + b + 1
+
         seq = sequence([])
         seq.data = self.data[a:b]
         return seq
