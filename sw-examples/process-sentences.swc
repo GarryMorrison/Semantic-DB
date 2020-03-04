@@ -28,3 +28,39 @@ process-ngram |*> #=>
 |null> => process-sentence the |sentences>
 
 
+
+the |text> => |Today's date is 4/03/2020. Another date is 13/2/97.>
+list-of |digits> => range(|0>, |9>)
+apply-digit-label |*> #=> if(is-mbr(|_self>, list-of |digits>), |#DIGIT#>, |_self>)
+
+read |*> #=> (then explain[pattern])^2 apply-digit-label ssplit |_self>
+
+then |*> #=> |_self>
+then |#EMPTY#> #=> |>
+
+
+pattern |node: 3: 1> => |#DIGIT#>
+then |node: 3: *> => |#1-DIGIT#>
+
+pattern |node: 4: 1> => |#DIGIT#> . |#DIGIT#>
+then |node: 4: *> => |#2-DIGIT#>
+
+pattern |node: 5: 1> => |#DIGIT#> . |#DIGIT#> . |#DIGIT#> . |#DIGIT#>
+then |node: 5: *> => |#4-DIGIT#>
+
+pattern |node: 6: 1> => |#PARTIAL-DATE#> . |/> . |#2-DIGIT#>
+pattern |node: 6: 2> => |#PARTIAL-DATE#> . |/> . |#4-DIGIT#>
+then |node: 6: *> => |#FULL-DATE#>
+
+pattern |node: 7: 1> => |#1-DIGIT#> . |/> . |#1-DIGIT#>
+pattern |node: 7: 2> => |#1-DIGIT#> . |/> . |#2-DIGIT#>
+pattern |node: 7: 3> => |#2-DIGIT#> . |/> . |#1-DIGIT#>
+pattern |node: 7: 4> => |#2-DIGIT#> . |/> . |#2-DIGIT#>
+then |node: 7: *> => |#PARTIAL-DATE#>
+
+
+process-letters |*> #=>
+    process-ngram ngrams["", 1,2,3,4,5,6,7,8,9,10] |__self>
+
+|null> => process-letters the |text>
+
