@@ -1,0 +1,30 @@
+the |text> => |The shopping list is bread, coffee and milk. The fridge contains butter, bacon, cheese and strawberries. Meanwhile, the man sat, and the very old man smoked>
+
+the |sentences> => split["? "] split["! "] split[". "] the |text>
+
+
+pattern |node: 1: 1> => |the> . |man>
+pattern |node: 1: 2> => |the> . |#STAR#> . |man>
+pattern |node: 1: 3> => |the> . |#STAR#> . |#STAR#> . |man>
+pattern |node: 1: 4> => |the> . |#STAR#> . |#STAR#> . |#STAR#> . |man>
+then |node: 1: *> => |#THE-MAN#>
+
+pattern |node: 2: 1> => |#STAR#> . |#COMMA#> . |#STAR#> . |and> . |#STAR#>
+pattern |node: 2: 2> => |#STAR#> . |#COMMA#> . |#STAR#> . |#COMMA#> . |#STAR#> . |and> . |#STAR#>
+then |node: 2: *> => |#LIST#>
+
+
+read |*> #=> ssplit[" "] string-replace(|, >, | #COMMA# >) to-lower |_self>
+
+process-sentence |*> #=>
+    process-ngram ngrams[" ", 2,3,4,5,6,7] |__self>
+
+process-ngram |*> #=>
+    tmp |node> => |#EMPTY#>
+    tmp |node> => drop-below[0.9] similar-input[pattern] read |__self>
+    class then tmp |node> +=> |__self>
+
+
+|null> => process-sentence the |sentences>
+
+
