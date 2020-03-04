@@ -29,11 +29,19 @@ process-ngram |*> #=>
 
 
 
-the |text> => |Today's date is 4/03/2020. Another date is 13/2/97.>
+the |text> => |Today's date is 4-03-2020. Another date is 13/2/97. Also, 12 March 2020.>
 list-of |digits> => range(|0>, |9>)
 apply-digit-label |*> #=> if(is-mbr(|_self>, list-of |digits>), |#DIGIT#>, |_self>)
 
-read |*> #=> (then explain[pattern])^2 apply-digit-label ssplit |_self>
+normalize-date-separation-char |*> #=> replace["-\", "/"] |_self>
+
+list-of-abbrev |months> => |Jan> + |Feb> + |Mar> + |Apr> + |May> + |June> + |July> + |Aug> + |Sep> + |Oct> + |Nov> + |Dec>
+list-of |months> => |January> + |February> + |March> + |April> + |May> + |June> + |July> + |August> + |September> + |October> + |November> + |December>
+full-list-of |months> => (list-of-abbrev + to-lower list-of-abbrev + list-of + to-lower list-of) |months>
+apply-month-label |*> #=> if(is-mbr(|_self>, full-list-of |months>), |#MONTH#>, |_self>)
+
+
+read |*> #=> (then explain[pattern])^2 apply-digit-label normalize-date-separation-char ssplit |_self>
 
 then |*> #=> |_self>
 then |#EMPTY#> #=> |>
@@ -48,22 +56,49 @@ then |node: 4: *> => |#2-DIGIT#>
 pattern |node: 5: 1> => |#DIGIT#> . |#DIGIT#> . |#DIGIT#> . |#DIGIT#>
 then |node: 5: *> => |#4-DIGIT#>
 
-pattern |node: 6: 1> => |#PARTIAL-DATE#> . |/> . |#2-DIGIT#>
-pattern |node: 6: 2> => |#PARTIAL-DATE#> . |/> . |#4-DIGIT#>
+pattern |node: 6: 1> => |#PARTIAL-DATE-1#> . |/> . |#2-DIGIT#>
+pattern |node: 6: 2> => |#PARTIAL-DATE-1#> . |/> . |#4-DIGIT#>
+pattern |node: 6: 3> => |#PARTIAL-DATE-2#> . | > . |#2-DIGIT#>
+pattern |node: 6: 4> => |#PARTIAL-DATE-2#> . | > . |#4-DIGIT#>
 then |node: 6: *> => |#FULL-DATE#>
 
 pattern |node: 7: 1> => |#1-DIGIT#> . |/> . |#1-DIGIT#>
 pattern |node: 7: 2> => |#1-DIGIT#> . |/> . |#2-DIGIT#>
 pattern |node: 7: 3> => |#2-DIGIT#> . |/> . |#1-DIGIT#>
 pattern |node: 7: 4> => |#2-DIGIT#> . |/> . |#2-DIGIT#>
-then |node: 7: *> => |#PARTIAL-DATE#>
+then |node: 7: *> => |#PARTIAL-DATE-1#>
 
-pattern |node: 8: 1> => |#PARTIAL-DATE#>
+pattern |node: 11: 1> => |#1-DIGIT#> . | > . |#MONTH#>
+pattern |node: 11: 2> => |#2-DIGIT#> . | > . |#MONTH#>
+then |node: 11: *> => |#PARTIAL-DATE-2#>
+
+pattern |node: 8: 1> => |#PARTIAL-DATE-1#>
+pattern |node: 8: 2> => |#PARTIAL-DATE-2#>
 then |node: 8: *> => |#PARTIAL-DATE#>
+
+pattern |node: 9: 1> => |#FULL-DATE#>
+then |node: 9: *> => |#FULL-DATE#>
+
+
+-- now auto build the #MONTH# if-then machine using "full-list-of |months>":
+create-single-rule |*> #=>
+    node |label> => |node: > _ node |number> _ |: > _ node |idx>
+    pattern node |label> => ssplit |__self>
+    node |idx> => plus[1] node |idx>
+
+create-if-then-machine (*,*) #=>
+    node |number> => |__self1>
+    node |idx> => |1>
+    create-single-rule |__self0>
+    node |label> => |node: > _ node |number> _ |: *>
+    then node |label> => |__self2>
+
+    
+|null> => create-if-then-machine(|10>, |#MONTH#>) full-list-of |months> 
 
 
 process-letters |*> #=>
-    process-ngram ngrams["", 1,2,3,4,5,6,7,8,9,10] |__self>
+    process-ngram ngrams["", 3,4,5,6,7,8,9,10,11,12,13] split[". "] |__self>
 
 |null> => process-letters the |text>
 
