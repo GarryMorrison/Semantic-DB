@@ -8188,29 +8188,28 @@ function_operators_usage['ngrams'] = """
         
 """
 def ngrams(input_ket, *parameters):
-    def create_seq_ngrams(s, merge_char, N):
+    def create_ngrams(s, merge_char, N):
         r = superposition()
-        for i in range(len(s.data) - N + 1):
-            labels = [x.label for x in s.data[i:i+ N]]
-            r.add(merge_char.join(labels))
+        for i in range(len(s) - N + 1):
+            r.add(merge_char.join(s[i:i+ N]))
         return r
 
-    print(input_ket)
     split_str, *sizes = parameters
-    print(split_str)
-    print(sizes)
-    seq = sequence([])
+
     if split_str == '':
-        for c in list(input_ket.label):
-            seq += ket(c, input_ket.value)  # is there a better way than using += here?
+        str_seq = list(input_ket.label)
     else:
-        for c in input_ket.label.split(split_str):
-            seq += ket(c, input_ket.value)
+        try:
+            str_seq = input_ket.label.split(split_str)
+        except Exception as e:
+            print('ngrams exception reason:', e)
+            return ket()
+
     r = superposition()
     for k in sizes:
         try:
-            seq_ngrams = create_seq_ngrams(seq, split_str, int(k))
-            r.add_sp(seq_ngrams)
+            sp_ngrams = create_ngrams(str_seq, split_str, int(k))
+            r.add_sp(sp_ngrams)
         except Exception as e:
             print('ngrams exception reason:', e)
             continue
