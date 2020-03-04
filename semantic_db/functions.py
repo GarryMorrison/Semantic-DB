@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 22/2/2020
+# Update: 4/3/2020
 # Copyright: GPLv3
 #
 # A collection of functions that apply to kets, superpositions and sequences.
@@ -8606,7 +8606,7 @@ def old_rename_kets(one, two, three):
 
 # https://en.wikipedia.org/wiki/Production_(computer_science)
 # set invoke method:
-whitelist_table_3['string-replace'] = 'string_replace'
+whitelist_table_2['string-replace'] = 'string_replace'
 # set usage info:
 sequence_functions_usage['string-replace'] = """
     description:
@@ -8614,21 +8614,21 @@ sequence_functions_usage['string-replace'] = """
         for the sequence seq, for every label in sp, replace with ket.label
 
     examples:
-        string-replace(|a> . |sad> . |fellow>, |sad>, |happy>)
+        string-replace(|sad>, |happy>) (|a> . |sad> . |fellow>)
             |a> . |happy> . |fellow>
 
-        string-replace(|Today's date is ${date}.>, |${date}>, extract-value current-date |> )
+        string-replace(|${date}>, extract-value current-date |> ) |Today's date is ${date}.>
             |Today's date is 2018-07-11.>
 
         -- remove " chars:
-        remove-quotes (*) #=> string-replace(|_self> , |">, |>)
+        remove-quotes (*) #=> string-replace(|">, |>) |_self>
         
         remove-quotes |text: "some text">    
             |text: some text>
 
         -- replace "  " with " "
         -- ie, double space with single space:
-        chomp-double-space (*) #=> string-replace(|_self>, |  >, | >)
+        chomp-double-space (*) #=> string-replace(|  >, | >) |_self>
 
         -- put it to use:
         chomp-double-space |some     text>
@@ -8639,7 +8639,7 @@ sequence_functions_usage['string-replace'] = """
 
         -- remove punctuation chars:
         -- :;.,!?$-"'
-        remove-punctuation (*) #=> string-replace(|_self>, split[""] |:;.,!?$-"'>, |>)
+        remove-punctuation (*) #=> string-replace(split[""] |:;.,!?$-"'>, |>) |_self>
         
         -- now put it to use:
         remove-punctuation |some, ... ! $$? noise-text>
@@ -8648,16 +8648,16 @@ sequence_functions_usage['string-replace'] = """
     see also:
         replace
 """
-def string_replace(input_seq, one, two, three):
-    two = two.to_sp()
-    s2 = three.to_sp().label
+def string_replace(input_seq, one, two):
+    one = one.to_sp()
+    s2 = two.to_sp().label
 
     seq = sequence([])
-    for sp in one:
+    for sp in input_seq:
         r = superposition()
         for x in sp:
             text = x.label
-            for elt in two:
+            for elt in one:
                 s1 = elt.label
                 text = text.replace(s1, s2)
             r.add(text, x.value)
