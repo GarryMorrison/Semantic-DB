@@ -58,6 +58,9 @@ pattern |node: 7: 3> => |#2-DIGIT#> . |/> . |#1-DIGIT#>
 pattern |node: 7: 4> => |#2-DIGIT#> . |/> . |#2-DIGIT#>
 then |node: 7: *> => |#PARTIAL-DATE#>
 
+pattern |node: 8: 1> => |#PARTIAL-DATE#>
+then |node: 8: *> => |#PARTIAL-DATE#>
+
 
 process-letters |*> #=>
     process-ngram ngrams["", 1,2,3,4,5,6,7,8,9,10] |__self>
