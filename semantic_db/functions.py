@@ -6520,30 +6520,6 @@ def third_explain(one, context, *ops):
     return ssplit(ket(sorted_solutions[0][0]), merge_char)
 
 
-# set invoke method:
-compound_table['sngrams'] = ['apply_seq_fn', 'seq_ngrams', '']
-# set usage info:
-function_operators_usage['sngrams'] = """
-    description:
-        create sequence ngrams
-
-    examples:
-
-    see also:
-        letter-ngrams, word-ngrams
-"""
-def generate_seq_ngrams(one, N):
-    for i in range(len(one)- N + 1):
-        data = one.data[i:i + N]
-        seq = sequence([])
-        seq.data = data
-        yield seq
-
-def seq_ngrams(one, N):
-    for seq in generate_seq_ngrams(one, N):
-        print('seq:', str(seq))
-    return ket('sngrams')
-
 
 # 28/7/2014:
 # Let's finally implement console train of thought.
@@ -8185,6 +8161,60 @@ function_operators_usage['letter-ngrams'] = """
 def letter_ngrams(one, *parameters):
     return make_ngrams(one, parameters, 'letter')
 
+
+
+# set invoke method:
+compound_table['ngrams'] = ['apply_fn', 'ngrams', '']
+# set usage info:
+function_operators_usage['ngrams'] = """
+    description:
+        ngrams[str, k1, k2, ..., kn] ket
+        ssplit the ket using "str", create ngrams of specified sizes, then smerge back to kets using "str"
+        the result is multiplied by the coefficient of the ket
+        for example, ngrams["", k1, k2, ..., kn] is the same as letter-ngrams[k1, k2, ..., kn]
+        and ngrams[" ", k1, k2, ..., kn] is the same as word-ngrams[k1, k2, ..., kn]
+        (though word-ngrams casts everything to lower-case and strips all punctuation)
+        Yeah, pretty much deprecates letter-ngrams and word-ngrams.
+
+    examples:
+        ngrams["", 1] |fish>
+            |f> + |i> + |s> + |h>
+
+        ngrams["", 1, 2, 3] |happy>
+            |h> + |a> + 2|p> + |y> + |ha> + |ap> + |pp> + |py> + |hap> + |app> + |ppy>
+
+    see also:
+        letter-ngrams, word-ngrams
+        
+"""
+def ngrams(input_ket, *parameters):
+    def create_seq_ngrams(s, merge_char, N):
+        r = superposition()
+        for i in range(len(s.data) - N + 1):
+            labels = [x.label for x in s.data[i:i+ N]]
+            r.add(merge_char.join(labels))
+        return r
+
+    print(input_ket)
+    split_str, *sizes = parameters
+    print(split_str)
+    print(sizes)
+    seq = sequence([])
+    if split_str == '':
+        for c in list(input_ket.label):
+            seq += ket(c, input_ket.value)  # is there a better way than using += here?
+    else:
+        for c in input_ket.label.split(split_str):
+            seq += ket(c, input_ket.value)
+    r = superposition()
+    for k in sizes:
+        try:
+            seq_ngrams = create_seq_ngrams(seq, split_str, int(k))
+            r.add_sp(seq_ngrams)
+        except Exception as e:
+            print('ngrams exception reason:', e)
+            continue
+    return r.multiply(input_ket.value)
 
 
 
