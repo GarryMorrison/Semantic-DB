@@ -29,7 +29,7 @@ process-ngram |*> #=>
 
 
 
-the |text> => |Today's date is 4-03-2020. Another date is 13/2/97. Also, 12 March 2020.>
+the |text> => |Today's date is 4-03-2020. Another date is 13/2/97. Also, 12 March 2020 at 2:45pm.>
 list-of |digits> => range(|0>, |9>)
 apply-digit-label |*> #=> if(is-mbr(|_self>, list-of |digits>), |#DIGIT#>, |_self>)
 
@@ -95,6 +95,20 @@ create-if-then-machine (*,*) #=>
 
     
 |null> => create-if-then-machine(|10>, |#MONTH#>) full-list-of |months> 
+
+
+pattern |node: 12: 1> => |#1-DIGIT#> . |:> . |#2-DIGIT#>
+pattern |node: 12: 2> => |#2-DIGIT#> . |:> . |#2-DIGIT#>
+pattern |node: 12: 3> => |#1-DIGIT#> . |:> . |#2-DIGIT#> . |#AM-PM#>
+pattern |node: 12: 4> => |#2-DIGIT#> . |:> . |#2-DIGIT#> . |#AM-PM#>
+then |node: 12: *> => |#TIME#>
+
+pattern |node: 13: 1> => |a> . |m>
+pattern |node: 13: 2> => |p> . |m>
+then |node: 13: *> => |#AM-PM#>
+
+pattern |node: 14: 1> => |#TIME#>
+then |node: 14: *> => |#TIME#>
 
 
 process-letters |*> #=>
