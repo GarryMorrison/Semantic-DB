@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 4/3/2020
+# Update: 5/3/2020
 # Copyright: GPLv3
 #
 # A collection of functions that apply to kets, superpositions and sequences.
@@ -6518,6 +6518,97 @@ def third_explain(one, context, *ops):
     # return ket(target)
 
     return ssplit(ket(sorted_solutions[0][0]), merge_char)
+
+
+# set invoke method:
+compound_table['fast-explain'] = ['apply_seq_fn', 'fast_explain', 'context']
+# set usage info:
+function_operators_usage['fast-explain'] = """
+    description:
+        fast-explain[op] seq
+        given a cause structure, and an input sequence, find the possible cause
+        See here for why we would want to do this:
+        Parsimonious Covering Theory with Causal Chaining and Ordering Constraints:
+        https://github.com/garrettkatz/copct
+        NB: copct.py code must be available for this function to work, so you will need to download it.
+        Also note that copct is MIT licensed.
+
+    examples:
+        -- given this knowledge:
+        cause |p> => |g> . |m> . |r>
+        cause |t> => |p> . |p>
+        cause |x> => |p> . |g>
+        cause |z> => |r> . |p> 
+        
+        -- explain |g> . |m> . |r> . |g> . |m> . |r>:
+        fast-explain[cause] ssplit |gmrgmr>
+        
+    see also:
+        sexp, explain
+        
+"""
+def fast_explain(input_seq, context, *ops):
+    try:
+        import copct
+    except Exception as e:
+        print('fast-explain requires you to download the copct code yourself before the import statement will work.')
+        print('Available here under MIT license: https://github.com/garrettkatz/copct')
+        return ket()
+
+    # verbose = True
+    verbose = False
+    multiple_results = False
+
+    if len(ops) == 1:
+        op = ops[0]
+        merge_char = ' . '  # currently bugs out if merge_char == ""
+    else:
+        op, merge_char = ops
+
+    # learn all the cause tree's:
+    cause_tree = {}
+    max_seq_len = 0
+    for x in context.relevant_kets(op):
+        pattern = tuple([y.label for y in x.apply_op(context, op)])
+        cause_tree[pattern] = x.label
+        max_seq_len = max(max_seq_len, len(pattern))
+        # print(x)
+        # print(pattern)
+        # print(cause_tree)
+        # print(max_seq_len)
+
+    def causes(v):
+        if v in cause_tree:
+            return set([cause_tree[v]])
+        return set()
+
+    w = tuple([x.label for x in input_seq])
+    M = max_seq_len
+
+    # compute explanations
+    status, tlcovs, g = copct.explain(causes, w, M=M, verbose=verbose)
+    # Prune by minimum cardinality
+    tlcovs_ml, ml = copct.minCardinalityTLCovers(tlcovs)
+
+    if verbose:
+        print('Top-level covers:')
+        # print([u for (u, _, _, _, _) in tlcovs])
+        for (u, _, _, _, _) in tlcovs:
+            print(merge_char.join(u))
+        print('MC top-level covers:')
+        # print([u for (u, _, _, _, _) in tlcovs_ml])
+        for (u, _, _, _, _) in tlcovs_ml:
+            print(merge_char.join(u))
+
+    if multiple_results:
+        r = superposition()
+        for u, _, _, _, _ in tlcovs_ml:
+            r.add(merge_char.join(u))
+        return r
+    else:
+        seq = sequence([])
+        seq.data = [superposition(x) for x in tlcovs_ml[0][0]]
+        return seq
 
 
 
