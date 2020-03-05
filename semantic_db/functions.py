@@ -6635,7 +6635,7 @@ def fifth_explain(input_seq, context, *ops):
     else:
         op, merge_char = ops
 
-    verbose = True
+    verbose = False
     multiple_results = False
 
     max_depth = 10  # hard code in a max_depth for now. Maybe later make it infinity.
@@ -6708,8 +6708,6 @@ def fifth_explain(input_seq, context, *ops):
             if candidate[k] != target[k] and candidate[k] != '#STAR#':
                 return False
         return True
-
-    # print('match test:', match_list_start(('a', '#STAR#'), ('a', 'b', 'f')))
 
     # filter to valid first step solutions:
     solutions = []

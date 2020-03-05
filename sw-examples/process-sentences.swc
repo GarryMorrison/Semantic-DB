@@ -117,5 +117,23 @@ then |node: 14: *> => |#TIME#>
 process-letters |*> #=>
     process-ngram ngrams["", 3,4,5,6,7,8,9,10,11,12,13] split[". "] |__self>
 
-|null> => process-letters the |text>
+-- |null> => process-letters the |text>
+
+
+extract-node-numbers |*> #=> sselect[2,2] ssplit[": "] |_self>
+
+create-if-then-machine (*) #=>
+    node |number> => plus[1] clean select[-1,-1] ket-sort extract-node-numbers rel-kets[pattern]
+    node |idx> => |1>
+    create-single-rule |__self0>
+    node |label> => |node: > _ node |number> _ |: *>
+    then node |label> => |__self1>
+
+
+|null> => create-if-then-machine(|#DIGIT#>) range(|0>, |9>)
+
+the |result 1> => smerge (then explain[pattern]) ssplit[""] |Today's date is 5 March 2020.>
+the |result 2> => smerge (then explain[pattern])^2 ssplit[""] |Today's date is 5 March 2020.>
+the |result 3> => smerge (then explain[pattern])^3 ssplit[""] |Today's date is 5 March 2020.>
+the |result 4> => smerge (then explain[pattern])^4 ssplit[""] |Today's date is 5 March 2020.>
 
