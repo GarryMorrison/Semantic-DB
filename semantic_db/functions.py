@@ -6597,16 +6597,19 @@ def fourth_explain(input_seq, context, *ops):
             if target.startswith(x.label):
                 solutions.append([label, target[len(x.label) + len(merge_char):]])
     if verbose:
+        print('\nFirst step solutions:')
         print(solutions)
 
     for _ in range(len_input + 1):
         solutions = find_next_step(solutions, forward_cause)
         if verbose:
+            print('\nSolutions:')
             print(solutions)
 
     sorted_solutions = sorted(solutions, key=lambda x: len(x[0].split(merge_char)), reverse=False)
 
     if verbose:
+        print('\nSorted solutions:')
         for label, _ in sorted_solutions:
             print(label)
 
