@@ -6144,7 +6144,7 @@ def seq_exp(one, context, *ops):
 
 
 # set invoke method:
-compound_table['explain'] = ['apply_seq_fn', 'fourth_explain', 'context']
+compound_table['explain'] = ['apply_seq_fn', 'fifth_explain', 'context']
 # set usage info:
 function_operators_usage['explain'] = """
     description:
@@ -6625,6 +6625,127 @@ def fourth_explain(input_seq, context, *ops):
     else:
         seq = sequence([])
         seq.data = [superposition(x) for x in sorted_solutions[0][0].split(merge_char)]
+        return seq
+
+
+def fifth_explain(input_seq, context, *ops):
+    if len(ops) == 1:
+        op = ops[0]
+        merge_char = ' . '  # currently bugs out if merge_char == ""
+    else:
+        op, merge_char = ops
+
+    verbose = True
+    multiple_results = False
+
+    max_depth = 10  # hard code in a max_depth for now. Maybe later make it infinity.
+    target = smerge(input_seq, merge_char).label  # replace with merge_char.join() later.
+    target_list = [y.label for y in input_seq]
+    len_input = len(input_seq)
+
+    if verbose:
+        print('target list:')
+        print(target_list)
+
+    def single_step(one, context, op):
+        seq = []
+        for x in one:
+            child = ket(x).apply_op(context, op)
+            if len(child) == 0:
+                seq_child = [x]
+            else:
+                seq_child = [y.label for y in child]
+            seq += seq_child
+        return tuple(seq)
+
+    forward_cause = {}
+    seen_sequences = {}
+
+    # learn all the cause tree's:
+    for x in context.relevant_kets(op):
+        elt = [x.label]
+        len_elt = 1
+        for k in range(max_depth):
+            elt = single_step(elt, context, op)
+            if len(elt) == len_elt and k > 0:
+                break
+            len_elt = len(elt)
+            # print('elt: %s' % elt)
+            if x.label not in forward_cause:
+                forward_cause[x.label] = []
+            forward_cause[x.label].append(elt)
+            seen_sequences[elt] = True  # later convert to set
+
+    # learn input elements:
+    for x in input_seq:
+        elt = tuple([x.label])
+        if elt not in seen_sequences:
+            forward_cause[x.label] = [elt]
+
+    if verbose:
+        # print cause tree:
+        print('\ncause tree:')
+        for label, sp in forward_cause.items():
+            print('%s: %s'% (label, sp))
+
+    # find causes:
+    def find_next_step(solutions, forward_cause):
+        new_solutions = []
+        for head_list, target_list in solutions:
+            if len(target_list) == 0:
+                new_solutions.append([head_list, target_list])
+            else:
+                for label, sp in forward_cause.items():
+                    for x in sp:
+                        if match_list_start(x, target_list):
+                            new_solutions.append([head_list + [label], target_list[len(x):]])
+        return new_solutions
+
+    def match_list_start(candidate, target):
+        if len(candidate) > len(target):
+            return False
+        for k in range(len(candidate)):
+            if candidate[k] != target[k] and candidate[k] != '#STAR#':
+                return False
+        return True
+
+    # print('match test:', match_list_start(('a', '#STAR#'), ('a', 'b', 'f')))
+
+    # filter to valid first step solutions:
+    solutions = []
+    for label, sp in forward_cause.items():
+        for x in sp:
+            if match_list_start(x, target_list):
+                solutions.append([[label], target_list[len(x):]])
+    if verbose:
+        print('\nFirst step solutions:')
+        print(solutions)
+
+    for _ in range(len_input + 1):
+        solutions = find_next_step(solutions, forward_cause)
+        if verbose:
+            print('\nSolutions:')
+            print(solutions)
+
+    sorted_solutions = sorted(solutions, key=lambda x: len(x[0]), reverse=False)
+
+    if verbose:
+        print('\nSorted solutions:')
+        for label, _ in sorted_solutions:
+            print(label)
+
+    if multiple_results:
+        min_len = math.inf
+        r = superposition()
+        for label, _ in sorted_solutions:
+            len_split_label = len(label)
+            if len_split_label <= min_len:
+                r.add(merge_char.join(label))
+                min_len = len_split_label
+        return r
+    else:
+        seq = sequence([])
+        seq.data = [superposition(x) for x in sorted_solutions[0][0]]
         return seq
 
 
