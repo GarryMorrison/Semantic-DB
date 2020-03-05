@@ -42,6 +42,9 @@ apply-month-label |*> #=> if(is-mbr(|_self>, full-list-of |months>), |#MONTH#>, 
 
 
 read |*> #=> (then explain[pattern])^2 apply-digit-label normalize-date-separation-char ssplit |_self>
+-- read |*> #=> (then fast-explain[pattern])^2 apply-digit-label normalize-date-separation-char ssplit |_self>
+
+
 
 then |*> #=> |_self>
 then |#EMPTY#> #=> |>

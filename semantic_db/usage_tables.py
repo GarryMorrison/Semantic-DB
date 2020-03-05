@@ -579,7 +579,7 @@ built_in_table_usage['sselect'] = """
             |c> . |d> . |e> . |f>   
 
     see also:
-        sselect
+        select
 """
 
 # set invoke method:

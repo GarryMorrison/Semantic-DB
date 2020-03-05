@@ -6144,7 +6144,7 @@ def seq_exp(one, context, *ops):
 
 
 # set invoke method:
-compound_table['explain'] = ['apply_seq_fn', 'third_explain', 'context']
+compound_table['explain'] = ['apply_seq_fn', 'fourth_explain', 'context']
 # set usage info:
 function_operators_usage['explain'] = """
     description:
@@ -6442,6 +6442,7 @@ def third_explain(one, context, *ops):
     else:
         op, merge_char = ops
 
+    verbose = False
     max_depth = 10  # hard code in a max_depth for now. Maybe later make it infinity.
     target = smerge(one, merge_char).label
     len_input = len(one)
@@ -6513,11 +6514,116 @@ def third_explain(one, context, *ops):
     else:
         sorted_solutions = sorted(solutions, key=lambda x: len(x[0].split(merge_char)), reverse=False)
 
-    for label, _ in sorted_solutions:
-        print(label)
-    # return ket(target)
+    if verbose:
+        for label, _ in sorted_solutions:
+            print(label)
+        # return ket(target)
 
     return ssplit(ket(sorted_solutions[0][0]), merge_char)
+
+
+def fourth_explain(input_seq, context, *ops):
+    if len(ops) == 1:
+        op = ops[0]
+        merge_char = ' . '  # currently bugs out if merge_char == ""
+    else:
+        op, merge_char = ops
+
+    verbose = False
+    multiple_results = False
+
+    max_depth = 10  # hard code in a max_depth for now. Maybe later make it infinity.
+    target = smerge(input_seq, merge_char).label  # replace with merge_char.join() later.
+    len_input = len(input_seq)
+
+    def single_step(one, context, op):
+        seq = []
+        for x in one:
+            child = ket(x).apply_op(context, op)
+            if len(child) == 0:
+                seq_child = [x]
+            else:
+                seq_child = [y.label for y in child]
+            seq += seq_child
+        return seq
+
+    forward_cause = {}
+    seen_sequences = {}
+
+    # learn all the cause tree's:
+    for x in context.relevant_kets(op):
+        elt = [x.label]
+        len_elt = 1
+        for k in range(max_depth):
+            elt = single_step(elt, context, op)
+            if len(elt) == len_elt and k > 0:
+                break
+            len_elt = len(elt)
+            # print('elt: %s' % elt)
+            if x.label not in forward_cause:
+                forward_cause[x.label] = superposition()
+            seq = merge_char.join(elt)
+            forward_cause[x.label].add(seq)
+            seen_sequences[seq] = True  # later convert to set
+
+    # learn input elements:
+    for x in input_seq:
+        if x.label not in seen_sequences:
+            forward_cause[x.label] = superposition() + x
+
+    if verbose:
+        # print cause tree:
+        print('cause tree:')
+        for label, sp in forward_cause.items():
+            print('%s: %s'% (label, sp))
+
+    # find causes:
+    def find_next_step(solutions, forward_cause):
+        new_solutions = []
+        for head_label, target in solutions:
+            if len(target) == 0:
+                new_solutions.append([head_label, target])
+            else:
+                for label, sp in forward_cause.items():
+                    for x in sp:
+                        if target.startswith(x.label):
+                            new_solutions.append([head_label + merge_char + label, target[len(x.label) + len(merge_char):]])
+        return new_solutions
+
+    # filter to valid first step solutions:
+    solutions = []
+    for label, sp in forward_cause.items():
+        for x in sp:
+            if target.startswith(x.label):
+                solutions.append([label, target[len(x.label) + len(merge_char):]])
+    if verbose:
+        print(solutions)
+
+    for _ in range(len_input + 1):
+        solutions = find_next_step(solutions, forward_cause)
+        if verbose:
+            print(solutions)
+
+    sorted_solutions = sorted(solutions, key=lambda x: len(x[0].split(merge_char)), reverse=False)
+
+    if verbose:
+        for label, _ in sorted_solutions:
+            print(label)
+
+    if multiple_results:
+        min_len = math.inf
+        r = superposition()
+        for label, _ in sorted_solutions:
+            len_split_label = len(label.split(merge_char))
+            if len_split_label <= min_len:
+                r.add(label)
+                min_len = len_split_label
+        return r
+    else:
+        seq = sequence([])
+        seq.data = [superposition(x) for x in sorted_solutions[0][0].split(merge_char)]
+        return seq
+
 
 
 # set invoke method:
@@ -6545,6 +6651,9 @@ function_operators_usage['fast-explain'] = """
         
     see also:
         sexp, explain
+        
+    future:
+        work out why in some cases it doesn't give the same results as "explain".
         
 """
 def fast_explain(input_seq, context, *ops):
