@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 5/3/2020
+# Update: 6/3/2020
 # Copyright: GPLv3
 #
 # A collection of functions that apply to kets, superpositions and sequences.
@@ -347,6 +347,56 @@ def smerge(one, merge_char=''):
                 labels.append(x.label)
     s = merge_char.join(labels)
     return ket(s)
+
+
+# set invoke method:
+compound_table['flatten-seq'] = ['apply_seq_fn', 'flatten_seq', '']
+# set usage info:
+function_operators_usage['flatten-seq'] = """
+    description:
+        flatten-seq[merge-str] seq
+        flatten-seq merges a sequence into a superposition of sequences, separated by the merge-string.
+        Each sequence in the superposition is another "pathway" through the input sequence
+        The coefficients of each piece of the sequence multiply the final sequence
+
+    examples:
+        flatten-seq[" . "] (|a> + |b> . |c> + |d> + |e> . |f> + |g>)
+            |a . c . f> + |a . c . g> + |a . d . f> + |a . d . g> + |a . e . f> + |a . e . g> + |b . c . f> + |b . c . g> + |b . d . f> + |b . d . g> + |b . e . f> + |b . e . g>
+            
+        -- how many pathways:
+        how-many flatten-seq[" . "] (|a> + |b> . |c> + |d> + |e> . |f> + |g>)
+            |number: 12>
+
+        flatten-seq[" . "] (|a> + 2|b> . 0.5|c> + 0.7|d> + 3|e>)
+            0.5|a . c> + 0.7|a . d> + 3|a . e> + |b . c> + 1.4|b . d> + 6|b . e>
+
+        -- how many pathways:
+        how-many flatten-seq[" . "] (|a> + 2|b> . 0.5|c> + 0.7|d> + 3|e>)
+            |number: 6>
+            
+
+    see also:
+        smerge
+        
+    future:
+        expand examples section to make it clearer what is going on here
+
+"""
+def flatten_seq(input_seq, merge_str):
+    r = superposition()
+    for sp in input_seq:
+        if len(r) == 0:
+            r = sp
+        else:
+            new_r = superposition()
+            for x in r:
+                for y in sp:
+                    label = x.label + merge_str + y.label
+                    value = x.value * y.value
+                    new_r.add(label, value)
+            r = new_r
+    return r
+
 
 
 # set invoke method:
