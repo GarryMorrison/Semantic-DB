@@ -373,14 +373,28 @@ function_operators_usage['flatten-seq'] = """
         -- how many pathways:
         how-many flatten-seq[" . "] (|a> + 2|b> . 0.5|c> + 0.7|d> + 3|e>)
             |number: 6>
+
             
+        Let's say we have a four step pathway:
+        A -> B -> C -> D
+        A -> B has |A to B path 1> and |A to B path 2> and |A to B path 3>
+        B -> C has |B to C path 1>
+        C -> D has |C to D path 1> and |C to D path 2>
+        then to find all permutations of pathways, we do:
+        print flatten-seq[" . "] (|A to B path 1> + |A to B path 2> + |A to B path 3> . |B to C path 1> . |C to D path 1> + |C to D path 2>)
+            A to B path 1 . B to C path 1 . C to D path 1
+            A to B path 1 . B to C path 1 . C to D path 2
+            A to B path 2 . B to C path 1 . C to D path 1
+            A to B path 2 . B to C path 1 . C to D path 2
+            A to B path 3 . B to C path 1 . C to D path 1
+            A to B path 3 . B to C path 1 . C to D path 2
+            |A to B path 1 . B to C path 1 . C to D path 1> + |A to B path 1 . B to C path 1 . C to D path 2> + |A to B path 2 . B to C path 1 . C to D path 1> + |A to B path 2 . B to C path 1 . C to D path 2> + |A to B path 3 . B to C path 1 . C to D path 1> + |A to B path 3 . B to C path 1 . C to D path 2>
+
+        further, if each step in the pathway has a weight, a coefficient, then the full pathway will have the weight of the multiple of the weights for each step.
 
     see also:
         smerge
         
-    future:
-        expand examples section to make it clearer what is going on here
-
 """
 def flatten_seq(input_seq, merge_str):
     r = superposition()
