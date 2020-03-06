@@ -1,0 +1,31 @@
+-- Code to convert the Moby part of speech sw file into if-then machines.
+-- First you need to download it from here:
+-- http://semantic-db.org/sw-examples/part-of-speech.sw
+--
+-- eg, lines such as:
+-- POS |word: old school> => |POS: Noun Phrase>
+-- POS |word: hungry> => |POS: Adjective>
+-- POS |word: hunger> => 0.333|POS: Noun> + 0.333|POS: Verb (participle)> + 0.333|POS: Verb (intransitive)>
+
+-- a couple of helper operators:
+extract-node-numbers |*> #=> sselect[2,2] ssplit[": "] |_self>
+apply-hash |*> #=> |#> _ to-upper replace[" ", "-"] |_self> _ |#>
+
+-- the main event:
+create-if-then-machine |*> #=>
+    node |number> => |1>
+    node |number> => plus[1] clean select[-1,-1] ket-sort extract-node-numbers rel-kets[pos-pattern]
+    node |label> => |node: > _ node |number> _ |: 1>
+    pos-pattern node |label> => ssplit[" "] extract-value |__self>
+    node |label> => |node: > _ node |number> _ |: *>
+    then node |label> => apply-hash clean extract-value POS |__self>
+
+-- now let's put the code to use, and learn them:
+|null> => create-if-then-machine rel-kets[POS]
+
+-- a quick demo:
+then |*> #=> |_self>
+read |*> #=> then explain[pos-pattern] ssplit[" "] string-replace(|, >, | #COMMA# >) |_self>
+
+|null> => read |The old school man was very hungry, indeed, dying of hunger>
+

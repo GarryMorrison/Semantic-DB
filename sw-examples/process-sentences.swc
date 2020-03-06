@@ -29,7 +29,7 @@ process-ngram |*> #=>
 
 
 
-the |text> => |Today's date is 4-03-2020. Another date is 13/2/97. Also, 12 March 2020 at 2:45pm.>
+the |text> => |Today's date is 4-03-2020. Another date is 13/2/97. Also, 12 March 2020 at 2:45pm or maybe 3:27 pm.>
 list-of |digits> => range(|0>, |9>)
 apply-digit-label |*> #=> if(is-mbr(|_self>, list-of |digits>), |#DIGIT#>, |_self>)
 
@@ -104,6 +104,8 @@ pattern |node: 12: 1> => |#1-DIGIT#> . |:> . |#2-DIGIT#>
 pattern |node: 12: 2> => |#2-DIGIT#> . |:> . |#2-DIGIT#>
 pattern |node: 12: 3> => |#1-DIGIT#> . |:> . |#2-DIGIT#> . |#AM-PM#>
 pattern |node: 12: 4> => |#2-DIGIT#> . |:> . |#2-DIGIT#> . |#AM-PM#>
+pattern |node: 12: 5> => |#1-DIGIT#> . |:> . |#2-DIGIT#> . | > . |#AM-PM#>
+pattern |node: 12: 6> => |#2-DIGIT#> . |:> . |#2-DIGIT#> . | > . |#AM-PM#>
 then |node: 12: *> => |#TIME#>
 
 pattern |node: 13: 1> => |a> . |m>
@@ -117,12 +119,13 @@ then |node: 14: *> => |#TIME#>
 process-letters |*> #=>
     process-ngram ngrams["", 3,4,5,6,7,8,9,10,11,12,13] split[". "] |__self>
 
--- |null> => process-letters the |text>
+|null> => process-letters the |text>
 
 
 extract-node-numbers |*> #=> sselect[2,2] ssplit[": "] |_self>
 
 create-if-then-machine (*) #=>
+    node |number> => |1>
     node |number> => plus[1] clean select[-1,-1] ket-sort extract-node-numbers rel-kets[pattern]
     node |idx> => |1>
     create-single-rule |__self0>
