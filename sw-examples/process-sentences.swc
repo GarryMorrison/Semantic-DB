@@ -1,0 +1,142 @@
+the |text> => |The shopping list is bread, coffee and milk. The fridge contains butter, bacon, cheese and strawberries. Meanwhile, the man sat, and the very old man smoked>
+
+the |sentences> => split["? "] split["! "] split[". "] the |text>
+
+
+pattern |node: 1: 1> => |the> . |man>
+pattern |node: 1: 2> => |the> . |#STAR#> . |man>
+pattern |node: 1: 3> => |the> . |#STAR#> . |#STAR#> . |man>
+pattern |node: 1: 4> => |the> . |#STAR#> . |#STAR#> . |#STAR#> . |man>
+then |node: 1: *> => |#THE-MAN#>
+
+pattern |node: 2: 1> => |#STAR#> . |#COMMA#> . |#STAR#> . |and> . |#STAR#>
+pattern |node: 2: 2> => |#STAR#> . |#COMMA#> . |#STAR#> . |#COMMA#> . |#STAR#> . |and> . |#STAR#>
+then |node: 2: *> => |#LIST#>
+
+
+read |*> #=> ssplit[" "] string-replace(|, >, | #COMMA# >) to-lower |_self>
+
+process-sentence |*> #=>
+    process-ngram ngrams[" ", 2,3,4,5,6,7] |__self>
+
+process-ngram |*> #=>
+    tmp |node> => |#EMPTY#>
+    tmp |node> => drop-below[0.9] similar-input[pattern] read |__self>
+    class then tmp |node> +=> |__self>
+
+
+|null> => process-sentence the |sentences>
+
+
+
+the |text> => |Today's date is 4-03-2020. Another date is 13/2/97. Also, 12 March 2020 at 2:45pm or maybe 3:27 pm.>
+list-of |digits> => range(|0>, |9>)
+apply-digit-label |*> #=> if(is-mbr(|_self>, list-of |digits>), |#DIGIT#>, |_self>)
+
+normalize-date-separation-char |*> #=> replace["-\", "/"] |_self>
+
+list-of-abbrev |months> => |Jan> + |Feb> + |Mar> + |Apr> + |May> + |June> + |July> + |Aug> + |Sep> + |Oct> + |Nov> + |Dec>
+list-of |months> => |January> + |February> + |March> + |April> + |May> + |June> + |July> + |August> + |September> + |October> + |November> + |December>
+full-list-of |months> => (list-of-abbrev + to-lower list-of-abbrev + list-of + to-lower list-of) |months>
+apply-month-label |*> #=> if(is-mbr(|_self>, full-list-of |months>), |#MONTH#>, |_self>)
+
+
+read |*> #=> (then explain[pattern])^2 apply-digit-label normalize-date-separation-char ssplit |_self>
+-- read |*> #=> (then fast-explain[pattern])^2 apply-digit-label normalize-date-separation-char ssplit |_self>
+
+
+
+then |*> #=> |_self>
+then |#EMPTY#> #=> |>
+
+
+pattern |node: 3: 1> => |#DIGIT#>
+then |node: 3: *> => |#1-DIGIT#>
+
+pattern |node: 4: 1> => |#DIGIT#> . |#DIGIT#>
+then |node: 4: *> => |#2-DIGIT#>
+
+pattern |node: 5: 1> => |#DIGIT#> . |#DIGIT#> . |#DIGIT#> . |#DIGIT#>
+then |node: 5: *> => |#4-DIGIT#>
+
+pattern |node: 6: 1> => |#PARTIAL-DATE-1#> . |/> . |#2-DIGIT#>
+pattern |node: 6: 2> => |#PARTIAL-DATE-1#> . |/> . |#4-DIGIT#>
+pattern |node: 6: 3> => |#PARTIAL-DATE-2#> . | > . |#2-DIGIT#>
+pattern |node: 6: 4> => |#PARTIAL-DATE-2#> . | > . |#4-DIGIT#>
+then |node: 6: *> => |#FULL-DATE#>
+
+pattern |node: 7: 1> => |#1-DIGIT#> . |/> . |#1-DIGIT#>
+pattern |node: 7: 2> => |#1-DIGIT#> . |/> . |#2-DIGIT#>
+pattern |node: 7: 3> => |#2-DIGIT#> . |/> . |#1-DIGIT#>
+pattern |node: 7: 4> => |#2-DIGIT#> . |/> . |#2-DIGIT#>
+then |node: 7: *> => |#PARTIAL-DATE-1#>
+
+pattern |node: 11: 1> => |#1-DIGIT#> . | > . |#MONTH#>
+pattern |node: 11: 2> => |#2-DIGIT#> . | > . |#MONTH#>
+then |node: 11: *> => |#PARTIAL-DATE-2#>
+
+pattern |node: 8: 1> => |#PARTIAL-DATE-1#>
+pattern |node: 8: 2> => |#PARTIAL-DATE-2#>
+then |node: 8: *> => |#PARTIAL-DATE#>
+
+pattern |node: 9: 1> => |#FULL-DATE#>
+then |node: 9: *> => |#FULL-DATE#>
+
+
+-- now auto build the #MONTH# if-then machine using "full-list-of |months>":
+create-single-rule |*> #=>
+    node |label> => |node: > _ node |number> _ |: > _ node |idx>
+    pattern node |label> => ssplit |__self>
+    node |idx> => plus[1] node |idx>
+
+create-if-then-machine (*,*) #=>
+    node |number> => |__self1>
+    node |idx> => |1>
+    create-single-rule |__self0>
+    node |label> => |node: > _ node |number> _ |: *>
+    then node |label> => |__self2>
+
+    
+|null> => create-if-then-machine(|10>, |#MONTH#>) full-list-of |months> 
+
+
+pattern |node: 12: 1> => |#1-DIGIT#> . |:> . |#2-DIGIT#>
+pattern |node: 12: 2> => |#2-DIGIT#> . |:> . |#2-DIGIT#>
+pattern |node: 12: 3> => |#1-DIGIT#> . |:> . |#2-DIGIT#> . |#AM-PM#>
+pattern |node: 12: 4> => |#2-DIGIT#> . |:> . |#2-DIGIT#> . |#AM-PM#>
+pattern |node: 12: 5> => |#1-DIGIT#> . |:> . |#2-DIGIT#> . | > . |#AM-PM#>
+pattern |node: 12: 6> => |#2-DIGIT#> . |:> . |#2-DIGIT#> . | > . |#AM-PM#>
+then |node: 12: *> => |#TIME#>
+
+pattern |node: 13: 1> => |a> . |m>
+pattern |node: 13: 2> => |p> . |m>
+then |node: 13: *> => |#AM-PM#>
+
+pattern |node: 14: 1> => |#TIME#>
+then |node: 14: *> => |#TIME#>
+
+
+process-letters |*> #=>
+    process-ngram ngrams["", 3,4,5,6,7,8,9,10,11,12,13] split[". "] |__self>
+
+|null> => process-letters the |text>
+
+
+extract-node-numbers |*> #=> sselect[2,2] ssplit[": "] |_self>
+
+create-if-then-machine (*) #=>
+    node |number> => |1>
+    node |number> => plus[1] clean select[-1,-1] ket-sort extract-node-numbers rel-kets[pattern]
+    node |idx> => |1>
+    create-single-rule |__self0>
+    node |label> => |node: > _ node |number> _ |: *>
+    then node |label> => |__self1>
+
+
+|null> => create-if-then-machine(|#DIGIT#>) range(|0>, |9>)
+
+the |result 1> => smerge (then explain[pattern]) ssplit[""] |Today's date is 5 March 2020.>
+the |result 2> => smerge (then explain[pattern])^2 ssplit[""] |Today's date is 5 March 2020.>
+the |result 3> => smerge (then explain[pattern])^3 ssplit[""] |Today's date is 5 March 2020.>
+the |result 4> => smerge (then explain[pattern])^4 ssplit[""] |Today's date is 5 March 2020.>
+

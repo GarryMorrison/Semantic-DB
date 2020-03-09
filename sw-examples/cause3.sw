@@ -37,3 +37,5 @@ pattern |node: 10: 4> => |phrase: with child>
 then |node: 10: *> => |concept: pregnancy>
 
 read |*> #=> ssplit[" "] replace[",?", ""] to-lower |_self>
+then |*> #=> |_self>
+

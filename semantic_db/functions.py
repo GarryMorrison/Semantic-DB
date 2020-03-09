@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 22/2/2020
+# Update: 6/3/2020
 # Copyright: GPLv3
 #
 # A collection of functions that apply to kets, superpositions and sequences.
@@ -347,6 +347,70 @@ def smerge(one, merge_char=''):
                 labels.append(x.label)
     s = merge_char.join(labels)
     return ket(s)
+
+
+# set invoke method:
+compound_table['flatten-seq'] = ['apply_seq_fn', 'flatten_seq', '']
+# set usage info:
+function_operators_usage['flatten-seq'] = """
+    description:
+        flatten-seq[merge-str] seq
+        flatten-seq merges a sequence into a superposition of sequences, separated by the merge-string.
+        Each sequence in the superposition is another "pathway" through the input sequence
+        The coefficients of each piece of the sequence multiply the final sequence
+
+    examples:
+        flatten-seq[" . "] (|a> + |b> . |c> + |d> + |e> . |f> + |g>)
+            |a . c . f> + |a . c . g> + |a . d . f> + |a . d . g> + |a . e . f> + |a . e . g> + |b . c . f> + |b . c . g> + |b . d . f> + |b . d . g> + |b . e . f> + |b . e . g>
+            
+        -- how many pathways:
+        how-many flatten-seq[" . "] (|a> + |b> . |c> + |d> + |e> . |f> + |g>)
+            |number: 12>
+
+        flatten-seq[" . "] (|a> + 2|b> . 0.5|c> + 0.7|d> + 3|e>)
+            0.5|a . c> + 0.7|a . d> + 3|a . e> + |b . c> + 1.4|b . d> + 6|b . e>
+
+        -- how many pathways:
+        how-many flatten-seq[" . "] (|a> + 2|b> . 0.5|c> + 0.7|d> + 3|e>)
+            |number: 6>
+
+            
+        Let's say we have a four step pathway:
+        A -> B -> C -> D
+        A -> B has |A to B path 1> and |A to B path 2> and |A to B path 3>
+        B -> C has |B to C path 1>
+        C -> D has |C to D path 1> and |C to D path 2>
+        then to find all permutations of pathways, we do:
+        print flatten-seq[" . "] (|A to B path 1> + |A to B path 2> + |A to B path 3> . |B to C path 1> . |C to D path 1> + |C to D path 2>)
+            A to B path 1 . B to C path 1 . C to D path 1
+            A to B path 1 . B to C path 1 . C to D path 2
+            A to B path 2 . B to C path 1 . C to D path 1
+            A to B path 2 . B to C path 1 . C to D path 2
+            A to B path 3 . B to C path 1 . C to D path 1
+            A to B path 3 . B to C path 1 . C to D path 2
+            |A to B path 1 . B to C path 1 . C to D path 1> + |A to B path 1 . B to C path 1 . C to D path 2> + |A to B path 2 . B to C path 1 . C to D path 1> + |A to B path 2 . B to C path 1 . C to D path 2> + |A to B path 3 . B to C path 1 . C to D path 1> + |A to B path 3 . B to C path 1 . C to D path 2>
+
+        further, if each step in the pathway has a weight, a coefficient, then the full pathway will have the weight of the multiple of the weights for each step.
+
+    see also:
+        smerge
+        
+"""
+def flatten_seq(input_seq, merge_str):
+    r = superposition()
+    for sp in input_seq:
+        if len(r) == 0:
+            r = sp
+        else:
+            new_r = superposition()
+            for x in r:
+                for y in sp:
+                    label = x.label + merge_str + y.label
+                    value = x.value * y.value
+                    new_r.add(label, value)
+            r = new_r
+    return r
+
 
 
 # set invoke method:
@@ -6144,7 +6208,7 @@ def seq_exp(one, context, *ops):
 
 
 # set invoke method:
-compound_table['explain'] = ['apply_seq_fn', 'third_explain', 'context']
+compound_table['explain'] = ['apply_seq_fn', 'fifth_explain', 'context']
 # set usage info:
 function_operators_usage['explain'] = """
     description:
@@ -6442,6 +6506,7 @@ def third_explain(one, context, *ops):
     else:
         op, merge_char = ops
 
+    verbose = False
     max_depth = 10  # hard code in a max_depth for now. Maybe later make it infinity.
     target = smerge(one, merge_char).label
     len_input = len(one)
@@ -6513,36 +6578,333 @@ def third_explain(one, context, *ops):
     else:
         sorted_solutions = sorted(solutions, key=lambda x: len(x[0].split(merge_char)), reverse=False)
 
-    for label, _ in sorted_solutions:
-        print(label)
-    # return ket(target)
+    if verbose:
+        for label, _ in sorted_solutions:
+            print(label)
+        # return ket(target)
 
     return ssplit(ket(sorted_solutions[0][0]), merge_char)
 
 
+def fourth_explain(input_seq, context, *ops):
+    if len(ops) == 1:
+        op = ops[0]
+        merge_char = ' . '  # currently bugs out if merge_char == ""
+    else:
+        op, merge_char = ops
+
+    verbose = False
+    multiple_results = False
+
+    max_depth = 10  # hard code in a max_depth for now. Maybe later make it infinity.
+    target = smerge(input_seq, merge_char).label  # replace with merge_char.join() later.
+    len_input = len(input_seq)
+
+    def single_step(one, context, op):
+        seq = []
+        for x in one:
+            child = ket(x).apply_op(context, op)
+            if len(child) == 0:
+                seq_child = [x]
+            else:
+                seq_child = [y.label for y in child]
+            seq += seq_child
+        return seq
+
+    forward_cause = {}
+    seen_sequences = {}
+
+    # learn all the cause tree's:
+    for x in context.relevant_kets(op):
+        elt = [x.label]
+        len_elt = 1
+        for k in range(max_depth):
+            elt = single_step(elt, context, op)
+            if len(elt) == len_elt and k > 0:
+                break
+            len_elt = len(elt)
+            # print('elt: %s' % elt)
+            if x.label not in forward_cause:
+                forward_cause[x.label] = superposition()
+            seq = merge_char.join(elt)
+            forward_cause[x.label].add(seq)
+            seen_sequences[seq] = True  # later convert to set
+
+    # learn input elements:
+    for x in input_seq:
+        if x.label not in seen_sequences:
+            forward_cause[x.label] = superposition() + x
+
+    if verbose:
+        # print cause tree:
+        print('cause tree:')
+        for label, sp in forward_cause.items():
+            print('%s: %s'% (label, sp))
+
+    # find causes:
+    def find_next_step(solutions, forward_cause):
+        new_solutions = []
+        for head_label, target in solutions:
+            if len(target) == 0:
+                new_solutions.append([head_label, target])
+            else:
+                for label, sp in forward_cause.items():
+                    for x in sp:
+                        if target.startswith(x.label):
+                            new_solutions.append([head_label + merge_char + label, target[len(x.label) + len(merge_char):]])
+        return new_solutions
+
+    # filter to valid first step solutions:
+    solutions = []
+    for label, sp in forward_cause.items():
+        for x in sp:
+            if target.startswith(x.label):
+                solutions.append([label, target[len(x.label) + len(merge_char):]])
+    if verbose:
+        print('\nFirst step solutions:')
+        print(solutions)
+
+    for _ in range(len_input + 1):
+        solutions = find_next_step(solutions, forward_cause)
+        if verbose:
+            print('\nSolutions:')
+            print(solutions)
+
+    sorted_solutions = sorted(solutions, key=lambda x: len(x[0].split(merge_char)), reverse=False)
+
+    if verbose:
+        print('\nSorted solutions:')
+        for label, _ in sorted_solutions:
+            print(label)
+
+    if multiple_results:
+        min_len = math.inf
+        r = superposition()
+        for label, _ in sorted_solutions:
+            len_split_label = len(label.split(merge_char))
+            if len_split_label <= min_len:
+                r.add(label)
+                min_len = len_split_label
+        return r
+    else:
+        seq = sequence([])
+        seq.data = [superposition(x) for x in sorted_solutions[0][0].split(merge_char)]
+        return seq
+
+
+def fifth_explain(input_seq, context, *ops):
+    if len(ops) == 1:
+        op = ops[0]
+        merge_char = ' . '  # currently bugs out if merge_char == ""
+    else:
+        op, merge_char = ops
+
+    verbose = False
+    multiple_results = False
+
+    max_depth = 10  # hard code in a max_depth for now. Maybe later make it infinity.
+    target = smerge(input_seq, merge_char).label  # replace with merge_char.join() later.
+    target_list = [y.label for y in input_seq]
+    len_input = len(input_seq)
+
+    if verbose:
+        print('target list:')
+        print(target_list)
+
+    def single_step(one, context, op):
+        seq = []
+        for x in one:
+            child = ket(x).apply_op(context, op)
+            if len(child) == 0:
+                seq_child = [x]
+            else:
+                seq_child = [y.label for y in child]
+            seq += seq_child
+        return tuple(seq)
+
+    forward_cause = {}
+    seen_sequences = {}
+
+    # learn all the cause tree's:
+    for x in context.relevant_kets(op):
+        elt = [x.label]
+        len_elt = 1
+        for k in range(max_depth):
+            elt = single_step(elt, context, op)
+            if len(elt) == len_elt and k > 0:
+                break
+            len_elt = len(elt)
+            # print('elt: %s' % elt)
+            if x.label not in forward_cause:
+                forward_cause[x.label] = []
+            forward_cause[x.label].append(elt)
+            seen_sequences[elt] = True  # later convert to set
+
+    # learn input elements:
+    for x in input_seq:
+        elt = tuple([x.label])
+        if elt not in seen_sequences:
+            forward_cause[x.label] = [elt]
+
+    if verbose:
+        # print cause tree:
+        print('\ncause tree:')
+        for label, sp in forward_cause.items():
+            print('%s: %s'% (label, sp))
+
+    # find causes:
+    def find_next_step(solutions, forward_cause):
+        new_solutions = []
+        for head_list, target_list in solutions:
+            if len(target_list) == 0:
+                new_solutions.append([head_list, target_list])
+            else:
+                for label, sp in forward_cause.items():
+                    for x in sp:
+                        if match_list_start(x, target_list):
+                            new_solutions.append([head_list + [label], target_list[len(x):]])
+        return new_solutions
+
+    def match_list_start(candidate, target):
+        if len(candidate) > len(target):
+            return False
+        for k in range(len(candidate)):
+            if candidate[k] != target[k] and candidate[k] != '#STAR#':
+                return False
+        return True
+
+    # filter to valid first step solutions:
+    solutions = []
+    for label, sp in forward_cause.items():
+        for x in sp:
+            if match_list_start(x, target_list):
+                solutions.append([[label], target_list[len(x):]])
+    if verbose:
+        print('\nFirst step solutions:')
+        print(solutions)
+
+    for _ in range(len_input + 1):
+        solutions = find_next_step(solutions, forward_cause)
+        if verbose:
+            print('\nSolutions:')
+            print(solutions)
+
+    sorted_solutions = sorted(solutions, key=lambda x: len(x[0]), reverse=False)
+
+    if verbose:
+        print('\nSorted solutions:')
+        for label, _ in sorted_solutions:
+            print(label)
+
+    if multiple_results:
+        min_len = math.inf
+        r = superposition()
+        for label, _ in sorted_solutions:
+            len_split_label = len(label)
+            if len_split_label <= min_len:
+                r.add(merge_char.join(label))
+                min_len = len_split_label
+        return r
+    else:
+        seq = sequence([])
+        seq.data = [superposition(x) for x in sorted_solutions[0][0]]
+        return seq
+
+
+
 # set invoke method:
-compound_table['sngrams'] = ['apply_seq_fn', 'seq_ngrams', '']
+compound_table['fast-explain'] = ['apply_seq_fn', 'fast_explain', 'context']
 # set usage info:
-function_operators_usage['sngrams'] = """
+function_operators_usage['fast-explain'] = """
     description:
-        create sequence ngrams
+        fast-explain[op] seq
+        given a cause structure, and an input sequence, find the possible cause
+        See here for why we would want to do this:
+        Parsimonious Covering Theory with Causal Chaining and Ordering Constraints:
+        https://github.com/garrettkatz/copct
+        NB: copct.py code must be available for this function to work, so you will need to download it.
+        Also note that copct is MIT licensed.
 
     examples:
-
+        -- given this knowledge:
+        cause |p> => |g> . |m> . |r>
+        cause |t> => |p> . |p>
+        cause |x> => |p> . |g>
+        cause |z> => |r> . |p> 
+        
+        -- explain |g> . |m> . |r> . |g> . |m> . |r>:
+        fast-explain[cause] ssplit |gmrgmr>
+        
     see also:
-        letter-ngrams, word-ngrams
+        sexp, explain
+        
+    future:
+        work out why in some cases it doesn't give the same results as "explain".
+        
 """
-def generate_seq_ngrams(one, N):
-    for i in range(len(one)- N + 1):
-        data = one.data[i:i + N]
-        seq = sequence([])
-        seq.data = data
-        yield seq
+def fast_explain(input_seq, context, *ops):
+    try:
+        import copct
+    except Exception as e:
+        print('fast-explain requires you to download the copct code yourself before the import statement will work.')
+        print('Available here under MIT license: https://github.com/garrettkatz/copct')
+        return ket()
 
-def seq_ngrams(one, N):
-    for seq in generate_seq_ngrams(one, N):
-        print('seq:', str(seq))
-    return ket('sngrams')
+    # verbose = True
+    verbose = False
+    multiple_results = False
+
+    if len(ops) == 1:
+        op = ops[0]
+        merge_char = ' . '  # currently bugs out if merge_char == ""
+    else:
+        op, merge_char = ops
+
+    # learn all the cause tree's:
+    cause_tree = {}
+    max_seq_len = 0
+    for x in context.relevant_kets(op):
+        pattern = tuple([y.label for y in x.apply_op(context, op)])
+        cause_tree[pattern] = x.label
+        max_seq_len = max(max_seq_len, len(pattern))
+        # print(x)
+        # print(pattern)
+        # print(cause_tree)
+        # print(max_seq_len)
+
+    def causes(v):
+        if v in cause_tree:
+            return set([cause_tree[v]])
+        return set()
+
+    w = tuple([x.label for x in input_seq])
+    M = max_seq_len
+
+    # compute explanations
+    status, tlcovs, g = copct.explain(causes, w, M=M, verbose=verbose)
+    # Prune by minimum cardinality
+    tlcovs_ml, ml = copct.minCardinalityTLCovers(tlcovs)
+
+    if verbose:
+        print('Top-level covers:')
+        # print([u for (u, _, _, _, _) in tlcovs])
+        for (u, _, _, _, _) in tlcovs:
+            print(merge_char.join(u))
+        print('MC top-level covers:')
+        # print([u for (u, _, _, _, _) in tlcovs_ml])
+        for (u, _, _, _, _) in tlcovs_ml:
+            print(merge_char.join(u))
+
+    if multiple_results:
+        r = superposition()
+        for u, _, _, _, _ in tlcovs_ml:
+            r.add(merge_char.join(u))
+        return r
+    else:
+        seq = sequence([])
+        seq.data = [superposition(x) for x in tlcovs_ml[0][0]]
+        return seq
+
 
 
 # 28/7/2014:
@@ -8187,6 +8549,59 @@ def letter_ngrams(one, *parameters):
 
 
 
+# set invoke method:
+compound_table['ngrams'] = ['apply_fn', 'ngrams', '']
+# set usage info:
+function_operators_usage['ngrams'] = """
+    description:
+        ngrams[str, k1, k2, ..., kn] ket
+        ssplit the ket using "str", create ngrams of specified sizes, then smerge back to kets using "str"
+        the result is multiplied by the coefficient of the ket
+        for example, ngrams["", k1, k2, ..., kn] is the same as letter-ngrams[k1, k2, ..., kn]
+        and ngrams[" ", k1, k2, ..., kn] is the same as word-ngrams[k1, k2, ..., kn]
+        (though word-ngrams casts everything to lower-case and strips all punctuation)
+        Yeah, pretty much deprecates letter-ngrams and word-ngrams.
+
+    examples:
+        ngrams["", 1] |fish>
+            |f> + |i> + |s> + |h>
+
+        ngrams["", 1, 2, 3] |happy>
+            |h> + |a> + 2|p> + |y> + |ha> + |ap> + |pp> + |py> + |hap> + |app> + |ppy>
+
+    see also:
+        letter-ngrams, word-ngrams
+        
+"""
+def ngrams(input_ket, *parameters):
+    def create_ngrams(s, merge_char, N):
+        r = superposition()
+        for i in range(len(s) - N + 1):
+            r.add(merge_char.join(s[i:i+ N]))
+        return r
+
+    split_str, *sizes = parameters
+
+    if split_str == '':
+        str_seq = list(input_ket.label)
+    else:
+        try:
+            str_seq = input_ket.label.split(split_str)
+        except Exception as e:
+            print('ngrams exception reason:', e)
+            return ket()
+
+    r = superposition()
+    for k in sizes:
+        try:
+            sp_ngrams = create_ngrams(str_seq, split_str, int(k))
+            r.add_sp(sp_ngrams)
+        except Exception as e:
+            print('ngrams exception reason:', e)
+            continue
+    return r.multiply(input_ket.value)
+
+
 
 # set invoke method:
 compound_table['ket-hash'] = ['apply_fn', 'ket_hash', '']
@@ -8606,7 +9021,7 @@ def old_rename_kets(one, two, three):
 
 # https://en.wikipedia.org/wiki/Production_(computer_science)
 # set invoke method:
-whitelist_table_3['string-replace'] = 'string_replace'
+whitelist_table_2['string-replace'] = 'string_replace'
 # set usage info:
 sequence_functions_usage['string-replace'] = """
     description:
@@ -8614,21 +9029,21 @@ sequence_functions_usage['string-replace'] = """
         for the sequence seq, for every label in sp, replace with ket.label
 
     examples:
-        string-replace(|a> . |sad> . |fellow>, |sad>, |happy>)
+        string-replace(|sad>, |happy>) (|a> . |sad> . |fellow>)
             |a> . |happy> . |fellow>
 
-        string-replace(|Today's date is ${date}.>, |${date}>, extract-value current-date |> )
+        string-replace(|${date}>, extract-value current-date |> ) |Today's date is ${date}.>
             |Today's date is 2018-07-11.>
 
         -- remove " chars:
-        remove-quotes (*) #=> string-replace(|_self> , |">, |>)
+        remove-quotes (*) #=> string-replace(|">, |>) |_self>
         
         remove-quotes |text: "some text">    
             |text: some text>
 
         -- replace "  " with " "
         -- ie, double space with single space:
-        chomp-double-space (*) #=> string-replace(|_self>, |  >, | >)
+        chomp-double-space (*) #=> string-replace(|  >, | >) |_self>
 
         -- put it to use:
         chomp-double-space |some     text>
@@ -8639,7 +9054,7 @@ sequence_functions_usage['string-replace'] = """
 
         -- remove punctuation chars:
         -- :;.,!?$-"'
-        remove-punctuation (*) #=> string-replace(|_self>, split[""] |:;.,!?$-"'>, |>)
+        remove-punctuation (*) #=> string-replace(split[""] |:;.,!?$-"'>, |>) |_self>
         
         -- now put it to use:
         remove-punctuation |some, ... ! $$? noise-text>
@@ -8648,16 +9063,16 @@ sequence_functions_usage['string-replace'] = """
     see also:
         replace
 """
-def string_replace(input_seq, one, two, three):
-    two = two.to_sp()
-    s2 = three.to_sp().label
+def string_replace(input_seq, one, two):
+    one = one.to_sp()
+    s2 = two.to_sp().label
 
     seq = sequence([])
-    for sp in one:
+    for sp in input_seq:
         r = superposition()
         for x in sp:
             text = x.label
-            for elt in two:
+            for elt in one:
                 s1 = elt.label
                 text = text.replace(s1, s2)
             r.add(text, x.value)
