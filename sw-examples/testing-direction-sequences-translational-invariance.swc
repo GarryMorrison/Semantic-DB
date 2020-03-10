@@ -1,0 +1,96 @@
+-- the code:
+create-nghbrs |*> #=>
+    current |pixel> => |__self>
+    value |pixel> => value |__self>
+    create-nghbr split |N NE E SE S SW W NW>
+
+create-nghbr |*> #=>
+    value |nghbr> => |0>
+    value |nghbr> => value apply(|op: > _ |__self>, current |pixel>)
+    nghbr current |pixel> +=> drop pop-float^2 (|__self> _ |: > _ value |pixel> _ |: > _ value |nghbr>)
+
+
+create-nghbrs-1 |*> #=>
+    current |pixel> => |__self>
+    value |pixel> => value |__self>
+    create-nghbr-1 nghbr current |pixel>
+
+step-pixel |*> #=>
+    next |pixel> => apply(|op: > _ |__self>, next |pixel>)
+
+extend-direction-seq |*> #=>
+    next |direction seq> => current |direction seq> _ | . > _ |__self>
+    pop-float^2 (next |direction seq> _ |: > _ value |pixel> _ |: > _ value next |pixel>)
+
+
+create-nghbr-1 |*> #=>
+    current |direction seq> => |__self>
+    next |pixel> => current |pixel>
+    |null> => step-pixel ssplit[" . "] |__self>
+    nghbr-1 current |pixel> +=> drop extend-direction-seq nghbr next |pixel>
+
+
+create-nghbrs-2 |*> #=>
+    current |pixel> => |__self>
+    value |pixel> => value |__self>
+    create-nghbr-2 nghbr-1 current |pixel>
+
+create-nghbr-2 |*> #=>
+    current |direction seq> => |__self>
+    next |pixel> => current |pixel>
+    |null> => step-pixel ssplit[" . "] |__self>
+    nghbr-2 current |pixel> +=> drop extend-direction-seq nghbr next |pixel>
+
+
+create-nghbrs-3 |*> #=>
+    current |pixel> => |__self>
+    value |pixel> => value |__self>
+    create-nghbr-3 nghbr-2 current |pixel>
+
+create-nghbr-3 |*> #=>
+    current |direction seq> => |__self>
+    next |pixel> => current |pixel>
+    |null> => step-pixel ssplit[" . "] |__self>
+    nghbr-3 current |pixel> +=> drop extend-direction-seq nghbr next |pixel>
+
+
+-- putting it to work:
+|null> => print |--------------------------------->
+|null> => print |testing translational invariance:>
+
+|null> => learn-map[5,5]
+
+-- learn some on pixels:
+value |grid: 1: 1> => |1>
+
+value |grid: 2: 1> => |1>
+value |grid: 2: 2> => |1>
+value |grid: 2: 3> => |1>
+value |grid: 2: 4> => |1>
+value |grid: 2: 5> => |1>
+
+value |grid: 4: 1> => |1>
+
+value |grid: 5: 1> => |1>
+value |grid: 5: 2> => |1>
+value |grid: 5: 3> => |1>
+value |grid: 5: 4> => |1>
+value |grid: 5: 5> => |1>
+
+
+-- display our map:
+|null> => display-map[5,5]
+
+list-of-interesting |pixels> => starts-with |grid: >
+
+-- learn nghbr direction sequences:
+|null> => create-nghbrs list-of-interesting |pixels>
+|null> => create-nghbrs-1 list-of-interesting |pixels>
+-- |null> => create-nghbrs-2 list-of-interesting |pixels>
+-- |null> => create-nghbrs-3 list-of-interesting |pixels>
+
+-- display the result:
+|null> => print | >
+|null> => print |nghbr direction sequences:>
+|null> => table[pixel, nghbr, nghbr-1] list-of-interesting |pixels>
+-- |null> => table[pixel, nghbr, nghbr-1, nghbr-2] list-of-interesting |pixels>
