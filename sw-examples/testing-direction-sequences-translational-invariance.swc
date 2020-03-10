@@ -86,11 +86,16 @@ list-of-interesting |pixels> => starts-with |grid: >
 -- learn nghbr direction sequences:
 |null> => create-nghbrs list-of-interesting |pixels>
 |null> => create-nghbrs-1 list-of-interesting |pixels>
--- |null> => create-nghbrs-2 list-of-interesting |pixels>
+|null> => create-nghbrs-2 list-of-interesting |pixels>
 -- |null> => create-nghbrs-3 list-of-interesting |pixels>
 
--- display the result:
+-- display the results:
 |null> => print | >
 |null> => print |nghbr direction sequences:>
 |null> => table[pixel, nghbr, nghbr-1] list-of-interesting |pixels>
 -- |null> => table[pixel, nghbr, nghbr-1, nghbr-2] list-of-interesting |pixels>
+
+|null> => print | >
+|null> => print |nghbr-2 direction sequences:>
+|null> => table[pixel, nghbr-2] list-of-interesting |pixels>
+
