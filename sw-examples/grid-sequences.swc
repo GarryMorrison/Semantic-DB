@@ -1,0 +1,93 @@
+-- I will explain how these are generated later!
+seq |one> => |E . E . E> + |E . E . W> + |E . W . E>
+seq |two> => |E . E . E> + |E . E . W> + |E . W . E>  + |E . W . W> + |W . E . E> + |W . E . W>
+seq |three> => |E . E . W> + |E . W . E> + |E . W . W> + |W . E . E> + |W . E . W> + |W . W . E>
+seq |four> => |E . W . E> + |E . W . W> + |W . E . E> + |W . E . W> + |W . W . E> + |W . W . W>
+seq |five> => |W . E . W> + |W . W . E> + |W . W . W>
+
+simm-seq (*,*) #=> round[2] push-float simm(seq |_self1>, seq |_self2>)
+
+simm-one |*> #=> simm-seq(|one>, |_self>)
+simm-two |*> #=> simm-seq(|two>, |_self>)
+simm-three |*> #=> simm-seq(|three>, |_self>)
+simm-four |*> #=> simm-seq(|four>, |_self>)
+simm-five |*> #=> simm-seq(|five>, |_self>)
+
+|null> => table[seq, simm-one, simm-two, simm-three, simm-four, simm-five] split |one two three four five>
+
+
+
+|null> => learn-map[5,5]
+
+value |grid: 3: 1> => |1>
+value |grid: 3: 2> => |1>
+value |grid: 3: 3> => |1>
+value |grid: 3: 4> => |1>
+value |grid: 3: 5> => |1>
+
+|null> => display-map[5,5]
+
+
+current |pixel> => |grid: 3: 1>
+nghbr |pixel> => current |pixel>
+
+step-pixel |*> #=>
+    nghbr |pixel> => apply(|op: > _ |__self>, nghbr |pixel>)
+
+|null> => step-pixel ssplit[" . "] |E . E . E>
+|null> => print (|nghbr pixel: > _ nghbr |pixel>)
+
+
+
+create-nghbrs |*> #=>
+    current |pixel> => |__self>
+    value |pixel> => value |__self>
+    create-nghbr split |N NE E SE S SW W NW>
+
+create-nghbr |*> #=>
+    value |nghbr> => |0>
+    value |nghbr> => value apply(|op: > _ |__self>, current |pixel>)
+    nghbr current |pixel> +=> drop pop-float^2 (|__self> _ |: > _ value |pixel> _ |: > _ value |nghbr>)
+
+
+create-nghbrs-1 |*> #=>
+    current |pixel> => |__self>
+    value |pixel> => value |__self>
+    create-nghbr-1 nghbr current |pixel>
+
+step-pixel |*> #=>
+    next |pixel> => apply(|op: > _ |__self>, next |pixel>)
+
+extend-direction-seq |*> #=>
+    next |direction seq> => current |direction seq> _ | . > _ |__self>
+    pop-float^2 (next |direction seq> _ |: > _ value |pixel> _ |: > _ value next |pixel>)
+
+
+create-nghbr-1 |*> #=>
+    current |direction seq> => |__self>
+    next |pixel> => current |pixel>
+    |null> => step-pixel ssplit[" . "] |__self>
+    nghbr-1 current |pixel> +=> drop extend-direction-seq nghbr next |pixel>
+
+
+create-nghbrs-2 |*> #=>
+    current |pixel> => |__self>
+    value |pixel> => value |__self>
+    create-nghbr-2 nghbr-1 current |pixel>
+
+create-nghbr-2 |*> #=>
+    current |direction seq> => |__self>
+    next |pixel> => current |pixel>
+    |null> => step-pixel ssplit[" . "] |__self>
+    nghbr-2 current |pixel> +=> drop extend-direction-seq nghbr next |pixel>
+
+
+
+|null> => create-nghbrs starts-with |grid: >
+|null> => create-nghbrs-1 starts-with |grid: >
+|null> => create-nghbrs-2 starts-with |grid: >
+
+|null> => table[pixel, nghbr, nghbr-1, nghbr-2] (|grid: 3: 1> + |grid: 3: 2> + |grid: 3: 3> + |grid: 3: 4> + |grid: 3: 5>)
+
+
+
