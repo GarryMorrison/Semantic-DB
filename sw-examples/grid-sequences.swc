@@ -17,17 +17,26 @@ simm-five |*> #=> simm-seq(|five>, |_self>)
 
 
 
+-- build a map:
 |null> => learn-map[5,5]
 
+-- learn some on pixels:
 value |grid: 3: 1> => |1>
 value |grid: 3: 2> => |1>
 value |grid: 3: 3> => |1>
 value |grid: 3: 4> => |1>
 value |grid: 3: 5> => |1>
 
+-- test result of adding in another on pixel:
+value |grid: 2: 1> => |1>
+-- value |grid: 2: 2> => |1>
+-- value |grid: 2: 3> => |1>
+
+-- display our map:
 |null> => display-map[5,5]
 
 
+-- test that step-pixel operator works as desired:
 current |pixel> => |grid: 3: 1>
 nghbr |pixel> => current |pixel>
 
@@ -87,7 +96,9 @@ create-nghbr-2 |*> #=>
 -- |null> => create-nghbrs-1 starts-with |grid: >
 -- |null> => create-nghbrs-2 starts-with |grid: >
 
-list-of-interesting |pixels> => |grid: 3: 1> + |grid: 3: 2> + |grid: 3: 3> + |grid: 3: 4> + |grid: 3: 5>
+list-of-interesting |pixels> => starts-with |grid: >
+--list-of-interesting |pixels> => |grid: 3: 1> + |grid: 3: 2> + |grid: 3: 3> + |grid: 3: 4> + |grid: 3: 5>
+
 |null> => create-nghbrs list-of-interesting |pixels>
 |null> => create-nghbrs-1 list-of-interesting |pixels>
 |null> => create-nghbrs-2 list-of-interesting |pixels>
@@ -95,7 +106,8 @@ list-of-interesting |pixels> => |grid: 3: 1> + |grid: 3: 2> + |grid: 3: 3> + |gr
 
 |null> => print | >
 |null> => print |nghbr direction sequences:>
-|null> => table[pixel, nghbr, nghbr-1, nghbr-2] list-of-interesting |pixels>
+|null> => table[pixel, nghbr, nghbr-1] list-of-interesting |pixels>
+-- |null> => table[pixel, nghbr, nghbr-1, nghbr-2] list-of-interesting |pixels>
 
 
 
@@ -122,9 +134,11 @@ create-nghbr-3 |*> #=>
     |null> => step-pixel ssplit[" . "] |__self>
     nghbr-3 current |pixel> +=> drop extend-direction-seq nghbr next |pixel>
 
+how-many-nghbr-3 |*> #=> how-many nghbr-3 |_self>
+
 |null> => create-nghbrs-3 list-of-interesting |pixels>
 |null> => print |nghbr-3 direction sequences:>
-|null> => table[pixel, nghbr-3] list-of-interesting |pixels>
+|null> => table[pixel, nghbr-3, how-many-nghbr-3] list-of-interesting |pixels>
 
 
 
@@ -136,4 +150,50 @@ seq |five> => nghbr-3 |grid: 3: 5>
 
 |null> => print |nghbr-3 similarity:>
 |null> => table[seq, simm-one, simm-two, simm-three, simm-four, simm-five] split |one two three four five>
+
+
+
+|null> => print |--------------------------------->
+|null> => print |testing translational invariance:>
+
+|null> => learn-map[5,5]
+
+-- learn some on pixels:
+value |grid: 1: 1> => |1>
+
+value |grid: 2: 1> => |1>
+value |grid: 2: 2> => |1>
+value |grid: 2: 3> => |1>
+value |grid: 2: 4> => |1>
+value |grid: 2: 5> => |1>
+
+value |grid: 4: 1> => |1>
+
+value |grid: 5: 1> => |1>
+value |grid: 5: 2> => |1>
+value |grid: 5: 3> => |1>
+value |grid: 5: 4> => |1>
+value |grid: 5: 5> => |1>
+
+
+-- display our map:
+|null> => display-map[5,5]
+
+-- unlearn nghbr direction sequences:
+-- we really need a delete[op] operator!
+-- eg: delete[nghbr] list-of-interesting |pixels>
+--
+nghbr list-of-interesting |pixels> => | >
+nghbr-1 list-of-interesting |pixels> => | >
+nghbr-2 list-of-interesting |pixels> => | >
+
+-- learn nghbr direction sequences:
+|null> => create-nghbrs list-of-interesting |pixels>
+|null> => create-nghbrs-1 list-of-interesting |pixels>
+|null> => create-nghbrs-2 list-of-interesting |pixels>
+
+-- display the result:
+|null> => print | >
+|null> => print |nghbr direction sequences:>
+|null> => table[pixel, nghbr, nghbr-1] list-of-interesting |pixels>
 
