@@ -87,7 +87,7 @@ list-of-interesting |pixels> => starts-with |grid: >
 |null> => create-nghbrs list-of-interesting |pixels>
 |null> => create-nghbrs-1 list-of-interesting |pixels>
 |null> => create-nghbrs-2 list-of-interesting |pixels>
--- |null> => create-nghbrs-3 list-of-interesting |pixels>
+|null> => create-nghbrs-3 list-of-interesting |pixels>
 
 -- display the results:
 |null> => print | >
@@ -98,4 +98,18 @@ list-of-interesting |pixels> => starts-with |grid: >
 |null> => print | >
 |null> => print |nghbr-2 direction sequences:>
 |null> => table[pixel, nghbr-2] list-of-interesting |pixels>
+
+
+-- print some similarity tables:
+|null> => print | >
+|null> => print |nghbr-2 similarities:>
+|null> => table[pixel, coeff] 100 similar-input[nghbr-2] nghbr-2 |grid: 1: 1>
+
+|null> => print | >
+|null> => print |nghbr-2 similarities:>
+|null> => table[pixel, coeff] 100 similar-input[nghbr-2] nghbr-2 |grid: 2: 1>
+
+|null> => print | >
+|null> => print |nghbr-3 similarities:>
+|null> => table[pixel, coeff] 100 similar-input[nghbr-3] nghbr-3 |grid: 2: 1>
 
