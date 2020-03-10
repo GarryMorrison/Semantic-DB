@@ -83,11 +83,57 @@ create-nghbr-2 |*> #=>
 
 
 
-|null> => create-nghbrs starts-with |grid: >
-|null> => create-nghbrs-1 starts-with |grid: >
-|null> => create-nghbrs-2 starts-with |grid: >
+-- |null> => create-nghbrs starts-with |grid: >
+-- |null> => create-nghbrs-1 starts-with |grid: >
+-- |null> => create-nghbrs-2 starts-with |grid: >
 
-|null> => table[pixel, nghbr, nghbr-1, nghbr-2] (|grid: 3: 1> + |grid: 3: 2> + |grid: 3: 3> + |grid: 3: 4> + |grid: 3: 5>)
+list-of-interesting |pixels> => |grid: 3: 1> + |grid: 3: 2> + |grid: 3: 3> + |grid: 3: 4> + |grid: 3: 5>
+|null> => create-nghbrs list-of-interesting |pixels>
+|null> => create-nghbrs-1 list-of-interesting |pixels>
+|null> => create-nghbrs-2 list-of-interesting |pixels>
 
 
+|null> => print | >
+|null> => print |nghbr direction sequences:>
+|null> => table[pixel, nghbr, nghbr-1, nghbr-2] list-of-interesting |pixels>
+
+
+
+-- now if you are paying attention, you can see where the table at the top of the page comes from:
+seq |one> => nghbr-2 |grid: 3: 1>
+seq |two> => nghbr-2 |grid: 3: 2>
+seq |three> => nghbr-2 |grid: 3: 3>
+seq |four> => nghbr-2 |grid: 3: 4>
+seq |five> => nghbr-2 |grid: 3: 5>
+
+|null> => print |nghbr-2 similarity:>
+|null> => table[seq, simm-one, simm-two, simm-three, simm-four, simm-five] split |one two three four five>
+
+
+
+create-nghbrs-3 |*> #=>
+    current |pixel> => |__self>
+    value |pixel> => value |__self>
+    create-nghbr-3 nghbr-2 current |pixel>
+
+create-nghbr-3 |*> #=>
+    current |direction seq> => |__self>
+    next |pixel> => current |pixel>
+    |null> => step-pixel ssplit[" . "] |__self>
+    nghbr-3 current |pixel> +=> drop extend-direction-seq nghbr next |pixel>
+
+|null> => create-nghbrs-3 list-of-interesting |pixels>
+|null> => print |nghbr-3 direction sequences:>
+|null> => table[pixel, nghbr-3] list-of-interesting |pixels>
+
+
+
+seq |one> => nghbr-3 |grid: 3: 1>
+seq |two> => nghbr-3 |grid: 3: 2>
+seq |three> => nghbr-3 |grid: 3: 3>
+seq |four> => nghbr-3 |grid: 3: 4>
+seq |five> => nghbr-3 |grid: 3: 5>
+
+|null> => print |nghbr-3 similarity:>
+|null> => table[seq, simm-one, simm-two, simm-three, simm-four, simm-five] split |one two three four five>
 
