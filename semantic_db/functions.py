@@ -10395,7 +10395,37 @@ sequence_functions_usage['smap'] = """
         
         read-sentence |Hello Fred Smith how are you?>
             |greeting: hello> . |> . |person: Fred Smith> . |> . |> . |phrase: how are you>
-            
+        
+        pattern |node: 4: 1> => ssplit[" "] |university of Adelaide>
+        then |node: 4: *> => |univeristy: Adelaide>
+        
+        pattern |node: 5: 1> => |Adelaide>
+        then |node: 5: *> => |Australia: city: Adelaide>
+        
+        pattern |node: 6: 1> => |river> . |Torrens>
+        then |node: 6: *> => |South Australia: river: Torrens>
+        
+        pattern |node: 7: 1> => |South> . |Australia>
+        then |node: 7: *> => |Australia: state: South Australia>
+        
+        long-display read-sentence |The university of Adelaide is located next to the beautiful river Torrens in Adelaide South Australia>
+            seq |0> => |>
+            seq |1> => |>
+            seq |2> => |>
+            seq |3> => |Australia: city: Adelaide> + |univeristy: Adelaide>
+            seq |4> => |>
+            seq |5> => |>
+            seq |6> => |>
+            seq |7> => |>
+            seq |8> => |>
+            seq |9> => |>
+            seq |10> => |>
+            seq |11> => |South Australia: river: Torrens>
+            seq |12> => |>
+            seq |13> => |Australia: city: Adelaide>
+            seq |14> => |>
+            seq |15> => |Australia: state: South Australia>
+
     see also:
         map, ngrams, swrite, sread, sread-range, swrite-range, long-display
 
