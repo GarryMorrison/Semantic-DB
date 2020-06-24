@@ -10363,3 +10363,58 @@ def swrite_range(input_seq, start_idx, finish_idx, write_seq):
         except:
             continue
     return seq
+
+
+# set invoke method:
+context_whitelist_table_3['smap'] = 'smap'
+# set usage info:
+sequence_functions_usage['smap'] = """
+    description:
+        smap(operators, min_size, max_size) input-seq
+        the sequence map operator
+        The input sequence is broken into pieces of len min_size to max_size
+        then the operators defined by 'operators' is then applied to each piece
+
+    examples:
+        smerge-dot (*) #=> smerge[" . "] |_self>
+        smerge-under (*) #=> smerge[" _ "] |_self>
+        long-display smap(|op: smerge-dot> + |op: smerge-under>, |2>, |4>) ssplit |abcdef>
+
+    see also:
+        map, ngrams, swrite, sread, sread-range, swrite-range, long-display
+
+grams = [sentence[i:i+N] for i in xrange(len(sentence)-N+1)]
+
+"""
+def smap(input_seq, context, operators, min_size, max_size):
+    print('input_seq:', input_seq)
+    print('operators:', operators)
+    print('min_size:', min_size)
+    print('max_size:', max_size)
+    try:
+        ops = []
+        for x in operators.to_sp():
+            s = x.label[4:]
+            ops.append(s)
+        min_k = int(min_size.to_ket().label)
+        max_k = int(max_size.to_ket().label)
+        print('ops:', ops)
+        print('min_k:', min_k)
+        print('max_k:', max_k)
+    except Exception as e:
+        print('smap exception reason:', e)
+        return ket()
+    def generate_ngrams(data, N):
+        for i in range(1, len(data) + 1):
+            yield data[i-N:i]
+    seq = sequence([])
+    seq.data = [superposition()] * len(input_seq)
+    for N in range(min_k, max_k + 1):
+        for op in ops:
+            k = 0
+            for patch in generate_ngrams(input_seq.data, N):
+                seq_patch = sequence(patch)
+                op_patch = seq_patch.apply_op(context, op)
+                seq.data[k] += op_patch.to_sp()
+                k += 1
+    return seq
