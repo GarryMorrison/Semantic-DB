@@ -10380,10 +10380,24 @@ sequence_functions_usage['smap'] = """
         smerge-under (*) #=> smerge[" _ "] |_self>
         long-display smap(|op: smerge-dot> + |op: smerge-under>, |2>, |4>) ssplit |abcdef>
 
+
+        pattern |node: 1: 1> => |Hello>
+        then |node: 1: *> => |greeting: hello>
+        
+        pattern |node: 2: 1> => |Fred> . |Smith>
+        then |node: 2: *> => |person: Fred Smith>
+        
+        pattern |node: 3: 1> => ssplit[" "] |how are you?>
+        then |node: 3: *> => |phrase: how are you>
+        
+        sim-pattern (*) #=> then drop-below[0.7] similar-input[pattern] |_self>
+        read-sentence |*> #=> smap(|op: sim-pattern>, |1>, |3>) ssplit[" "] |_self>
+        
+        read-sentence |Hello Fred Smith how are you?>
+            |greeting: hello> . |> . |person: Fred Smith> . |> . |> . |phrase: how are you>
+            
     see also:
         map, ngrams, swrite, sread, sread-range, swrite-range, long-display
-
-grams = [sentence[i:i+N] for i in xrange(len(sentence)-N+1)]
 
 """
 def smap(input_seq, context, operators, min_size, max_size):
@@ -10414,7 +10428,11 @@ def smap(input_seq, context, operators, min_size, max_size):
             k = 0
             for patch in generate_ngrams(input_seq.data, N):
                 seq_patch = sequence(patch)
-                op_patch = seq_patch.apply_op(context, op)
+                # op_patch = seq_patch.apply_op(context, op)  # this is broken
+                op_patch = context.seq_fn_recall(op, [ket(), seq_patch], active=True)
                 seq.data[k] += op_patch.to_sp()
+                # print('seq_patch:', seq_patch)
+                # print('op_patch:', op_patch)
+                # print('op_patch.to_sp():', op_patch.to_sp())
                 k += 1
     return seq
