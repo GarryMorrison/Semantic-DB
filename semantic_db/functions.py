@@ -10397,6 +10397,7 @@ sequence_functions_usage['smap'] = """
             |greeting: hello> . |> . |person: Fred Smith> . |> . |> . |phrase: how are you>
         
         pattern |node: 4: 1> => ssplit[" "] |university of Adelaide>
+        pattern |node: 4: 2> => ssplit[" "] |University of Adelaide>
         then |node: 4: *> => |univeristy: Adelaide>
         
         pattern |node: 5: 1> => |Adelaide>
@@ -10408,9 +10409,13 @@ sequence_functions_usage['smap'] = """
         pattern |node: 7: 1> => |South> . |Australia>
         then |node: 7: *> => |Australia: state: South Australia>
         
+        pattern |node: 8: 1> => |university>
+        pattern |node: 8: 2> => |Univeristy>
+        then |node: 8: *> => |place of study: university>
+        
         long-display read-sentence |The university of Adelaide is located next to the beautiful river Torrens in Adelaide South Australia>
             seq |0> => |>
-            seq |1> => |>
+            seq |1> => |place of study: university>
             seq |2> => |>
             seq |3> => |Australia: city: Adelaide> + |univeristy: Adelaide>
             seq |4> => |>
@@ -10426,15 +10431,72 @@ sequence_functions_usage['smap'] = """
             seq |14> => |>
             seq |15> => |Australia: state: South Australia>
 
+            
+        -- using it for a spell-check operator:
+        -- first load a dictionary, eg:
+        -- web-load http://semantic-db.org/sw-examples/small-english-dictionary.sw
+        -- web-load http://semantic-db.org/sw-examples/moby-dictionary.sw
+
+        -- define the required operators:
+        seq2sp-op (*) #=> seq2sp |_self>
+        spelling-encoder |*> #=> smap(|op: seq2sp-op>, |1>, |3>) ssplit |_self>
+        spell-check |*> #=> select[1,10] similar-input[encoded-spelling] spelling-encoder |_self>
+        
+        -- learn the encoded spelling patterns:
+        |null> => map[spelling-encoder, encoded-spelling] rel-kets[spelling] |>
+        
+        -- now use the spell-check operator:
+        bar-chart[10] spell-check |hierarchy>
+            ----------
+            hierarchy    : ||||||||||
+            hierarchical : |||||||
+            oligarchy    : |||||
+            overarching  : |||||
+            hindrance    : |||||
+            hibernate    : ||||
+            research     : ||||
+            dietary      : ||||
+            hilarious    : ||||
+            hilarity     : ||||
+            ----------
+
+        bar-chart[10] spell-check |recieve>
+            ----------
+            relieve  : ||||||||||
+            receive  : |||||||||
+            recipe   : ||||||||
+            recite   : ||||||||
+            recover  : ||||||||
+            recital  : |||||||
+            recline  : |||||||
+            receipt  : |||||||
+            reviewer : |||||||
+            believe  : |||||||
+            ----------
+
+        bar-chart[10] spell-check |elefant>
+            ----------
+            elegant   : ||||||||||
+            elevate   : ||||||||
+            element   : ||||||||
+            elegance  : ||||||||
+            elevator  : |||||||
+            elegiac   : ||||||
+            eleven    : ||||||
+            elephant  : ||||||
+            elevation : ||||||
+            elemental : ||||||
+            ----------
+        
     see also:
-        map, ngrams, swrite, sread, sread-range, swrite-range, long-display
+        map, ngrams, swrite, sread, sread-range, swrite-range, long-display, bar-chart
 
 """
 def smap(input_seq, context, operators, min_size, max_size):
-    print('input_seq:', input_seq)
-    print('operators:', operators)
-    print('min_size:', min_size)
-    print('max_size:', max_size)
+    # print('input_seq:', input_seq)
+    # print('operators:', operators)
+    # print('min_size:', min_size)
+    # print('max_size:', max_size)
     try:
         ops = []
         for x in operators.to_sp():
@@ -10442,9 +10504,9 @@ def smap(input_seq, context, operators, min_size, max_size):
             ops.append(s)
         min_k = int(min_size.to_ket().label)
         max_k = int(max_size.to_ket().label)
-        print('ops:', ops)
-        print('min_k:', min_k)
-        print('max_k:', max_k)
+        # print('ops:', ops)
+        # print('min_k:', min_k)
+        # print('max_k:', max_k)
     except Exception as e:
         print('smap exception reason:', e)
         return ket()
