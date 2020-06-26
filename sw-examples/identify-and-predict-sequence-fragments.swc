@@ -73,21 +73,29 @@ id-sequence |*> #=> smap(|op: simm-pattern>, min |fragment len>, max |fragment l
 
 
 -- define the predict-next operator:
-predict-next |*> #=> print-next drop-below[0.97] similar-input[pattern] ssplit |_self>
+predict-nodes |*> #=> drop-below[0.97] similar-input[pattern] ssplit |_self>
+do-you-know-prediction |*> #=> do-you-know predict-nodes |_self>
+-- predict-next |*> #=> print-next predict-nodes |_self>
 
+predict-next |*> #=>
+    the |result> => |#EMPTY#>
+    the |result> => predict-nodes |__self>
+    print-result the |result>
+
+print-result |#EMPTY#> => |Anomaly, no sequence detected ... >
+print-result |*> #=> print-next |_self>
+    
 
 -- define the print-next operators:
-print-next-1 |yes> #=> print (|next-1:> __ smerge[" "] tmp |var>)
-print-next-2 |yes> #=> print (|next-2:> __ smerge[" "] tmp |var>)
-print-next-3 |yes> #=> print (|next-3:> __ smerge[" "] tmp |var>)
+print-next-1 |yes> #=> print (|next-1:> __ then tmp |var> _ |: > _ smerge[" "] next-1 tmp |var>)
+print-next-2 |yes> #=> print (|next-2:> __ then tmp |var> _ |: > _ smerge[" "] next-2 tmp |var>)
+print-next-3 |yes> #=> print (|next-3:> __ then tmp |var> _ |: > _ smerge[" "] next-3 tmp |var>)
 
 print-next |*> #=>
-    tmp |var> => next-1 |__self>
-    print-next-1 if(do-you-know next-1 |__self>, |yes>, |no>)
-    tmp |var> => next-2 |__self>
-    print-next-2 if(do-you-know next-2 |__self>, |yes>, |no>)
-    tmp |var> => next-3 |__self>
-    print-next-3 if(do-you-know next-3 |__self>, |yes>, |no>)
+    tmp |var> => |__self>
+    print-next-1 do-you-know next-1 |__self>
+    print-next-2 do-you-know next-2 |__self>
+    print-next-3 do-you-know next-3 |__self>
     |results>
 
 
@@ -100,12 +108,20 @@ print-next |*> #=>
 
 
 print-usage |*> #=>
-    print |Split sequence into fragments, and identify which sequence it belongs to:>
+    print
+    print |Split the input sequence into fragments, and identify which sequence it belongs to:>
     print |  id-sequence ket(3.1415)> 
     print |  id-sequence ket(1828)>
     print
     print |Given a sequence, predict the next elements:>
     print |  predict-next ket(3.141)>
     print |  predict-next ket(2.7)>
+    print |  predict-next ket(999)>
     print
+    print |Given a sequence, test if it is recognized:>
+    print |  do-you-know-prediction ket(3.141)>
+    print |  do-you-know-prediction ket(999)>
+    print
+
+|null> => print-usage |>
 
