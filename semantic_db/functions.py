@@ -10387,7 +10387,7 @@ sequence_functions_usage['smap'] = """
         smap(|op: print-smerge>, |2>, |4>) ssplit |abcdef>
         
 
-        -- active reading example
+        -- active reading example:
         -- first define background knowledge, defined through if-then machines
         -- then read a couple of sample sentences
         pattern |node: 1: 1> => |Hello>
@@ -10413,6 +10413,7 @@ sequence_functions_usage['smap'] = """
         then |node: 6: *> => |South Australia: river: Torrens>
         
         pattern |node: 7: 1> => |South> . |Australia>
+        pattern |node: 7: 2> => |SA>
         then |node: 7: *> => |Australia: state: South Australia>
         
         pattern |node: 8: 1> => |university>
@@ -10448,7 +10449,7 @@ sequence_functions_usage['smap'] = """
             seq |14> => |>
             seq |15> => |Australia: state: South Australia>
 
-        long-display read-sentence |Adelaide uni is next to the Torrens>
+        long-display read-sentence |Adelaide uni is next to the Torrens in SA>
             seq |0> => |Australia: city: Adelaide> + |UK: queen: Adelaide>
             seq |1> => |place of study: university> + |univeristy: Adelaide>
             seq |2> => |>
@@ -10456,6 +10457,8 @@ sequence_functions_usage['smap'] = """
             seq |4> => |>
             seq |5> => |>
             seq |6> => |South Australia: river: Torrens>
+            seq |7> => |>
+            seq |8> => |Australia: state: South Australia>
 
 
         -- using it for a simple spell-check operator:
