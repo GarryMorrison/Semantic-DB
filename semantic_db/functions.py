@@ -10372,15 +10372,24 @@ sequence_functions_usage['smap'] = """
     description:
         smap(operators, min_size, max_size) input-seq
         the sequence map operator
-        The input sequence is broken into pieces of len min_size to max_size
+        The input sequence is broken into pieces/ngrams of len min_size to max_size
         then the operators defined by 'operators' is then applied to each piece
 
     examples:
+        -- just an abstract test to verify smap() is working as desired:
         smerge-dot (*) #=> smerge[" . "] |_self>
         smerge-under (*) #=> smerge[" _ "] |_self>
         long-display smap(|op: smerge-dot> + |op: smerge-under>, |2>, |4>) ssplit |abcdef>
 
 
+        -- another test, this time to print out the sequences handed to the specified operator:
+        print-smerge (*) #=> print smerge[" "] |_self>
+        smap(|op: print-smerge>, |2>, |4>) ssplit |abcdef>
+        
+
+        -- active reading example
+        -- first define background knowledge, defined through if-then machines
+        -- then read a couple of sample sentences
         pattern |node: 1: 1> => |Hello>
         then |node: 1: *> => |greeting: hello>
         
@@ -10388,22 +10397,19 @@ sequence_functions_usage['smap'] = """
         then |node: 2: *> => |person: Fred Smith>
         
         pattern |node: 3: 1> => ssplit[" "] |how are you?>
-        then |node: 3: *> => |phrase: how are you>
-        
-        sim-pattern (*) #=> then drop-below[0.7] similar-input[pattern] |_self>
-        read-sentence |*> #=> smap(|op: sim-pattern>, |1>, |3>) ssplit[" "] |_self>
-        
-        read-sentence |Hello Fred Smith how are you?>
-            |greeting: hello> . |> . |person: Fred Smith> . |> . |> . |phrase: how are you>
-        
+        then |node: 3: *> => |phrase question: how are you>
+                
         pattern |node: 4: 1> => ssplit[" "] |university of Adelaide>
         pattern |node: 4: 2> => ssplit[" "] |University of Adelaide>
+        pattern |node: 4: 3> => |Adelaide> . |uni>
         then |node: 4: *> => |univeristy: Adelaide>
         
         pattern |node: 5: 1> => |Adelaide>
-        then |node: 5: *> => |Australia: city: Adelaide>
+        then |node: 5: *> => |Australia: city: Adelaide> + |UK: queen: Adelaide>
         
         pattern |node: 6: 1> => |river> . |Torrens>
+        pattern |node: 6: 2> => |the> . |Torrens>
+        pattern |node: 6: 3> => |Torrens> . |river>
         then |node: 6: *> => |South Australia: river: Torrens>
         
         pattern |node: 7: 1> => |South> . |Australia>
@@ -10411,13 +10417,24 @@ sequence_functions_usage['smap'] = """
         
         pattern |node: 8: 1> => |university>
         pattern |node: 8: 2> => |Univeristy>
+        pattern |node: 8: 3> => |uni>
         then |node: 8: *> => |place of study: university>
+
+
+        -- define our required operators:
+        -- depending on what you are doing, you might want to increase drop-below threshold to say 0.97, or lower it.        
+        sim-pattern (*) #=> then drop-below[0.7] similar-input[pattern] |_self>
+        read-sentence |*> #=> smap(|op: sim-pattern>, |1>, |3>) ssplit[" "] |_self>
         
+        -- now read simple sentences:
+        read-sentence |Hello Fred Smith how are you?>
+            |greeting: hello> . |> . |person: Fred Smith> . |> . |> . |phrase question: how are you>
+
         long-display read-sentence |The university of Adelaide is located next to the beautiful river Torrens in Adelaide South Australia>
             seq |0> => |>
             seq |1> => |place of study: university>
             seq |2> => |>
-            seq |3> => |Australia: city: Adelaide> + |univeristy: Adelaide>
+            seq |3> => |Australia: city: Adelaide> + |UK: queen: Adelaide> + |univeristy: Adelaide>
             seq |4> => |>
             seq |5> => |>
             seq |6> => |>
@@ -10427,12 +10444,21 @@ sequence_functions_usage['smap'] = """
             seq |10> => |>
             seq |11> => |South Australia: river: Torrens>
             seq |12> => |>
-            seq |13> => |Australia: city: Adelaide>
+            seq |13> => |Australia: city: Adelaide> + |UK: queen: Adelaide>
             seq |14> => |>
             seq |15> => |Australia: state: South Australia>
 
-            
-        -- using it for a spell-check operator:
+        long-display read-sentence |Adelaide uni is next to the Torrens>
+            seq |0> => |Australia: city: Adelaide> + |UK: queen: Adelaide>
+            seq |1> => |place of study: university> + |univeristy: Adelaide>
+            seq |2> => |>
+            seq |3> => |>
+            seq |4> => |>
+            seq |5> => |>
+            seq |6> => |South Australia: river: Torrens>
+
+
+        -- using it for a simple spell-check operator:
         -- first load a dictionary, eg:
         -- web-load http://semantic-db.org/sw-examples/small-english-dictionary.sw
         -- web-load http://semantic-db.org/sw-examples/moby-dictionary.sw
@@ -10488,8 +10514,36 @@ sequence_functions_usage['smap'] = """
             elemental : ||||||
             ----------
         
+        bar-chart[10] spell-check |teh>
+            ----------
+            tea  : ||||||||||
+            ten  : ||||||||||
+            the  : ||||||||
+            team : |||||||
+            tear : |||||||
+            teem : |||||||
+            teen : |||||||
+            tell : |||||||
+            tend : |||||||
+            tens : |||||||
+            ----------
+
+        bar-chart[10] spell-check |shwo>
+            ----------
+            show  : ||||||||||
+            shod  : |||||||||
+            shoe  : |||||||||
+            shop  : |||||||||
+            shot  : |||||||||
+            sham  : ||||||||
+            shed  : ||||||||
+            ship  : ||||||||
+            shown : ||||||||
+            shows : ||||||||
+            ----------
+
     see also:
-        map, ngrams, swrite, sread, sread-range, swrite-range, long-display, bar-chart
+        map, ngrams, swrite, sread, long-display, bar-chart
 
 """
 def smap(input_seq, context, operators, min_size, max_size):
