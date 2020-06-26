@@ -1,6 +1,6 @@
--- use smap to predict next digits from a sequence fragment:
+-- use smap and if-then machines to identify and predict next digits from a sequence fragment:
 
--- min and max ngram lenghts for the if-then machines:
+-- min and max ngram lenghts for the prediction if-then machines:
 min |ngram len> => |3>
 max |ngram len> => |8>
 
@@ -17,6 +17,16 @@ string |e> => |2.71828182845904523>
 digits |e> => ssplit string |e>
 
 
+-- learn what is a digit:
+list-of |digits> => |0> + |1> + |2> + |3> + |4> + |5> + |6> + |7> + |8> + |9>
+is-digit |*> #=> is-mbr(|_self>, list-of |digits>)
+
+-- define a digit encoder (note, it isn't a number encoder, just digits):
+-- change the value passed to the Gaussian operator to change width of the Gaussian.
+digit-encoder |*> #=> if(is-digit |_self>, Gaussian[0.6] |_self>, |_self>)
+
+
+
 -- define the if-then machine create-rule for the id-sequence code:
 create-single-rule (*) #=>
     node |label> => |node: > _ node |number> _ |: > _ node |idx>
@@ -28,16 +38,19 @@ create-single-rule (*) #=>
 create-next-rules (*) #=>
     node |label> => |node: > _ node |number> _ |: > _ node |idx>
     pattern node |label> => sselect[1,-2] |__self>
+    fuzzy-pattern node |label> => digit-encoder sselect[1,-2] |__self>
     next-1 node |label> => sselect[-1,-1] |__self>
     node |idx> => plus[1] node |idx>
     --
     node |label> => |node: > _ node |number> _ |: > _ node |idx>
     pattern node |label> => sselect[1,-3] |__self>
+    fuzzy-pattern node |label> => digit-encoder sselect[1,-3] |__self>
     next-2 node |label> => sselect[-2,-1] |__self>
     node |idx> => plus[1] node |idx>
     --
     node |label> => |node: > _ node |number> _ |: > _ node |idx>
     pattern node |label> => sselect[1,-4] |__self>
+    fuzzy-pattern node |label> => digit-encoder sselect[1,-4] |__self>
     next-3 node |label> => sselect[-3,-1] |__self>
     node |idx> => plus[1] node |idx>
 
@@ -84,12 +97,17 @@ predict-next |*> #=>
 
 print-result |#EMPTY#> => |Anomaly, no sequence detected ... >
 print-result |*> #=> print-next |_self>
-    
+
 
 -- define the print-next operators:
-print-next-1 |yes> #=> print (|next-1:> __ then tmp |var> _ |: > _ smerge[" "] next-1 tmp |var>)
-print-next-2 |yes> #=> print (|next-2:> __ then tmp |var> _ |: > _ smerge[" "] next-2 tmp |var>)
-print-next-3 |yes> #=> print (|next-3:> __ then tmp |var> _ |: > _ smerge[" "] next-3 tmp |var>)
+-- print-next-1 |yes> #=> print (|next-1:     > __ extract-value push-float tmp |var> _ |     > __ then tmp |var> _ |:      > _ smerge[" "] next-1 tmp |var>)
+-- print-next-2 |yes> #=> print (|next-2:     > __ extract-value push-float tmp |var> _ |     > __ then tmp |var> _ |:      > _ smerge[" "] next-2 tmp |var>)
+-- print-next-3 |yes> #=> print (|next-3:     > __ extract-value push-float tmp |var> _ |     > __ then tmp |var> _ |:      > _ smerge[" "] next-3 tmp |var>)
+
+print-next-1 |yes> #=> print (extract-value round[1] push-float 100 tmp |var> _ | %     > __ then tmp |var> __ |     pattern:     > _ smerge[" "] pattern tmp |var> _ |      next-1:     > _ smerge[" "] next-1 tmp |var>)
+print-next-2 |yes> #=> print (extract-value round[1] push-float 100 tmp |var> _ | %     > __ then tmp |var> __ |     pattern:     > _ smerge[" "] pattern tmp |var> _ |      next-2:     > _ smerge[" "] next-2 tmp |var>)
+print-next-3 |yes> #=> print (extract-value round[1] push-float 100 tmp |var> _ | %     > __ then tmp |var> __ |     pattern:     > _ smerge[" "] pattern tmp |var> _ |      next-3:     > _ smerge[" "] next-3 tmp |var>)
+
 
 print-next |*> #=>
     tmp |var> => |__self>
@@ -98,6 +116,14 @@ print-next |*> #=>
     print-next-3 do-you-know next-3 |__self>
     |results>
 
+
+-- define the fuzzy-predict-next operator:
+fuzzy-predict-nodes |*> #=> drop-below[0.5] similar-input[fuzzy-pattern] digit-encoder ssplit |_self>
+do-you-know-fuzzy-prediction |*> #=> do-you-know fuzzy-predict-nodes |_self>
+fuzzy-predict-next |*> #=>
+    the |result> => |#EMPTY#>
+    the |result> => fuzzy-predict-nodes |__self>
+    print-result the |result>
 
 
 -- usage examples:
@@ -113,6 +139,10 @@ print-usage |*> #=>
     print |  id-sequence ket(3.1415)> 
     print |  id-sequence ket(1828)>
     print
+    print
+    print |Given a sequence, return matching nodes:>
+    print |  predict-nodes ket(3.141)>
+    print
     print |Given a sequence, predict the next elements:>
     print |  predict-next ket(3.141)>
     print |  predict-next ket(2.7)>
@@ -122,6 +152,19 @@ print-usage |*> #=>
     print |  do-you-know-prediction ket(3.141)>
     print |  do-you-know-prediction ket(999)>
     print
+    print
+    print |Given a sequence, return fuzzy matching nodes:>
+    print |  fuzzy-predict-nodes ket(3.142)>
+    print
+    print |Given a sequence, fuzzy-predict the next elements:>
+    print |  fuzzy-predict-next ket(3.2)>
+    print |  fuzzy-predict-next ket(3.142)>
+    print |  fuzzy-predict-next ket(181)>
+    print
+    print |Given a sequence, test if it is fuzzy-recognized:>
+    print |  do-you-know-fuzzy-prediction ket(3.142)>
+    print
+
 
 |null> => print-usage |>
 
