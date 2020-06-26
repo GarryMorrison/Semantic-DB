@@ -1,0 +1,57 @@
+-- use smap to ID sequence fragments:
+
+-- min and max ngram lenghts for the if-then machines:
+min |ngram len> => |3>
+max |ngram len> => |3>
+
+-- min and max fragment lengths for id-sequence operator:
+min |fragment len> => |3>
+max |fragment len> => |3>
+
+
+-- learn a couple of sequences:
+string |pi> => |3.141592653589>
+digits |pi> => ssplit string |pi>
+
+string |e> => |2.71828182845904523>
+digits |e> => ssplit string |e>
+
+
+-- learn what is a digit:
+list-of |digits> => |0> + |1> + |2> + |3> + |4> + |5> + |6> + |7> + |8> + |9>
+is-digit |*> #=> is-mbr(|_self>, list-of |digits>)
+
+-- define a digit encoder (note, it isn't a number encoder, just digits):
+digit-encoder |*> #=> if(is-digit |_self>, Gaussian[0.7] |_self>, |_self>)
+
+
+-- define create-if-then-machine operator:
+create-single-rule (*) #=>
+    node |label> => |node: > _ node |number> _ |: > _ node |idx>
+    pattern node |label> => |__self>
+    node |idx> => plus[1] node |idx>
+
+extract-node-numbers |*> #=> sselect[2,2] ssplit[": "] |_self>
+
+create-if-then-machine (*) #=>
+    node |number> => |1>
+    node |number> => plus[1] clean select[-1,-1] ket-sort extract-node-numbers rel-kets[pattern]
+    node |idx> => |1>
+    smap(|op: create-single-rule>, min |ngram len>, max |ngram len>) |__self0>
+    node |label> => |node: > _ node |number> _ |: *>
+    then node |label> => |__self1>
+
+
+-- now use it to create the desired if-then machines:
+|null> => create-if-then-machine(|number: pi>) digits |pi>
+|null> => create-if-then-machine(|number: e>) digits |e>
+
+
+simm-pattern (*) #=> then drop-below[0.8] similar-input[pattern] |_self>
+id-sequence |*> #=> smap(|op: simm-pattern>, min |fragment len>, max |fragment len>) ssplit |_self>
+
+
+-- usage examples:
+-- id-sequence |3.1415>
+-- id-sequnece |1828>
+
