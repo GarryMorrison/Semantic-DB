@@ -34,7 +34,7 @@ create-single-rule (*) #=>
     node |idx> => plus[1] node |idx>
 
 
--- define the if-then machine create-rule for the predict-next code:
+-- define the if-then machine create-rule for the predict-next and fuzzy-predict-next code:
 create-next-rules (*) #=>
     node |label> => |node: > _ node |number> _ |: > _ node |idx>
     pattern node |label> => sselect[1,-2] |__self>
@@ -131,6 +131,7 @@ fuzzy-predict-next |*> #=>
 -- id-sequnece |1828>
 -- predict-next |3.141>
 -- predict-next |2.7>
+-- fuzzy-predict-next |3.2>
 
 
 print-usage |*> #=>
@@ -160,6 +161,7 @@ print-usage |*> #=>
     print |  fuzzy-predict-next ket(3.2)>
     print |  fuzzy-predict-next ket(3.142)>
     print |  fuzzy-predict-next ket(181)>
+    print |  fuzzy-predict-next ket(162)>
     print
     print |Given a sequence, test if it is fuzzy-recognized:>
     print |  do-you-know-fuzzy-prediction ket(3.142)>
