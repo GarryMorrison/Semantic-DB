@@ -1,0 +1,79 @@
+-- use smap to predict next digits from a sequence fragment:
+
+-- min and max ngram lenghts for the if-then machines:
+min |ngram len> => |3>
+max |ngram len> => |8>
+
+-- min and max fragment lengths for id-sequence operator:
+min |fragment len> => |3>
+max |fragment len> => |3>
+
+
+-- learn a couple of sequences:
+string |pi> => |3.141592653589>
+digits |pi> => ssplit string |pi>
+
+string |e> => |2.71828182845904523>
+digits |e> => ssplit string |e>
+
+
+-- define create-if-then-machine operator:
+create-next-rules (*) #=>
+    node |label> => |node: > _ node |number> _ |: > _ node |idx>
+    pattern node |label> => sselect[1,-2] |__self>
+    next-1 node |label> => sselect[-1,-1] |__self>
+    node |idx> => plus[1] node |idx>
+    --
+    node |label> => |node: > _ node |number> _ |: > _ node |idx>
+    pattern node |label> => sselect[1,-3] |__self>
+    next-2 node |label> => sselect[-2,-1] |__self>
+    node |idx> => plus[1] node |idx>
+    --
+    node |label> => |node: > _ node |number> _ |: > _ node |idx>
+    pattern node |label> => sselect[1,-4] |__self>
+    next-3 node |label> => sselect[-3,-1] |__self>
+    node |idx> => plus[1] node |idx>
+
+
+extract-node-numbers |*> #=> sselect[2,2] ssplit[": "] |_self>
+
+create-if-then-machine (*,*) #=>
+    node |number> => |1>
+    node |number> => plus[1] clean select[-1,-1] ket-sort extract-node-numbers rel-kets[pattern]
+    node |idx> => |1>
+    smap(|__self1>, min |ngram len>, max |ngram len>) |__self0>
+    node |label> => |node: > _ node |number> _ |: *>
+    then node |label> => |__self2>
+
+
+-- now use it to create the desired if-then machines:
+|null> => create-if-then-machine(|op: create-next-rules>, |number: pi>) digits |pi>
+|null> => create-if-then-machine(|op: create-next-rules>, |number: e>) digits |e>
+
+
+simm-pattern (*) #=> then drop-below[0.8] similar-input[pattern] |_self>
+id-sequence |*> #=> smap(|op: simm-pattern>, min |fragment len>, max |fragment len>) ssplit |_self>
+
+
+-- print-next |*> #=> print ((|next-1:> __ smerge[" "] next-1 |_self>) . (|next-2:> __ smerge[" "] next-2 |_self>) . |>)
+predict-next |*> #=> print-next drop-below[0.97] similar-input[pattern] ssplit |_self>
+
+
+print-next-1 |yes> #=> print (|next-1:> __ smerge[" "] tmp |var>)
+print-next-2 |yes> #=> print (|next-2:> __ smerge[" "] tmp |var>)
+print-next-3 |yes> #=> print (|next-3:> __ smerge[" "] tmp |var>)
+
+print-next |*> #=>
+    tmp |var> => next-1 |__self>
+    print-next-1 if(do-you-know next-1 |__self>, |yes>, |no>)
+    tmp |var> => next-2 |__self>
+    print-next-2 if(do-you-know next-2 |__self>, |yes>, |no>)
+    tmp |var> => next-3 |__self>
+    print-next-3 if(do-you-know next-3 |__self>, |yes>, |no>)
+    |results>
+
+-- usage examples:
+-- id-sequence |3.1415>
+-- id-sequnece |1828>
+-- predict-next-1 |3.>
+
