@@ -10383,7 +10383,7 @@ sequence_functions_usage['smap'] = """
 
 
         -- another test, this time to print out the sequences handed to the specified operator:
-        print-smerge (*) #=> print smerge[" "] |_self>
+        print-smerge (*) #=> print (|[> _ smerge[", "] |_self> _ |]>)
         smap(|op: print-smerge>, |2>, |4>) ssplit |abcdef>
         
 
