@@ -17,7 +17,14 @@ string |e> => |2.71828182845904523>
 digits |e> => ssplit string |e>
 
 
--- define create-if-then-machine operator:
+-- define the if-then machine create-rule for the id-sequence code:
+create-single-rule (*) #=>
+    node |label> => |node: > _ node |number> _ |: > _ node |idx>
+    digit-pattern node |label> => |__self>
+    node |idx> => plus[1] node |idx>
+
+
+-- define the if-then machine create-rule for the predict-next code:
 create-next-rules (*) #=>
     node |label> => |node: > _ node |number> _ |: > _ node |idx>
     pattern node |label> => sselect[1,-2] |__self>
@@ -35,29 +42,41 @@ create-next-rules (*) #=>
     node |idx> => plus[1] node |idx>
 
 
+-- a helper operator:
 extract-node-numbers |*> #=> sselect[2,2] ssplit[": "] |_self>
 
+-- define our if-then machine creation operator:
 create-if-then-machine (*,*) #=>
     node |number> => |1>
-    node |number> => plus[1] clean select[-1,-1] ket-sort extract-node-numbers rel-kets[pattern]
+    node |number> => plus[1] clean select[-1,-1] ket-sort extract-node-numbers rel-kets[then] |>
     node |idx> => |1>
     smap(|__self1>, min |ngram len>, max |ngram len>) |__self0>
     node |label> => |node: > _ node |number> _ |: *>
     then node |label> => |__self2>
 
 
--- now use it to create the desired if-then machines:
+-- now use it to create the next-k if-then machines:
 |null> => create-if-then-machine(|op: create-next-rules>, |number: pi>) digits |pi>
 |null> => create-if-then-machine(|op: create-next-rules>, |number: e>) digits |e>
 
 
-simm-pattern (*) #=> then drop-below[0.8] similar-input[pattern] |_self>
+-- now create the id sequence if-then machines:
+min |ngram len> => |3>
+max |ngram len> => |3>
+|null> => create-if-then-machine(|op: create-single-rule>, |number: pi>) digits |pi>
+|null> => create-if-then-machine(|op: create-single-rule>, |number: e>) digits |e>
+
+
+-- define the id-sequence operator:
+simm-pattern (*) #=> then drop-below[0.8] similar-input[digit-pattern] |_self>
 id-sequence |*> #=> smap(|op: simm-pattern>, min |fragment len>, max |fragment len>) ssplit |_self>
 
 
+-- define the predict-next operator:
 predict-next |*> #=> print-next drop-below[0.97] similar-input[pattern] ssplit |_self>
 
 
+-- define the print-next operators:
 print-next-1 |yes> #=> print (|next-1:> __ smerge[" "] tmp |var>)
 print-next-2 |yes> #=> print (|next-2:> __ smerge[" "] tmp |var>)
 print-next-3 |yes> #=> print (|next-3:> __ smerge[" "] tmp |var>)
@@ -71,8 +90,22 @@ print-next |*> #=>
     print-next-3 if(do-you-know next-3 |__self>, |yes>, |no>)
     |results>
 
+
+
 -- usage examples:
 -- id-sequence |3.1415>
 -- id-sequnece |1828>
 -- predict-next |3.141>
 -- predict-next |2.7>
+
+
+print-usage |*> #=>
+    print |Split sequence into fragments, and identify which sequence it belongs to:>
+    print |  id-sequence ket(3.1415)> 
+    print |  id-sequence ket(1828)>
+    print
+    print |Given a sequence, predict the next elements:>
+    print |  predict-next ket(3.141)>
+    print |  predict-next ket(2.7)>
+    print
+
