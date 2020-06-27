@@ -4166,8 +4166,9 @@ def int_coeffs_to_word(one, context):  # at some point maybe we want float_coeff
 
 # code from here:
 # http://stackoverflow.com/questions/16996217/prime-factorization-list
-def primes(n):
-    print("n:", n)
+def primes(n, silent=False):
+    if not silent:
+        print("n:", n)
     f, fs = 3, []
     while n % 2 == 0:
         fs.append(2)
@@ -4178,7 +4179,8 @@ def primes(n):
             n //= f  # and this too.
         f += 2
     if n > 1: fs.append(n)
-    print("factors:", fs)
+    if not silent:
+        print("factors:", fs)
     return fs
 
 
@@ -4208,7 +4210,7 @@ def is_prime(x):
     if n <= 1:
         return ket()
 
-    if len(primes(n)) == 1:
+    if len(primes(n, silent=True)) == 1:
         return ket("yes")
     else:
         return ket("no")
@@ -5955,7 +5957,7 @@ function_operators_usage['map'] = """
         map-fn-to-op (|x> + |y> + |z>)
 
     see also:
-        tree.sw, copy-map
+        tree.sw, copy-map, smap
 """
 def map(one, context, *op):
     try:
@@ -10362,4 +10364,230 @@ def swrite_range(input_seq, start_idx, finish_idx, write_seq):
                 i_delta += len(write_seq) - 1
         except:
             continue
+    return seq
+
+
+# set invoke method:
+context_whitelist_table_3['smap'] = 'smap'
+# set usage info:
+sequence_functions_usage['smap'] = """
+    description:
+        smap(operators, min_size, max_size) input-seq
+        the sequence map operator
+        The input sequence is broken into pieces/ngrams of len min_size to max_size
+        then the operators defined by 'operators' is then applied to each piece
+
+    examples:
+        -- just an abstract test to verify smap() is working as desired:
+        smerge-dot (*) #=> smerge[" . "] |_self>
+        smerge-under (*) #=> smerge[" _ "] |_self>
+        long-display smap(|op: smerge-dot> + |op: smerge-under>, |2>, |4>) ssplit |abcdef>
+
+
+        -- another test, this time to print out the sequences handed to the specified operator:
+        print-smerge (*) #=> print (|[> _ smerge[", "] |_self> _ |]>)
+        smap(|op: print-smerge>, |2>, |4>) ssplit |abcdef>
+        
+
+        -- active reading example:
+        -- first define background knowledge, defined through if-then machines
+        -- then read a couple of sample sentences
+        pattern |node: 1: 1> => |Hello>
+        then |node: 1: *> => |greeting: hello>
+        
+        pattern |node: 2: 1> => |Fred> . |Smith>
+        then |node: 2: *> => |person: Fred Smith>
+        
+        pattern |node: 3: 1> => ssplit[" "] |how are you?>
+        then |node: 3: *> => |phrase question: how are you>
+                
+        pattern |node: 4: 1> => ssplit[" "] |university of Adelaide>
+        pattern |node: 4: 2> => ssplit[" "] |University of Adelaide>
+        pattern |node: 4: 3> => |Adelaide> . |uni>
+        then |node: 4: *> => |univeristy: Adelaide>
+        
+        pattern |node: 5: 1> => |Adelaide>
+        then |node: 5: *> => |Australia: city: Adelaide> + |UK: queen: Adelaide>
+        
+        pattern |node: 6: 1> => |river> . |Torrens>
+        pattern |node: 6: 2> => |the> . |Torrens>
+        pattern |node: 6: 3> => |Torrens> . |river>
+        then |node: 6: *> => |South Australia: river: Torrens>
+        
+        pattern |node: 7: 1> => |South> . |Australia>
+        pattern |node: 7: 2> => |SA>
+        then |node: 7: *> => |Australia: state: South Australia>
+        
+        pattern |node: 8: 1> => |university>
+        pattern |node: 8: 2> => |Univeristy>
+        pattern |node: 8: 3> => |uni>
+        then |node: 8: *> => |place of study: university>
+
+
+        -- define our required operators:
+        -- depending on what you are doing, you might want to increase drop-below threshold to say 0.97, or lower it.
+        -- and you might want to make the max ngrams bigger than 3.        
+        sim-pattern (*) #=> then drop-below[0.7] similar-input[pattern] |_self>
+        read-sentence |*> #=> smap(|op: sim-pattern>, |1>, |3>) ssplit[" "] |_self>
+        
+        -- now read simple sentences:
+        read-sentence |Hello Fred Smith how are you?>
+            |greeting: hello> . |> . |person: Fred Smith> . |> . |> . |phrase question: how are you>
+
+        long-display read-sentence |The university of Adelaide is located next to the beautiful river Torrens in Adelaide South Australia>
+            seq |0> => |>
+            seq |1> => |place of study: university>
+            seq |2> => |>
+            seq |3> => |Australia: city: Adelaide> + |UK: queen: Adelaide> + |univeristy: Adelaide>
+            seq |4> => |>
+            seq |5> => |>
+            seq |6> => |>
+            seq |7> => |>
+            seq |8> => |>
+            seq |9> => |>
+            seq |10> => |>
+            seq |11> => |South Australia: river: Torrens>
+            seq |12> => |>
+            seq |13> => |Australia: city: Adelaide> + |UK: queen: Adelaide>
+            seq |14> => |>
+            seq |15> => |Australia: state: South Australia>
+
+        long-display read-sentence |Adelaide uni is next to the Torrens in SA>
+            seq |0> => |Australia: city: Adelaide> + |UK: queen: Adelaide>
+            seq |1> => |place of study: university> + |univeristy: Adelaide>
+            seq |2> => |>
+            seq |3> => |>
+            seq |4> => |>
+            seq |5> => |>
+            seq |6> => |South Australia: river: Torrens>
+            seq |7> => |>
+            seq |8> => |Australia: state: South Australia>
+
+
+        -- using it for a simple spell-check operator:
+        -- first load a dictionary, eg:
+        -- web-load http://semantic-db.org/sw-examples/small-english-dictionary.sw
+        -- web-load http://semantic-db.org/sw-examples/moby-dictionary.sw
+
+        -- define the required operators:
+        seq2sp-op (*) #=> seq2sp |_self>
+        spelling-encoder |*> #=> smap(|op: seq2sp-op>, |1>, |3>) ssplit |_self>
+        spell-check |*> #=> select[1,10] similar-input[encoded-spelling] spelling-encoder |_self>
+        
+        -- learn the encoded spelling patterns:
+        |null> => map[spelling-encoder, encoded-spelling] rel-kets[spelling] |>
+        
+        -- now use the spell-check operator:
+        bar-chart[10] spell-check |hierarchy>
+            ----------
+            hierarchy    : ||||||||||
+            hierarchical : |||||||
+            oligarchy    : |||||
+            overarching  : |||||
+            hindrance    : |||||
+            hibernate    : ||||
+            research     : ||||
+            dietary      : ||||
+            hilarious    : ||||
+            hilarity     : ||||
+            ----------
+
+        bar-chart[10] spell-check |recieve>
+            ----------
+            relieve  : ||||||||||
+            receive  : |||||||||
+            recipe   : ||||||||
+            recite   : ||||||||
+            recover  : ||||||||
+            recital  : |||||||
+            recline  : |||||||
+            receipt  : |||||||
+            reviewer : |||||||
+            believe  : |||||||
+            ----------
+
+        bar-chart[10] spell-check |elefant>
+            ----------
+            elegant   : ||||||||||
+            elevate   : ||||||||
+            element   : ||||||||
+            elegance  : ||||||||
+            elevator  : |||||||
+            elegiac   : ||||||
+            eleven    : ||||||
+            elephant  : ||||||
+            elevation : ||||||
+            elemental : ||||||
+            ----------
+        
+        bar-chart[10] spell-check |teh>
+            ----------
+            tea  : ||||||||||
+            ten  : ||||||||||
+            the  : ||||||||
+            team : |||||||
+            tear : |||||||
+            teem : |||||||
+            teen : |||||||
+            tell : |||||||
+            tend : |||||||
+            tens : |||||||
+            ----------
+
+        bar-chart[10] spell-check |shwo>
+            ----------
+            show  : ||||||||||
+            shod  : |||||||||
+            shoe  : |||||||||
+            shop  : |||||||||
+            shot  : |||||||||
+            sham  : ||||||||
+            shed  : ||||||||
+            ship  : ||||||||
+            shown : ||||||||
+            shows : ||||||||
+            ----------
+
+    see also:
+        map, ngrams, swrite, sread, long-display, bar-chart
+        spell-check-operator.sw
+        identify-and-predict-sequence-fragments.swc
+        identify-and-predict-integer-sequence-fragments.swc
+
+"""
+def smap(input_seq, context, operators, min_size, max_size):
+    # print('input_seq:', input_seq)
+    # print('operators:', operators)
+    # print('min_size:', min_size)
+    # print('max_size:', max_size)
+    try:
+        ops = []
+        for x in operators.to_sp():
+            s = x.label[4:]
+            ops.append(s)
+        min_k = int(min_size.to_ket().label)
+        max_k = int(max_size.to_ket().label)
+        # print('ops:', ops)
+        # print('min_k:', min_k)
+        # print('max_k:', max_k)
+    except Exception as e:
+        print('smap exception reason:', e)
+        return ket()
+    def generate_ngrams(data, N):
+        for i in range(1, len(data) + 1):
+            yield data[i-N:i]
+    seq = sequence([])
+    seq.data = [superposition()] * len(input_seq)
+    for N in range(min_k, max_k + 1):
+        for op in ops:
+            k = 0
+            for patch in generate_ngrams(input_seq.data, N):
+                seq_patch = sequence(patch)
+                # op_patch = seq_patch.apply_op(context, op)  # this is broken
+                op_patch = context.seq_fn_recall(op, [ket(), seq_patch], active=True)
+                seq.data[k] += op_patch.to_sp()
+                # print('seq_patch:', seq_patch)
+                # print('op_patch:', op_patch)
+                # print('op_patch.to_sp():', op_patch.to_sp())
+                k += 1
     return seq
