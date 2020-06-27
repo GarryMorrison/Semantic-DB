@@ -5955,7 +5955,7 @@ function_operators_usage['map'] = """
         map-fn-to-op (|x> + |y> + |z>)
 
     see also:
-        tree.sw, copy-map
+        tree.sw, copy-map, smap
 """
 def map(one, context, *op):
     try:
@@ -10423,7 +10423,8 @@ sequence_functions_usage['smap'] = """
 
 
         -- define our required operators:
-        -- depending on what you are doing, you might want to increase drop-below threshold to say 0.97, or lower it.        
+        -- depending on what you are doing, you might want to increase drop-below threshold to say 0.97, or lower it.
+        -- and you might want to make the max ngrams bigger than 3.        
         sim-pattern (*) #=> then drop-below[0.7] similar-input[pattern] |_self>
         read-sentence |*> #=> smap(|op: sim-pattern>, |1>, |3>) ssplit[" "] |_self>
         
@@ -10547,6 +10548,9 @@ sequence_functions_usage['smap'] = """
 
     see also:
         map, ngrams, swrite, sread, long-display, bar-chart
+        spell-check-operator.sw
+        identify-and-predict-sequence-fragments.swc
+        identify-and-predict-integer-sequence-fragments.swc
 
 """
 def smap(input_seq, context, operators, min_size, max_size):
