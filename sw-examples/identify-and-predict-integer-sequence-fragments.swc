@@ -88,6 +88,9 @@ create-if-then-machine (*,*) #=>
     then node |label> => |__self2>
 
 
+-- print out start learning message:
+|null> => print (| > . |Starting to learn our sequences ... >)
+
 -- now use it to create the next-k if-then machines:
 |null> => create-if-then-machine(|op: create-next-rules>, |integer sequence: counting>) int-seq |count>
 |null> => create-if-then-machine(|op: create-next-rules>, |integer sequence: fibonacci>) int-seq |fib>
@@ -102,6 +105,9 @@ max |ngram len> => |3>
 |null> => create-if-then-machine(|op: create-single-rule>, |integer sequence: fibonacci>) int-seq |fib>
 |null> => create-if-then-machine(|op: create-single-rule>, |integer sequence: factorial>) int-seq |fact>
 |null> => create-if-then-machine(|op: create-single-rule>, |integer sequence: primes>) int-seq |primes>
+
+-- print out finished learning message:
+|null> => print (|Finished learning> __ extract-value to-comma-number how-many rel-kets[*] |> __ |rules.> . | >)
 
 
 -- define the id-sequence operator:
@@ -151,35 +157,36 @@ fuzzy-predict-next |*> #=>
 
 print-usage |*> #=>
     print
-    print |Split the input sequence into fragments, and identify which sequence it belongs to:>
-    print |  id-sequence ket(1 2 3 4)> 
-    print |  id-sequence ket(2 3 5 8)>
+    print |Usage:>
+    print |  Split the input sequence into fragments, and identify which sequence it belongs to:>
+    print |    id-sequence ket(1 2 3 4)> 
+    print |    id-sequence ket(2 3 5 8)>
     print
     print
-    print |Given a sequence, return matching nodes:>
-    print |  predict-nodes ket(2 3 5 8)>
+    print |  Given a sequence, return matching nodes:>
+    print |    predict-nodes ket(2 3 5 8)>
     print
-    print |Given a sequence, predict the next elements:>
-    print |  predict-next ket(1 2 3 4 5)>
-    print |  predict-next ket(2 3 5 8)>
-    print |  predict-next ket(2 6 24)>
-    print |  predict-next ket(2 3 5 7)>
-    print |  predict-next ket(9 9 9)>
+    print |  Given a sequence, predict the next elements:>
+    print |    predict-next ket(1 2 3 4 5)>
+    print |    predict-next ket(2 3 5 8)>
+    print |    predict-next ket(2 6 24)>
+    print |    predict-next ket(2 3 5 7)>
+    print |    predict-next ket(9 9 9)>
     print
-    print |Given a sequence, test if it is recognized:>
-    print |  do-you-know-prediction ket(2 6 24)>
-    print |  do-you-know-prediction ket(9 9 9)>
+    print |  Given a sequence, test if it is recognized:>
+    print |    do-you-know-prediction ket(2 6 24)>
+    print |    do-you-know-prediction ket(9 9 9)>
     print
     print
-    print |Given a sequence, return fuzzy matching nodes:>
-    print |  fuzzy-predict-nodes ket(11 12 13 14)>
+    print |  Given a sequence, return fuzzy matching nodes:>
+    print |    fuzzy-predict-nodes ket(11 12 13 14)>
     print
-    print |Given a sequence, fuzzy-predict the next elements:>
-    print |  fuzzy-predict-next ket(2 3 5 7 11)>
-    print |  fuzzy-predict-next ket(9 9 9)>
+    print |  Given a sequence, fuzzy-predict the next elements:>
+    print |    fuzzy-predict-next ket(2 3 5 7 11)>
+    print |    fuzzy-predict-next ket(9 9 9)>
     print
-    print |Given a sequence, test if it is fuzzy-recognized:>
-    print |  do-you-know-fuzzy-prediction ket(9 9 9)>
+    print |  Given a sequence, test if it is fuzzy-recognized:>
+    print |    do-you-know-fuzzy-prediction ket(9 9 9)>
     print
 
 

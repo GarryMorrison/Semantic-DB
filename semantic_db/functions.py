@@ -4166,8 +4166,9 @@ def int_coeffs_to_word(one, context):  # at some point maybe we want float_coeff
 
 # code from here:
 # http://stackoverflow.com/questions/16996217/prime-factorization-list
-def primes(n):
-    print("n:", n)
+def primes(n, silent=False):
+    if not silent:
+        print("n:", n)
     f, fs = 3, []
     while n % 2 == 0:
         fs.append(2)
@@ -4178,7 +4179,8 @@ def primes(n):
             n //= f  # and this too.
         f += 2
     if n > 1: fs.append(n)
-    print("factors:", fs)
+    if not silent:
+        print("factors:", fs)
     return fs
 
 
@@ -4208,7 +4210,7 @@ def is_prime(x):
     if n <= 1:
         return ket()
 
-    if len(primes(n)) == 1:
+    if len(primes(n, silent=True)) == 1:
         return ket("yes")
     else:
         return ket("no")
