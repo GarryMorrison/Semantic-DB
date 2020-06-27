@@ -28,14 +28,15 @@ spell-check |*> #=> select[1,10] similar-input[encoded-spelling] spelling-encode
 
 print-usage |*> #=>
     print
-    print |The spell check operator:>
-    print |  bar-chart[10] spell-check ket(hierarchy)>
-    print |  bar-chart[10] spell-check ket(recieve)>
+    print |Usage:>
+    print |  The spell check operator:>
+    print |    bar-chart[10] spell-check ket(hierarchy)>
+    print |    bar-chart[10] spell-check ket(recieve)>
     print
-    print |Make sure you have a dictionary loaded in memory before you load this file.>
-    print |eg:>
-    print |  web-load http://semantic-db.org/sw-examples/small-english-dictionary.sw>
-    print |  web-load http://semantic-db.org/sw-examples/moby-dictionary.sw>
+    print |  Make sure you have a dictionary loaded in memory before you load this file.>
+    print |  eg:>
+    print |    web-load http://semantic-db.org/sw-examples/small-english-dictionary.sw>
+    print |    web-load http://semantic-db.org/sw-examples/moby-dictionary.sw>
     print
 
 |null> => print-usage |>
