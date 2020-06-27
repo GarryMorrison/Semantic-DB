@@ -48,6 +48,7 @@ def float_to_int(x, t=3):
 
 
 def my_print(name, value=''):
+    print('Warning: this function should not be actively used anywhere')
     return
     if value == '':
         print(name)
@@ -1105,8 +1106,8 @@ class sequence(object):
             return
         if len(self) == 0:
             self.data = [superposition()]  # is this right? should it be self.data = []?
-        # my_print('self', str(self))
-        # my_print('seq', str(seq))
+        # #my_print('self', str(self))
+        # #my_print('seq', str(seq))
         if type(seq) in [ket, superposition]:
             len_seq = 1
         else:
@@ -1117,8 +1118,8 @@ class sequence(object):
             two = [seq] + [superposition()] * (max_len - 1)
         if type(seq) in [sequence]:
             two = seq.data + [superposition()] * (max_len - len(seq.data))
-        # my_print('one', [str(x) for x in one])
-        # my_print('two', [str(x) for x in two])
+        # #my_print('one', [str(x) for x in one])
+        # #my_print('two', [str(x) for x in two])
         self.data = []
         for k in range(max_len):
             self.data.append(one[k] + two[k])
@@ -1134,8 +1135,8 @@ class sequence(object):
             two = [seq] + [superposition()] * (max_len - 1)
         if type(seq) in [sequence]:
             two = seq.data + [superposition()] * (max_len - len(seq.data))
-        # my_print('one', [str(x) for x in one])
-        # my_print('two', [str(x) for x in two])
+        # #my_print('one', [str(x) for x in one])
+        # #my_print('two', [str(x) for x in two])
         self.data = []
         for k in range(max_len):
             self.data.append(one[k] - two[k])
@@ -2627,9 +2628,9 @@ def process_operators(context, ops, seq, self_object=None):
     # python_code = ''
     for op in reversed(ops):
         if type(op) is list:  # found either a compound-op, a function-op or bracket-ops
-            my_print('op[0]', op[0])
+            #my_print('op[0]', op[0])
             if op[0] is 'c_op':
-                my_print('compound_op')
+                #my_print('compound_op')
                 # the_op = op[1]
                 # parameters = ','.join(op[2:])
                 the_op, *parameters = op[1:]
@@ -2655,16 +2656,16 @@ def process_operators(context, ops, seq, self_object=None):
                     seq = method(*full_params)
 
             elif op[0] is 'f_op':
-                my_print('function_op')
+                #my_print('function_op')
                 null, fnk, *data = op
-                my_print('fnk', fnk)
-                my_print('data', data)
+                #my_print('fnk', fnk)
+                #my_print('data', data)
                 # print('f_op seq: %s' % seq)
 
                 # python_code = ''
                 our_fn = ''
                 seq_list = [compile_compound_sequence(context, x, self_object) for x in data]
-                # my_print('str_seq_list', [str(x) for x in seq_list])
+                # #my_print('str_seq_list', [str(x) for x in seq_list])
 
                 if len(data) == 1:  # 1-parameter function:
                     if fnk in whitelist_table_1:
@@ -2700,24 +2701,24 @@ def process_operators(context, ops, seq, self_object=None):
                 else:
                     seq = context.seq_fn_recall(fnk, [seq] + seq_list, active=True)
                 # seq_list = [compile_compound_sequence(context, x, self_object) for x in data]
-                # my_print('str_seq_list', [str(x) for x in seq_list])
+                # #my_print('str_seq_list', [str(x) for x in seq_list])
                 # if len(python_code) > 0:
-                #  my_print("whitelist_table: python code", python_code)
+                #  #my_print("whitelist_table: python code", python_code)
                 #  seq = eval(python_code)                                                       # can we implement this without using eval??
                 # else:
                 #  seq = context.seq_fn_recall(fnk, seq_list, True)
                 python_code = ''
             elif op[0][0] in ['+', '-', '_', '.']:
-                my_print('bracket ops')
-                my_print('bracket ops seq', str(seq))
+                #my_print('bracket ops')
+                #my_print('bracket ops seq', str(seq))
                 version_1 = True
                 if version_1:
                     new_seq = sequence([])
                     for bracket_op in op:
-                        my_print('bracket_op', bracket_op)
+                        #my_print('bracket_op', bracket_op)
                         symbol, bracket_ops = bracket_op
-                        my_print('symbol', symbol)
-                        my_print('bracket_ops', bracket_ops)
+                        #my_print('symbol', symbol)
+                        #my_print('bracket_ops', bracket_ops)
                         the_seq = process_operators(context, bracket_ops, seq, self_object)
 
                         if symbol == '+':
@@ -2730,7 +2731,7 @@ def process_operators(context, ops, seq, self_object=None):
                             new_seq.merge_seq(the_seq, ' ')
                         elif symbol == '.':
                             new_seq += the_seq
-                        my_print('new_seq', str(new_seq))
+                        #my_print('new_seq', str(new_seq))
                     seq = new_seq
                 else:  # finish this branch!
                     for sp in seq:  # haven't handled sequences yet. eg, (op3 _ op2) (|x> . |y> + |z>)
@@ -2738,10 +2739,10 @@ def process_operators(context, ops, seq, self_object=None):
                         for x in sp:
                             new_seq = sequence([])
                             for bracket_op in op:
-                                my_print('bracket_op', bracket_op)
+                                #my_print('bracket_op', bracket_op)
                                 symbol, bracket_ops = bracket_op
-                                my_print('symbol', symbol)
-                                my_print('bracket_ops', bracket_ops)
+                                #my_print('symbol', symbol)
+                                #my_print('bracket_ops', bracket_ops)
                                 the_seq = process_operators(context, bracket_ops, x, self_object)
 
                                 if symbol == '+':
@@ -2754,13 +2755,13 @@ def process_operators(context, ops, seq, self_object=None):
                                     new_seq.merge_seq(the_seq, ' ')
                                 elif symbol == '.':
                                     new_seq += the_seq
-                                my_print('new_seq', str(new_seq))
+                                #my_print('new_seq', str(new_seq))
                             r.add_seq(new_seq)
                         seq = r
         elif type(op) is tuple:  # powered op found.
             tuple_op, power = op
-            my_print('tuple_op', tuple_op)
-            my_print('power', power)
+            #my_print('tuple_op', tuple_op)
+            #my_print('power', power)
             for _ in range(power):  # is there a better way to implement this?
                 seq = process_operators(context, [tuple_op], seq, self_object)
         elif type(op) in [int, float]:
@@ -2801,15 +2802,15 @@ def process_operators(context, ops, seq, self_object=None):
 
 
 def compile_compound_sequence(context, compound_sequence, self_object=None):
-    my_print('cs', compound_sequence)
-    my_print('self', self_object)
+    #my_print('cs', compound_sequence)
+    #my_print('self', self_object)
 
     seq = sequence([])
     for seq2 in compound_sequence:
         symbol, (ops, object) = seq2
-        my_print('symbol', symbol)
-        my_print('ops', ops)
-        my_print('object', object)
+        #my_print('symbol', symbol)
+        #my_print('ops', ops)
+        #my_print('object', object)
 
         distribute = True
         the_seq = sequence([])
@@ -2824,23 +2825,23 @@ def compile_compound_sequence(context, compound_sequence, self_object=None):
                 try:
                     the_seq = sequence(self_object[position])
                 except Exception as e:
-                    my_print('self object exception', e)
+                    #my_print('self object exception', e)
                     the_seq = sequence(superposition(object))
             else:
                 the_seq = sequence(superposition(object))
 
         if type(object) is list:
-            my_print('fish')
+            #my_print('fish')
             the_seq = compile_compound_sequence(context, object, self_object)
             distribute = True
 
-        my_print('\n----------\nfinal')
-        my_print('ops', ops)
-        my_print('the_seq', str(the_seq))
-        my_print('distribute', distribute)
-        my_print('----------\n')
+        #my_print('\n----------\nfinal')
+        #my_print('ops', ops)
+        #my_print('the_seq', str(the_seq))
+        #my_print('distribute', distribute)
+        #my_print('----------\n')
         the_seq = process_operators(context, ops, the_seq, self_object)
-        # my_print('really final the_seq', str(the_seq))
+        # #my_print('really final the_seq', str(the_seq))
 
         if symbol == '+':
             seq.tail_add_seq(the_seq)
@@ -2864,10 +2865,10 @@ def compile_compound_sequence(context, compound_sequence, self_object=None):
 
 
 def learn_stored_rule(context, op, one, rule_type, s):
-    my_print('op', op)
-    my_print('one', one)
-    my_print('rule_type', rule_type)
-    my_print('s', s)
+    #my_print('op', op)
+    #my_print('one', one)
+    #my_print('rule_type', rule_type)
+    #my_print('s', s)
     if one in ['(*)', '(*,*)', '(*,*,*)', '(*,*,*,*)']:  # seq_fn_learn rule found. Tidy later!
         one = one[1:-1]
         if rule_type == '#=>':
@@ -2884,10 +2885,10 @@ def learn_stored_rule(context, op, one, rule_type, s):
 #  context.print_universe()
 
 def learn_standard_rule(context, op, one, rule_type, parsed_seq):
-    my_print('op', op)
-    my_print('one', one)
-    my_print('type(one)', type(one))
-    my_print('rule_type', rule_type)
+    #my_print('op', op)
+    #my_print('one', one)
+    #my_print('type(one)', type(one))
+    #my_print('rule_type', rule_type)
 
     if op == 'supported-ops':  # don't learn supported-ops lines.
         return
@@ -2896,14 +2897,14 @@ def learn_standard_rule(context, op, one, rule_type, parsed_seq):
         one = one[1:-1]
         # seq = compile_compound_sequence(context, parsed_seq, one)
         seq = compile_compound_sequence(context, parsed_seq)  # I don't currently know how to handle rules like: foo (*) => |_self>
-        my_print('sp seq', str(seq))
+        #my_print('sp seq', str(seq))
         if rule_type == '=>':
             context.seq_fn_learn(op, one, seq)
             return
 
     if type(one) is str:
         seq = compile_compound_sequence(context, parsed_seq, [ket(), one])
-        my_print('seq', str(seq))
+        #my_print('seq', str(seq))
 
         if op == '' and one == 'context' and rule_type == '=>':
             name = seq.to_sp().label
@@ -2920,7 +2921,7 @@ def learn_standard_rule(context, op, one, rule_type, parsed_seq):
             return seq
     elif type(one) is list:  # indirect learn rule found
         indirect_object = compile_compound_sequence(context, one)
-        my_print('indirect learn object', str(indirect_object))
+        #my_print('indirect learn object', str(indirect_object))
         seq = sequence([])
         for sp in indirect_object:
             for one in sp:
@@ -2942,8 +2943,8 @@ def recall_rule(context, op, one):
 
 def extract_compound_sequence(context, unparsed_seq, self_object=None):  # need to make context explicit somewhere ... rather than a global....
     parsed_seq = op_grammar(unparsed_seq).full_compound_sequence()
-    my_print('parsed_seq', parsed_seq)
-    my_print('self_object', self_object)
+    #my_print('parsed_seq', parsed_seq)
+    #my_print('self_object', self_object)
     seq = compile_compound_sequence(context, parsed_seq, self_object)
     return seq
 
