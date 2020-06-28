@@ -28,3 +28,5 @@ $RECYCLE.BIN/
 
 # Semantic DB Console command history
 sa-console-command-history.txt
+*.xml
+*.iml

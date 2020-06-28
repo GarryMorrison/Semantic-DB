@@ -2538,6 +2538,7 @@ whitelist_table_2['simm'] = 'aligned_simm'
 sequence_functions_usage['simm'] = """
     description:
         simm(seq, seq)
+        simm(seq, seq) input-ket
         the aligned sequences version of our similarity measure
         for each superposition in our sequences, calculate the similarity measure
         (ie, 0 for completely distinct, 1 for exactly the same, values in between otherwise)
@@ -2557,10 +2558,17 @@ sequence_functions_usage['simm'] = """
         push-float rename-simm simm(|a>, split |a b c d>)
             |result: 0.25>
             
+        -- now using input-ket we can do the same using:
+        push-float simm(|a>, split |a b c d>) |result>
+            |result: 0.25>
+            
     see also: 
 """
 def aligned_simm(input_seq, one, two):
     # return ket(float_to_int(aligned_simm_value(one, two)))  # not sure which version we want.
+    if len(input_seq) > 0:
+        input_label = input_seq.to_ket().label
+        return ket(input_label, aligned_simm_value(one, two))
     return ket('simm', aligned_simm_value(one, two))
 
 
@@ -10591,3 +10599,213 @@ def smap(input_seq, context, operators, min_size, max_size):
                 # print('op_patch.to_sp():', op_patch.to_sp())
                 k += 1
     return seq
+
+
+# set invoke method:
+whitelist_table_3['sin'] = 'sin'
+# set usage info:
+sequence_functions_usage['sin'] = """
+    description:
+        sin(start, finish, k)
+        the sin function
+
+    examples:
+        bar-chart[20] sin(|0>, |20>, |1>)
+            ----------
+            0  :
+            1  : |||
+            2  : ||||||
+            3  : |||||||||
+            4  : |||||||||||
+            5  : ||||||||||||||
+            6  : ||||||||||||||||
+            7  : |||||||||||||||||
+            8  : |||||||||||||||||||
+            9  : |||||||||||||||||||
+            10 : ||||||||||||||||||||
+            11 : |||||||||||||||||||
+            12 : |||||||||||||||||||
+            13 : |||||||||||||||||
+            14 : ||||||||||||||||
+            15 : ||||||||||||||
+            16 : |||||||||||
+            17 : |||||||||
+            18 : ||||||
+            19 : |||
+            20 :
+            ----------
+    
+        bar-chart[20] sin(|0>, |20>, |4>)
+            ----------
+            0  :
+            1  : ||||||||||||
+            2  : |||||||||||||||||||
+            3  : ||||||||||||||||||||
+            4  : ||||||||||||
+            5  :
+            6  :
+            7  :
+            8  :
+            9  :
+            10 :
+            11 : ||||||||||||
+            12 : |||||||||||||||||||
+            13 : ||||||||||||||||||||
+            14 : ||||||||||||
+            15 :
+            16 :
+            17 :
+            18 :
+            19 :
+            20 :
+            ----------
+            
+        bar-chart[20] square sin(|0>, |20>, |4>)
+            ----------
+            0  :
+            1  : |||||||
+            2  : |||||||||||||||||||
+            3  : |||||||||||||||||||
+            4  : |||||||
+            5  :
+            6  : |||||||
+            7  : |||||||||||||||||||
+            8  : |||||||||||||||||||
+            9  : |||||||
+            10 :
+            11 : |||||||
+            12 : |||||||||||||||||||
+            13 : |||||||||||||||||||
+            14 : |||||||
+            15 :
+            16 : |||||||
+            17 : |||||||||||||||||||
+            18 : ||||||||||||||||||||
+            19 : |||||||
+            20 :
+            ----------
+        
+    see also:
+        cos, square
+"""
+def sin(input_seq, start, finish, k):
+    try:
+        start_pos = int(start.to_ket().label)
+        finish_pos = int(finish.to_ket().label)
+        k = float(k.to_ket().label)
+    except Exception as e:
+        print('sin exception reason:', e)
+        return ket()
+    # print('start:', start_pos)
+    # print('finish:', finish_pos)
+    # print('k:', k)
+    sp = superposition()
+    for x in range(start_pos, finish_pos + 1):
+        value = math.sin((x - start_pos)*math.pi*k/(finish_pos - start_pos))
+        sp.add(str(x), value)
+    return sp
+
+
+# set invoke method:
+whitelist_table_3['cos'] = 'cos'
+# set usage info:
+sequence_functions_usage['cos'] = """
+    description:
+        cos(start, finish, k)
+        the cos function
+
+    examples:
+        bar-chart[20] cos(|0>, |20>, |1>)
+            ----------
+            0  : ||||||||||||||||||||
+            1  : |||||||||||||||||||
+            2  : |||||||||||||||||||
+            3  : |||||||||||||||||
+            4  : ||||||||||||||||
+            5  : ||||||||||||||
+            6  : |||||||||||
+            7  : |||||||||
+            8  : ||||||
+            9  : |||
+            10 :
+            11 :
+            12 :
+            13 :
+            14 :
+            15 :
+            16 :
+            17 :
+            18 :
+            19 :
+            20 :
+            ----------
+
+        bar-chart[20] cos(|0>, |20>, |4>)
+            ----------
+            0  : ||||||||||||||||||||
+            1  : ||||||||||||||||
+            2  : ||||||
+            3  :
+            4  :
+            5  :
+            6  :
+            7  :
+            8  : ||||||
+            9  : ||||||||||||||||
+            10 : ||||||||||||||||||||
+            11 : ||||||||||||||||
+            12 : ||||||
+            13 :
+            14 :
+            15 :
+            16 :
+            17 :
+            18 : ||||||
+            19 : ||||||||||||||||
+            20 : ||||||||||||||||||||
+            ----------
+
+        bar-chart[20] square cos(|0>, |20>, |1>)
+            ----------
+            0  : ||||||||||||||||||||
+            1  : |||||||||||||||||||
+            2  : ||||||||||||||||||
+            3  : |||||||||||||||
+            4  : |||||||||||||
+            5  : ||||||||||
+            6  : ||||||
+            7  : ||||
+            8  : |
+            9  :
+            10 :
+            11 :
+            12 : |
+            13 : ||||
+            14 : ||||||
+            15 : |||||||||
+            16 : |||||||||||||
+            17 : |||||||||||||||
+            18 : ||||||||||||||||||
+            19 : |||||||||||||||||||
+            20 : ||||||||||||||||||||
+            ----------
+        
+    see also:
+        sin, square
+"""
+def cos(input_seq, start, finish, k):
+    try:
+        start_pos = int(start.to_ket().label)
+        finish_pos = int(finish.to_ket().label)
+        k = float(k.to_ket().label)
+    except Exception as e:
+        print('sin exception reason:', e)
+        return ket()
+    # print('start:', start_pos)
+    # print('finish:', finish_pos)
+    # print('k:', k)
+    sp = superposition()
+    for x in range(start_pos, finish_pos + 1):
+        value = math.cos((x - start_pos) * math.pi * k / (finish_pos - start_pos))
+        sp.add(str(x), value)
+    return sp
