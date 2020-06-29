@@ -10838,10 +10838,11 @@ sequence_functions_usage['for'] = """
               
         for(|0> + |1>, |2> + |3>, |op: merge-elts> + |op: merge-dots>)
             |0: 2> + |0 .. 2> + |0: 3> + |0 .. 3> + |1: 2> + |1 .. 2> + |1: 3> + |1 .. 3>
-            
-        print (*) #=> print (|[> _ |_self1> _ |]>)
-        print (*,*) #=> print (|[> _ |_self1> _ |, > _ |_self2> _ |]>)
-        print (*,*,*) #=> print (|[> _ |_self1> _ |, > _ |_self2> _ |, > _ |_self3> _ |]>)
+
+        bracket (*) #=> (|[> _ smerge[", "] |_self1> _ |]>)            
+        print (*) #=> print bracket(|_self1>)
+        print (*,*) #=> print bracket(|_self1> . |_self2>)
+        print (*,*,*) #=> print bracket(|_self1> . |_self2> . |_self3>)
         
         for(|a> + |b> + |c>, |op: print>)
             [a]
@@ -10940,10 +10941,10 @@ sequence_functions_usage['sfor'] = """
         merge-elts (*,*) #=> |_self1> _ |: > _ |_self2>
         merge-dots (*,*) #=> |_self1> _ | .. > _ |_self2>
         sfor(|0> . |1>, |2> . |3>, |op: merge-elts>)
-            |0: 2> + |0: 3> + |1: 2> + |1: 3>
+            |0: 2> . |0: 3> . |1: 2> . |1: 3>
 
         sfor(|0> . |1>, |2> . |3>, |op: merge-elts> + |op: merge-dots>)
-            |0: 2> + |0 .. 2> + |0: 3> + |0 .. 3> + |1: 2> + |1 .. 2> + |1: 3> + |1 .. 3>
+            |0: 2> + |0 .. 2> . |0: 3> + |0 .. 3> . |1: 2> + |1 .. 2> . |1: 3> + |1 .. 3>    
 
         bracket (*) #=> (|[> _ smerge[", "] |_self1> _ |]>)
         print (*) #=> print bracket(|_self1>)
