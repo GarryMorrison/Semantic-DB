@@ -2695,6 +2695,9 @@ def process_operators(context, ops, seq, self_object=None):
                     if fnk in whitelist_table_4:
                         # python_code = "%s(*seq_list)" % whitelist_table_4[fnk]
                         our_fn = globals()[whitelist_table_4[fnk]]
+                    elif fnk in context_whitelist_table_4:
+                        seq_list = [context] + seq_list
+                        our_fn = globals()[context_whitelist_table_4[fnk]]
                 if our_fn is not '':
                     # print('our_fn: %s' % str(our_fn))
                     seq = our_fn(seq, *seq_list)

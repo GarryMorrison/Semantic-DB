@@ -80,6 +80,9 @@ context_whitelist_table_2 = {}
 # functions of form: fn(input-seq, context, seq, seq, seq):
 context_whitelist_table_3 = {}
 
+# functions of form: fn(input-seq, context, seq, seq, seq, seq):
+context_whitelist_table_4 = {}
+
 
 # define our usage dictionaries:
 function_operators_usage = {}
@@ -10701,7 +10704,8 @@ def sin(input_seq, start, finish, k):
     # print('k:', k)
     sp = superposition()
     for x in range(start_pos, finish_pos + 1):
-        value = math.sin((x - start_pos)*math.pi*k/(finish_pos - start_pos))
+        value = math.sin((x - start_pos) * math.pi * k / (finish_pos - start_pos))
+        # value = math.sin((x - start_pos)*math.pi*k/(finish_pos + 1 - start_pos))  # not sure if need +1 or not
         sp.add(str(x), value)
     return sp
 
@@ -10807,5 +10811,112 @@ def cos(input_seq, start, finish, k):
     sp = superposition()
     for x in range(start_pos, finish_pos + 1):
         value = math.cos((x - start_pos) * math.pi * k / (finish_pos - start_pos))
+        # value = math.cos((x - start_pos) * math.pi * k / (finish_pos + 1 - start_pos))  # not sure if need +1 or not
         sp.add(str(x), value)
+    return sp
+
+
+# set invoke method:
+context_whitelist_table_2['for'] = 'for_1'
+context_whitelist_table_3['for'] = 'for_2'
+context_whitelist_table_4['for'] = 'for_3'
+# set usage info:
+sequence_functions_usage['for'] = """
+    description:
+        for(sp1, operators)
+        for(sp1, sp2, operators)
+        for(sp1, sp2, sp3, operators)
+        the for loop function
+        nested loops over the given superpositions, applying operators specified in 'operators'
+
+    examples:
+        -- just some abstract tests:
+        merge-elts (*,*) #=> |_self1> _ |: > _ |_self2>
+        merge-dots (*,*) #=> |_self1> _ | .. > _ |_self2>
+        for(|0> + |1>, |2> + |3>, |op: merge-elts>)
+            |0: 2> + |0: 3> + |1: 2> + |1: 3>
+              
+        for(|0> + |1>, |2> + |3>, |op: merge-elts> + |op: merge-dots>)
+            |0: 2> + |0 .. 2> + |0: 3> + |0 .. 3> + |1: 2> + |1 .. 2> + |1: 3> + |1 .. 3>
+            
+        print (*) #=> print (|[> _ |_self1> _ |]>)
+        print (*,*) #=> print (|[> _ |_self1> _ |, > _ |_self2> _ |]>)
+        print (*,*,*) #=> print (|[> _ |_self1> _ |, > _ |_self2> _ |, > _ |_self3> _ |]>)
+        
+        for(|a> + |b> + |c>, |op: print>)
+            [a]
+            [b]
+            [c]
+
+        for(split |a b c>, split |a b c>, |op: print>)
+            [a, a]
+            [a, b]
+            [a, c]
+            [b, a]
+            [b, b]
+            [b, c]
+            [c, a]
+            [c, b]
+            [c, c]        
+
+        for(split |a b>, split |a b>, split |a b>, |op: print>)
+            [a, a, a]
+            [a, a, b]
+            [a, b, a]
+            [a, b, b]
+            [b, a, a]
+            [b, a, b]
+            [b, b, a]
+            [b, b, b]
+        
+    see also:
+        smap
+
+"""
+def for_1(input_seq, context, one, operators):
+    one = one.to_sp()
+    operators = operators.to_sp()
+    ops = []
+    for op in operators:
+        s = op.label[4:]
+        ops.append(s)
+    sp = superposition()
+    for x in one:
+        for op in ops:
+            result = context.seq_fn_recall(op, [ket(), x], active=True)
+            sp += result.to_sp()
+    return sp
+
+def for_2(input_seq, context, one, two, operators):
+    one = one.to_sp()
+    two = two.to_sp()
+    operators = operators.to_sp()
+    ops = []
+    for op in operators:
+        s = op.label[4:]
+        ops.append(s)
+    sp = superposition()
+    for x in one:
+        for y in two:
+            for op in ops:
+                result = context.seq_fn_recall(op, [ket(), x,y], active=True)
+                sp += result.to_sp()
+    return sp
+
+def for_3(input_seq, context, one, two, three, operators):
+    one = one.to_sp()
+    two = two.to_sp()
+    three = three.to_sp()
+    operators = operators.to_sp()
+    ops = []
+    for op in operators:
+        s = op.label[4:]
+        ops.append(s)
+    sp = superposition()
+    for x in one:
+        for y in two:
+            for z in three:
+                for op in ops:
+                    result = context.seq_fn_recall(op, [ket(), x,y,z], active=True)
+                    sp += result.to_sp()
     return sp
