@@ -10870,7 +10870,7 @@ sequence_functions_usage['for'] = """
             [b, b, b]
         
     see also:
-        smap
+        sfor, smap
 
 """
 def for_1(input_seq, context, one, operators):
@@ -10920,3 +10920,118 @@ def for_3(input_seq, context, one, two, three, operators):
                     result = context.seq_fn_recall(op, [ket(), x,y,z], active=True)
                     sp += result.to_sp()
     return sp
+
+
+# set invoke method:
+context_whitelist_table_2['sfor'] = 'sfor_1'
+context_whitelist_table_3['sfor'] = 'sfor_2'
+context_whitelist_table_4['sfor'] = 'sfor_3'
+# set usage info:
+sequence_functions_usage['sfor'] = """
+    description:
+        sfor(seq1, operators)
+        sfor(seq1, seq2, operators)
+        sfor(seq1, seq2, seq3, operators)
+        the sequence for loop function
+        nested loops over the given sequences, applying operators specified in 'operators'
+
+    examples:
+        -- just some abstract tests:
+        merge-elts (*,*) #=> |_self1> _ |: > _ |_self2>
+        merge-dots (*,*) #=> |_self1> _ | .. > _ |_self2>
+        sfor(|0> . |1>, |2> . |3>, |op: merge-elts>)
+            |0: 2> + |0: 3> + |1: 2> + |1: 3>
+
+        sfor(|0> . |1>, |2> . |3>, |op: merge-elts> + |op: merge-dots>)
+            |0: 2> + |0 .. 2> + |0: 3> + |0 .. 3> + |1: 2> + |1 .. 2> + |1: 3> + |1 .. 3>
+
+        bracket (*) #=> (|[> _ smerge[", "] |_self1> _ |]>)
+        print (*) #=> print bracket(|_self1>)
+        print (*,*) #=> print bracket( bracket(|_self1>) . bracket(|_self2>))
+        print (*,*,*) #=> print bracket( bracket(|_self1>) . bracket(|_self2>) . bracket(|_self3>))
+
+        sfor(|a> . |b> . |c>, |op: print>)
+            [a]
+            [b]
+            [c]
+
+        sfor(split |a b c>, split |a b c>, |op: print>)
+            [[a, b, c], [a, b, c]]
+
+        sfor(ssplit[" "] |a b c>, ssplit[" "] |a b c>, |op: print>)
+            [[a], [a]]
+            [[a], [b]]
+            [[a], [c]]
+            [[b], [a]]
+            [[b], [b]]
+            [[b], [c]]
+            [[c], [a]]
+            [[c], [b]]
+            [[c], [c]]
+
+        sfor(ssplit[" "] |a b>, ssplit[" "] |a b>, ssplit[" "] |a b>, |op: print>)
+            [[a], [a], [a]]
+            [[a], [a], [b]]
+            [[a], [b], [a]]
+            [[a], [b], [b]]
+            [[b], [a], [a]]
+            [[b], [a], [b]]
+            [[b], [b], [a]]
+            [[b], [b], [b]]
+
+    see also:
+        for, smap
+
+"""
+def sfor_1(input_seq, context, one, operators):
+    operators = operators.to_sp()
+    ops = []
+    for op in operators:
+        s = op.label[4:]
+        ops.append(s)
+    seq = sequence([])
+    seq.data = [superposition()] * len(one)
+    for op in ops:
+        k = 0
+        for x in one:
+            result = context.seq_fn_recall(op, [ket(), x], active=True)
+            seq.data[k] += result.to_sp()
+            k += 1
+    return seq
+
+
+def sfor_2(input_seq, context, one, two, operators):
+    operators = operators.to_sp()
+    ops = []
+    for op in operators:
+        s = op.label[4:]
+        ops.append(s)
+    seq = sequence([])
+    seq.data = [superposition()] * len(one) * len(two)
+    for op in ops:
+        k = 0
+        for x in one:
+            for y in two:
+                result = context.seq_fn_recall(op, [ket(), x, y], active=True)
+                seq.data[k] += result.to_sp()
+                k += 1
+    return seq
+
+
+def sfor_3(input_seq, context, one, two, three, operators):
+    operators = operators.to_sp()
+    ops = []
+    for op in operators:
+        s = op.label[4:]
+        ops.append(s)
+    seq = sequence([])
+    seq.data = [superposition()] * len(one) * len(two) * len(three)
+    for op in ops:
+        k = 0
+        for x in one:
+            for y in two:
+                for z in three:
+                    result = context.seq_fn_recall(op, [ket(), x, y, z], active=True)
+                    seq.data[k] += result.to_sp()
+                    k += 1
+    return seq
