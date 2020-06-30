@@ -14,7 +14,7 @@
 -- improved version:
 -- define the required operators:
 seq2sp-op (*) #=> seq2sp |_self>
-spelling-encoder |*> #=> smap(|op: seq2sp-op>, |1>, |3>) ssplit |_self>
+spelling-encoder |*> #=> smap(|1>, |3>, |op: seq2sp-op>) ssplit |_self>
 spell-check |*> #=> select[1,10] similar-input[encoded-spelling] spelling-encoder |_self>
 
 -- learn the encoded spelling patterns:

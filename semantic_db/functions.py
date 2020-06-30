@@ -1994,6 +1994,9 @@ sequence_functions_usage['multiply'] = """
         multiply(3|a> + 1.2|b>, 3.5|a> + 0.9|b> + 5.13|c>)
             10.5|a> + 1.08|b> + 0|c>
 
+        -- we can use it to implement the dot-product:
+        dot (*,*) #=> measure-currency multiply(|_self1>, |_self2>)
+
     see also:
       intersection, union, complement, addition   
 """
@@ -10383,7 +10386,7 @@ context_whitelist_table_3['smap'] = 'smap'
 # set usage info:
 sequence_functions_usage['smap'] = """
     description:
-        smap(operators, min_size, max_size) input-seq
+        smap(min_size, max_size, operators) input-seq
         the sequence map operator
         The input sequence is broken into pieces/ngrams of len min_size to max_size
         then the operators defined by 'operators' is then applied to each piece
@@ -10392,13 +10395,31 @@ sequence_functions_usage['smap'] = """
         -- just an abstract test to verify smap() is working as desired:
         smerge-dot (*) #=> smerge[" . "] |_self>
         smerge-under (*) #=> smerge[" _ "] |_self>
-        long-display smap(|op: smerge-dot> + |op: smerge-under>, |2>, |4>) ssplit |abcdef>
+        long-display smap(|2>, |4>, |op: smerge-dot> + |op: smerge-under>) ssplit |abcdef>
 
 
         -- another test, this time to print out the sequences handed to the specified operator:
-        print-smerge (*) #=> print (|[> _ smerge[", "] |_self> _ |]>)
-        smap(|op: print-smerge>, |2>, |4>) ssplit |abcdef>
-        
+        bracket (*) #=> |[> _ smerge[", "] |_self> _ |]>
+        print-bracket (*) #=> print bracket |_self>
+        smap(|2>, |4>, |op: print-bracket>) ssplit |abcdef>
+            []
+            [a, b]
+            [b, c]
+            [c, d]
+            [d, e]
+            [e, f]
+            []
+            []
+            [a, b, c]
+            [b, c, d]
+            [c, d, e]
+            [d, e, f]
+            []
+            []
+            []
+            [a, b, c, d]
+            [b, c, d, e]
+            [c, d, e, f]        
 
         -- active reading example:
         -- first define background knowledge, defined through if-then machines
@@ -10439,7 +10460,7 @@ sequence_functions_usage['smap'] = """
         -- depending on what you are doing, you might want to increase drop-below threshold to say 0.97, or lower it.
         -- and you might want to make the max ngrams bigger than 3.        
         sim-pattern (*) #=> then drop-below[0.7] similar-input[pattern] |_self>
-        read-sentence |*> #=> smap(|op: sim-pattern>, |1>, |3>) ssplit[" "] |_self>
+        read-sentence |*> #=> smap(|1>, |3>, |op: sim-pattern>) ssplit[" "] |_self>
         
         -- now read simple sentences:
         read-sentence |Hello Fred Smith how are you?>
@@ -10482,7 +10503,7 @@ sequence_functions_usage['smap'] = """
 
         -- define the required operators:
         seq2sp-op (*) #=> seq2sp |_self>
-        spelling-encoder |*> #=> smap(|op: seq2sp-op>, |1>, |3>) ssplit |_self>
+        spelling-encoder |*> #=> smap(|1>, |3>, |op: seq2sp-op>) ssplit |_self>
         spell-check |*> #=> select[1,10] similar-input[encoded-spelling] spelling-encoder |_self>
         
         -- learn the encoded spelling patterns:
@@ -10566,11 +10587,11 @@ sequence_functions_usage['smap'] = """
         identify-and-predict-integer-sequence-fragments.swc
 
 """
-def smap(input_seq, context, operators, min_size, max_size):
+def smap(input_seq, context, min_size, max_size, operators):
     # print('input_seq:', input_seq)
-    # print('operators:', operators)
     # print('min_size:', min_size)
     # print('max_size:', max_size)
+    # print('operators:', operators)
     try:
         ops = []
         for x in operators.to_sp():
@@ -10839,8 +10860,8 @@ sequence_functions_usage['for'] = """
         for(|0> + |1>, |2> + |3>, |op: merge-elts> + |op: merge-dots>)
             |0: 2> + |0 .. 2> + |0: 3> + |0 .. 3> + |1: 2> + |1 .. 2> + |1: 3> + |1 .. 3>
 
-        bracket (*) #=> (|[> _ smerge[", "] |_self1> _ |]>)            
-        print (*) #=> print bracket(|_self1>)
+        bracket (*) #=> |[> _ smerge[", "] |_self1> _ |]>            
+        print (*) #=> print bracket |_self1>
         print (*,*) #=> print bracket(|_self1> . |_self2>)
         print (*,*,*) #=> print bracket(|_self1> . |_self2> . |_self3>)
         
@@ -10946,10 +10967,10 @@ sequence_functions_usage['sfor'] = """
         sfor(|0> . |1>, |2> . |3>, |op: merge-elts> + |op: merge-dots>)
             |0: 2> + |0 .. 2> . |0: 3> + |0 .. 3> . |1: 2> + |1 .. 2> . |1: 3> + |1 .. 3>    
 
-        bracket (*) #=> (|[> _ smerge[", "] |_self1> _ |]>)
-        print (*) #=> print bracket(|_self1>)
-        print (*,*) #=> print bracket( bracket(|_self1>) . bracket(|_self2>))
-        print (*,*,*) #=> print bracket( bracket(|_self1>) . bracket(|_self2>) . bracket(|_self3>))
+        bracket (*) #=> |[> _ smerge[", "] |_self1> _ |]>
+        print (*) #=> print bracket |_self1>
+        print (*,*) #=> print bracket( bracket |_self1> . bracket |_self2> )
+        print (*,*,*) #=> print bracket( bracket |_self1> . bracket |_self2> . bracket |_self3> )
 
         sfor(|a> . |b> . |c>, |op: print>)
             [a]

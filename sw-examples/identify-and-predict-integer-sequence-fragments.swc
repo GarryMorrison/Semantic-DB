@@ -83,7 +83,7 @@ create-if-then-machine (*,*) #=>
     node |number> => |1>
     node |number> => plus[1] clean select[-1,-1] ket-sort extract-node-numbers rel-kets[then] |>
     node |idx> => |1>
-    smap(|__self1>, min |ngram len>, max |ngram len>) |__self0>
+    smap(min |ngram len>, max |ngram len>, |__self1>) |__self0>
     node |label> => |node: > _ node |number> _ |: *>
     then node |label> => |__self2>
 
@@ -112,7 +112,7 @@ max |ngram len> => |3>
 
 -- define the id-sequence operator:
 simm-pattern (*) #=> then drop-below[0.8] similar-input[int-seq-pattern] |_self>
-id-sequence |*> #=> smap(|op: simm-pattern>, min |fragment len>, max |fragment len>) ssplit[" "] |_self>
+id-sequence |*> #=> smap(min |fragment len>, max |fragment len>, |op: simm-pattern>) ssplit[" "] |_self>
 
 
 -- define the predict-next operator:
