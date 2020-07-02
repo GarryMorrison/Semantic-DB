@@ -2530,7 +2530,7 @@ def unscaled_superposition_simm(A, B):
                 merged_sum += min(v1, v2)
         return merged_sum / max(one_sum, two_sum)
     except Exception as e:
-        print("superposition_simm exception reason: %s" % e)
+        print("unscaled_superposition_simm exception reason: %s" % e)
 
 
 #  if type(A) is sequence:                     # hack just for now, until we can implement a sequence version of simm.
@@ -2568,7 +2568,8 @@ sequence_functions_usage['simm'] = """
         push-float simm(|a>, split |a b c d>) |result>
             |result: 0.25>
             
-    see also: 
+    see also:
+        unscaled-simm
 """
 def aligned_simm(input_seq, one, two):
     # return ket(float_to_int(aligned_simm_value(one, two)))  # not sure which version we want.
@@ -2618,6 +2619,54 @@ sequence_functions_usage['seqn-simm'] = """
 """
 def seqn_simm(input_seq, one, two):
     return ket('seqn-simm', seqn_simm_value(one, two))
+
+
+# set invoke method:
+whitelist_table_2['unscaled-simm'] = 'unscaled_aligned_simm'
+# set usage info:
+sequence_functions_usage['unscaled-simm'] = """
+    description:
+        unscaled-simm(seq, seq)
+        unscaled-simm(seq, seq) input-ket
+        the aligned sequences version of our similarity measure
+        NB: in this version, the superpositions are not rescaled.
+        for each superposition in our sequences, calculate the similarity measure
+        (ie, 0 for completely distinct, 1 for exactly the same, values in between otherwise)
+        then average them
+
+    examples:
+        unscaled-simm(|a>, |b>)
+            0|unscaled-simm>
+
+        unscaled-simm(3|a> + 1.2|b>, 3.5|a> + 0.9|b> + 5.13|c>)
+            0.409|unscaled-simm>        
+
+        unscaled-simm(|a1> + |a2> . 0.3|b1> + 0.5|b2>, 3|a1> + 0.9|a2> . 0.7|b2>)
+            0.556|unscaled-simm>       
+
+        push-float unscaled-simm(|a>, split |a b c d>) |result>
+            |result: 0.25>
+
+    see also: 
+        simm
+"""
+def unscaled_aligned_simm(input_seq, one, two):
+    if len(input_seq) > 0:
+        input_label = input_seq.to_ket().label
+        return ket(input_label, unscaled_aligned_simm_value(one, two))
+    return ket('unscaled-simm', unscaled_aligned_simm_value(one, two))
+
+
+def unscaled_aligned_simm_value(one, two):
+    one, two = normalize_seq_len(one, two)  # we should be able to skip this ...
+    if len(one) == 0:
+        return 0
+    r = 0  # for now just average the results. Min of results is a stricter alternative
+    for k in range(len(one)):
+        r += unscaled_superposition_simm(one[k], two[k])
+    return r / len(one)
+
+
 
 # set invoke method:
 whitelist_table_2['subseqn-extract'] = 'subseqn_extract'
