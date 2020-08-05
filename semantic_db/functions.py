@@ -2579,7 +2579,7 @@ def aligned_simm(input_seq, one, two):
     return ket('simm', aligned_simm_value(one, two))
 
 
-def aligned_simm_value(one, two):
+def first_aligned_simm_value(one, two):
     one, two = normalize_seq_len(one, two)
     if len(one) == 0:
         return 0
@@ -2587,6 +2587,16 @@ def aligned_simm_value(one, two):
     for k in range(len(one)):
         r += superposition_simm(one[k], two[k])
     return r / len(one)
+
+def aligned_simm_value(one, two):  # Needs testing, but I'm fairly sure it is correct.
+    min_len = min(len(one), len(two))
+    max_len = max(len(one), len(two))
+    if max_len == 0:
+        return 0
+    r = 0
+    for k in range(min_len):
+        r += superposition_simm(one[k], two[k])
+    return r / max_len
 
 def seqn_simm_value(one, two):
     min_len = min(len(one), len(two))
