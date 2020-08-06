@@ -10495,7 +10495,7 @@ sequence_functions_usage['smap'] = """
         pattern |node: 4: 1> => ssplit[" "] |university of Adelaide>
         pattern |node: 4: 2> => ssplit[" "] |University of Adelaide>
         pattern |node: 4: 3> => |Adelaide> . |uni>
-        then |node: 4: *> => |univeristy: Adelaide>
+        then |node: 4: *> => |university: Adelaide>
         
         pattern |node: 5: 1> => |Adelaide>
         then |node: 5: *> => |Australia: city: Adelaide> + |UK: queen: Adelaide>
@@ -10529,7 +10529,7 @@ sequence_functions_usage['smap'] = """
             seq |0> => |>
             seq |1> => |place of study: university>
             seq |2> => |>
-            seq |3> => |Australia: city: Adelaide> + |UK: queen: Adelaide> + |univeristy: Adelaide>
+            seq |3> => |Australia: city: Adelaide> + |UK: queen: Adelaide> + |university: Adelaide>
             seq |4> => |>
             seq |5> => |>
             seq |6> => |>
@@ -10545,7 +10545,7 @@ sequence_functions_usage['smap'] = """
 
         long-display read-sentence |Adelaide uni is next to the Torrens in SA>
             seq |0> => |Australia: city: Adelaide> + |UK: queen: Adelaide>
-            seq |1> => |place of study: university> + |univeristy: Adelaide>
+            seq |1> => |place of study: university> + |university: Adelaide>
             seq |2> => |>
             seq |3> => |>
             seq |4> => |>
@@ -10569,18 +10569,18 @@ sequence_functions_usage['smap'] = """
         |null> => map[spelling-encoder, encoded-spelling] rel-kets[spelling] |>
         
         -- now use the spell-check operator:
-        bar-chart[10] spell-check |hierarchy>
+        bar-chart[10] spell-check |heirarchy>
             ----------
             hierarchy    : ||||||||||
             hierarchical : |||||||
-            oligarchy    : |||||
+            oligarchy    : ||||||
+            heirloom     : |||||
+            hesitancy    : |||||
+            headache     : |||||
+            heirs        : |||||
+            research     : |||||
             overarching  : |||||
-            hindrance    : |||||
-            hibernate    : ||||
-            research     : ||||
-            dietary      : ||||
-            hilarious    : ||||
-            hilarity     : ||||
+            oligarch     : |||||
             ----------
 
         bar-chart[10] spell-check |recieve>
