@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The Semantic DB is at its core an associative memory system, that was orignally motivated by the idea of a semantic web. That is, an internet wide network of servers transfering packets of semantic information, and processing that information into some useful form. But as it currently stands, the SDB is still trying to find its niche, and remains a toy, experimental language. The founding idea behind the SDB is to reduce everything to what we call kets and operators, with the idea that they provide a notation to describe neuronal circuits. Simply enough, kets perhaps correspond to synapses, and operators to changes in state of a neural system. Note however that we are more motivated by mathematical ideas than biological ones, so we are not fussed if this mapping is not biologically exact. Biologically approximate is sufficent.
+The Semantic DB is at its core an associative memory system, that was orignally motivated by the idea of a [semantic web](https://en.wikipedia.org/wiki/Semantic_Web). That is, an internet wide network of servers transfering packets of semantic information, and processing that information into some useful form. But as it currently stands, the SDB is still trying to find its niche, and remains a toy, experimental language. The founding idea behind the SDB is to reduce everything to what we call kets and operators, with the idea that they provide a notation to describe neuronal circuits. Simply enough, kets perhaps correspond to synapses, and operators to changes in state of a neural system. Note however that we are more motivated by mathematical ideas than biological ones, so we are not fussed if this mapping is not biologically exact. Biologically approximate is sufficent.
 
 ### Kets
 
@@ -76,7 +76,7 @@ So even though the string "Fred Smith" is in a sense arbitrary, and could for ex
   age |Erica Smith> => |33>
   height |Erica Smith> => |cm: 167>
 ```
-If we enter this knowledge into our SDB "console", which has the prompt `sa:`, we can ask the system simple questions:
+If we enter this knowledge into our [SDB "console"](https://github.com/GarryMorrison/Semantic-DB/blob/master/sdb-console.py), which has the prompt `sa:`, we can ask the system simple questions:
 
 How old is Fred?
 ```
