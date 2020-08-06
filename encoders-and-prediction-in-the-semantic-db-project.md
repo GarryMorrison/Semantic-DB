@@ -20,11 +20,11 @@ with the meaning, 2 apples, 5 oranges, 1 banana, 1 milk, 1 steak and 1 coffee. W
 ```
   0.3|A> + 0.22|B> + 0.05|C> + 0.43|D>
 ```
-has one interpretation as 30% chance of A, 22% chance of B, 5% chance of C, and 43% chance of D. It should be noted that superpositions are implemented in python as OrderedDict's, where the string is the key, and the float is the value. Mathematically it doesn't make a lot of sense for superpositions to be ordered, but in practice this is very useful indeed. For example, sorting by the coefficient using `coeff-sort`, sorting by the ket string using `ket-sort` or some more involved sorting process using `sort-by[]`.
+has one interpretation as 30% chance of A, 22% chance of B, 5% chance of C, and 43% chance of D. It should be noted that superpositions are implemented in python as OrderedDict's, where the string is the key, and the float is the value. Mathematically it doesn't make a lot of sense for superpositions to be ordered, but in practice this is very useful indeed. For example, sorting by the coefficient using [coeff-sort](http://semantic-db.org/docs/usage/built-in/coeff-sort.html), sorting by the ket string using [ket-sort](http://semantic-db.org/docs/usage/built-in/ket-sort.html) or some more involved sorting process using [sort-by[]](http://semantic-db.org/docs/usage/function-operators/sort-by.html).
 
 ### Sequences
 
-Given superpositions, we can now build sequences. So while a superposition is a collection of kets active at one time, a sequence represents a change in activation over some period of time. Though the speed with which a sequence changes from one superposition to the next is not specified. Notationaly we represent a sequence by separating the superpositions with the dot character " . ". Unfortunately, in general a sequence of superpositions is notationaly quite ugly to read, though we have operators such as `long-display` that helps with this. But for simple superpositions they are not so bad. The simplest sequences are sequences of clean kets (ie, kets with coefficient 1). Indeed, we can represent a lot just with these "clean" sequences. Some examples:
+Given superpositions, we can now build sequences. So while a superposition is a collection of kets active at one time, a sequence represents a change in activation over some period of time. Though the speed with which a sequence changes from one superposition to the next is not specified. Notationaly we represent a sequence by separating the superpositions with the dot character " . ". Unfortunately, in general a sequence of superpositions is notationaly quite ugly to read, though we have operators such as [long-display](http://semantic-db.org/docs/usage/function-operators/long-display.html) that helps with this. But for simple superpositions they are not so bad. The simplest sequences are sequences of clean kets (ie, kets with coefficient 1). Indeed, we can represent a lot just with these "clean" sequences. Some examples:
 
 The spelling of the word happy:
 ```
@@ -108,7 +108,7 @@ One powerful feature of operators is that they can be chained in sequences (sepa
 
 ### The table operator
 
-Asking questions one at a time is a little limited, so we can display our knowledge in a neatly formatted table. For example, if we define a list of people of interest:
+Asking questions one at a time is a little limited, so we can display our knowledge in a neatly formatted [table](http://semantic-db.org/docs/usage/function-operators/table.html). For example, if we define a list of people of interest:
 ```
   the |people> => |Eve Smith> + |John Smith> + |Fred Smith> + |Erica Smith>
 ```
@@ -129,7 +129,7 @@ where the table column headings are the operators applied to the objects in the 
 
 ### The empty ket
 
-An aside about the empty ket `|>`. Anytime the system does not know the answer, it returns `|>`. Mathematically, `|>` is the identity element for superpositions, in that if you add it to any superposition that superpostion is unchanged. Just like 0 is the identity element for addition, and 1 is the identity element for multiplication. Also, any triple with `|>` as the pattern on the right hand side is ignored, ie, nothing is learned in that case. Sometimes you don't want this behaviour, so there are work-arounds, but mostly you do. There is also a related operator called `do-you-know` that tells you if the result is the empty ket or not. So for example:
+An aside about the empty ket `|>`. Anytime the system does not know the answer, it returns `|>`. Mathematically, `|>` is the identity element for superpositions, in that if you add it to any superposition that superpostion is unchanged. Just like 0 is the identity element for addition, and 1 is the identity element for multiplication. Also, any triple with `|>` as the pattern on the right hand side is ignored, ie, nothing is learned in that case. Sometimes you don't want this behaviour, so there are work-arounds, but mostly you do. There is also a related operator called [do-you-know](http://semantic-db.org/docs/usage/built-in/do-you-know.html) that tells you if the result is the empty ket or not. So for example:
 ```
   sa: do-you-know sister |Fred Smith>
     |yes>
@@ -140,12 +140,12 @@ An aside about the empty ket `|>`. Anytime the system does not know the answer, 
 
 ### Similarity measure
 
-Above we briefly mentioned you can take the union or intersection of superpositions, even superpositions that are not "clean". Well, we also have a similarity measure. This returns a value in the range 0 to 1 based on the "similarity" of two given superpositions. The similarity of any superposition with itself is always 1. The similarity of any superposition with another that has no kets in common is always 0. If the two superpositions share some kets in common, then the similarity is somewhere between 0 and 1. This measure allows us to compare superpositions in a useful way. If the superpositions are encoded in just the right way, then the similarity measure measures the semantic similarity of two objects. In theory this is very powerful, in practice it is hard work to find good encoders. It is for example easy to find encoders that encode the spelling similarity of words, or the similarity of a sequence of digits of say pi or e, or the similarity of integer sequences such as Fibonacci and factorial. It is much harder to find encoders that encode the semantic similarity of two words (see for example [Cortical IO's work](https://www.cortical.io/)), or that can be used for [MNIST digit recognition](http://yann.lecun.com/exdb/mnist/), or the even harder problem of face or object recognition. So finding good [encoders](https://arxiv.org/ftp/arxiv/papers/1602/1602.05925.pdf), in the general case, remains an open but important problem.
+Above we briefly mentioned you can take the union or intersection of superpositions, even superpositions that are not "clean". Well, we also have a [similarity measure](http://semantic-db.org/docs/usage/sequence-functions/simm.html). This returns a value in the range 0 to 1 based on the "similarity" of two given superpositions. The similarity of any superposition with itself is always 1. The similarity of any superposition with another that has no kets in common is always 0. If the two superpositions share some kets in common, then the similarity is somewhere between 0 and 1. This measure allows us to compare superpositions in a useful way. If the superpositions are encoded in just the right way, then the similarity measure measures the semantic similarity of two objects. In theory this is very powerful, in practice it is hard work to find good encoders. It is for example easy to find encoders that encode the spelling similarity of words, or the similarity of a sequence of digits of say pi or e, or the similarity of integer sequences such as Fibonacci and factorial. It is much harder to find encoders that encode the semantic similarity of two words (see for example [Cortical IO's work](https://www.cortical.io/)), or that can be used for [MNIST digit recognition](http://yann.lecun.com/exdb/mnist/), or the even harder problem of face or object recognition. So finding good [encoders](https://arxiv.org/ftp/arxiv/papers/1602/1602.05925.pdf), in the general case, remains an open but important problem.
 
 
 ### If-Then machines
 
-Now we have the basics out of the way, we can move on to a more advanced topic, so called if-then machines. The motivation is that we have a collection of patterns that when matched return an output pattern. Ie, if any of the patterns are true (or at least fuzzily true), then the output is triggered. Hence the (boring) name. But more interestingly, if-then machines can be considered a simplified model of a neuron. The patterns correspond to different "input branches" of the given neuron, and the output pattern is the result when the neuron "fires". The idea is you feed in an input pattern, then it is compared (by way of the `similar-input[]` operator) using the similarity measure against all the patterns defined with respect to a literal operator (most frequently that operator is simply called `pattern`). We then filter the results using the `drop-below[]` operator. So, for a 75% similarity before firing, we would use `drop-below[0.75]`. It is important to note that the SDB while being "mathematical" in structure, is unlike [Prolog](https://en.wikipedia.org/wiki/Prolog) and similar, by not being based on [first order logic](https://en.wikipedia.org/wiki/First-order_logic).
+Now we have the basics out of the way, we can move on to a more advanced topic, so called if-then machines. The motivation is that we have a collection of patterns that when matched return an output pattern. Ie, if any of the patterns are true (or at least fuzzily true), then the output is triggered. Hence the (boring) name. But more interestingly, if-then machines can be considered a simplified model of a neuron. The patterns correspond to different "input branches" of the given neuron, and the output pattern is the result when the neuron "fires". The idea is you feed in an input pattern, then it is compared (by way of the [similar-input[]](http://semantic-db.org/docs/usage/function-operators/similar-input.html) operator) using the similarity measure against all the patterns defined with respect to a literal operator (most frequently that operator is simply called `pattern`). We then filter the results using the [drop-below[]](http://semantic-db.org/docs/usage/built-in/drop-below.html) operator. So, for a 75% similarity before firing, we would use [drop-below[0.75]](http://semantic-db.org/docs/usage/built-in/drop-below.html). It is important to note that the SDB while being "mathematical" in structure, is unlike [Prolog](https://en.wikipedia.org/wiki/Prolog) and similar, by not being based on [first order logic](https://en.wikipedia.org/wiki/First-order_logic).
 
 Here is a very simple example, used to read a correspondingly simple sentence (which we will get to in a moment):
 ```
@@ -161,7 +161,7 @@ Here is a very simple example, used to read a correspondingly simple sentence (w
 
 ### Smap
 
-Before we can proceed, we need to explain the smap operator (ie, the sequence-map operator). The general idea is you break a sequence into ngrams of the specified sizes, and then apply operators to those pieces. The motivation is to replicate a little what happens when a person reads a sentence, and indeed, that is the example we will get to shortly. First a sentence is split into a sequence, and at each step, you populate a small set of buffers which are ngrams of the last n words, and apply operators to those buffers. Let's work through a trivial example, the sequence `|a> . |b> . |c> . |d> . |e>`, and buffers of length 1, 2 and 3. 
+Before we can proceed, we need to explain the [smap](http://semantic-db.org/docs/usage/sequence-functions/smap.html) operator (ie, the sequence-map operator). The general idea is you break a sequence into ngrams of the specified sizes, and then apply operators to those pieces. The motivation is to replicate a little what happens when a person reads a sentence, and indeed, that is the example we will get to shortly. First a sentence is split into a sequence, and at each step, you populate a small set of buffers which are ngrams of the last n words, and apply operators to those buffers. Let's work through a trivial example, the sequence `|a> . |b> . |c> . |d> . |e>`, and buffers of length 1, 2 and 3. 
 
 At step 1 the three buffers are:
 ```
@@ -185,11 +185,11 @@ At step 5 the buffers are:
 ```
 At step 6 the processing stops, so the output sequence of smap is always the same length as the input sequence. Along with operator sequences, this allows one to build up hierarchical processing of an input sequence. 
 
-If we define a wrapper around the smerge function, that merges a sequence into a ket (though we won't go into details here):
+If we define a wrapper around the [smerge](http://semantic-db.org/docs/usage/function-operators/smerge.html) function, that merges a sequence into a ket (though we won't go into details here):
 ```
   merge-seq (*) #=> smerge[" . "] |_self>
 ```
-And note that smap has form:
+And note that [smap](http://semantic-db.org/docs/usage/sequence-functions/smap.html) has form:
 ```
   smap(min_size, max_size, operators) input-seq
 ```
@@ -205,7 +205,7 @@ Then finally, we can get a hint of what smap is doing using the following code:
     seq |4> => |e> + |d . e> + |c . d . e>
     |a> . |b> + |a . b> . |c> + |b . c> + |a . b . c> . |d> + |c . d> + |b . c . d> . |e> + |d . e> + |c . d . e>
 ```
-As I said above, the final sequence is hard to read, but the `long-display` operator shows the superpositions at each step in the sequence. If this section on smap doesn't make a terrible lot of sense, it is safe to mostly ignore it!
+As I said above, the final sequence is hard to read, but the [long-display](http://semantic-db.org/docs/usage/function-operators/long-display.html) operator shows the superpositions at each step in the sequence. If this section on smap doesn't make a terrible lot of sense, it is safe to mostly ignore it!
 
 
 ### Read-sentence
@@ -220,7 +220,7 @@ And now we can do:
   sa: read-sentence |Hello Fred Smith how are you?>
     |greeting: hello> . |> . |person: Fred Smith> . |> . |> . |phrase question: how are you>
 ```
-where `sim-pattern` operator invokes our if-then machines, and `read-sentence` applies `sim-pattern` to the ngrams generated by smap. We used "max_size" of `|3>`, but in practice `|4>` or `|5>` might be more appropriate if we want to consider longer ngrams. Likewise, we used `drop-below[0.7]`, in other cases you might want it stricter than this, eg, `drop-below[0.98]` or less strict such as `drop-below[0.5]`, for 98% and 50% similarity respectively.
+where `sim-pattern` operator invokes our if-then machines, and `read-sentence` applies `sim-pattern` to the ngrams generated by smap. We used "max_size" of `|3>`, but in practice `|4>` or `|5>` might be more appropriate if we want to consider longer ngrams. Likewise, we used [drop-below[0.7]](http://semantic-db.org/docs/usage/built-in/drop-below.html), in other cases you might want it stricter than this, eg, [drop-below[0.98]](http://semantic-db.org/docs/usage/built-in/drop-below.html) or less strict such as [drop-below[0.5]](http://semantic-db.org/docs/usage/built-in/drop-below.html), for 98% and 50% similarity respectively.
 
 ### A larger if-then machine example
 
@@ -289,7 +289,7 @@ To start to "understand" more complex sentences is then an exercise in specifyin
 
 ### Spelling encoder
 
-We now have enough background to describe our spelling encoder. It is quite compact, but perhaps a bit slow and not as good as a standard spell-check algorithm. I guess it is more of a proof of concept. At a later stage, someone might design a better spelling encoder. Again, our encoder makes use of smap, and an additional operator called `seq2sp`. Seq2sp converts a sequence into a single superposition by adding all the superpositions in the sequence together. Here is our proposed encoder:
+We now have enough background to describe our spelling encoder. It is quite compact, but perhaps a bit slow and not as good as a standard spell-check algorithm. I guess it is more of a proof of concept. At a later stage, someone might design a better spelling encoder. Again, our encoder makes use of smap, and an additional operator called [seq2sp](http://semantic-db.org/docs/usage/function-operators/seq2sp.html). Seq2sp converts a sequence into a single superposition by adding all the superpositions in the sequence together. Here is our proposed encoder:
 ```
   seq2sp-op (*) #=> seq2sp |_self>
   spelling-encoder |*> #=> smap(|1>, |3>, |op: seq2sp-op>) ssplit |_self>
@@ -321,11 +321,11 @@ Then we need to apply the spelling encoder to every word in that dictionary usin
 ```
   sa: map[spelling-encoder, encoded-spelling] rel-kets[spelling]
 ```
-where `rel-kets[spelling]` returns a superposition with all the "relevant" kets that have the literal operator `spelling` defined. In our case that is all the words in the dictionary we just loaded. The map operator then applies our spelling encoder to each of the kets in the superposition returned by rel-kets, and stores the result using the literal operator `encoded-spelling`. With those pieces in place, our spell-check operator becomes:
+where [rel-kets[spelling]](http://semantic-db.org/docs/usage/function-operators/rel-kets.html) returns a superposition with all the "relevant" kets that have the literal operator `spelling` defined. In our case that is all the words in the dictionary we just loaded. The [map](http://semantic-db.org/docs/usage/function-operators/map.html) operator then applies our spelling encoder to each of the kets in the superposition returned by rel-kets, and stores the result using the literal operator `encoded-spelling`. With those pieces in place, our spell-check operator becomes:
 ```
   spell-check |*> #=> select[1,10] similar-input[encoded-spelling] spelling-encoder |_self>
 ```
-This encodes the input word, compares it to all the stored encoded-spellings (which can be quite slow unfortunately, as there are a lot of comparisons going on in the background), and then selects the top 10 results. Noting that the superposition returned by `similar-input[]` is sorted by coefficient size, largest first, otherwise `select[]` would not work as desired. The resulting superposition is somewhat difficult to read, so we display it using the `bar-chart[]` operator. The length of the bars correspond to the coefficients of the kets. Here are some examples of common typos:
+This encodes the input word, compares it to all the stored encoded-spellings (which can be quite slow unfortunately, as there are a lot of comparisons going on in the background), and then selects the top 10 results. Noting that the superposition returned by [similar-input[]](http://semantic-db.org/docs/usage/function-operators/similar-input.html) is sorted by coefficient size, largest first, otherwise [select[]](http://semantic-db.org/docs/usage/built-in/select.html) would not work as desired. The resulting superposition is somewhat difficult to read, so we display it using the [bar-chart[]](http://semantic-db.org/docs/usage/function-operators/bar-chart.html) operator. The length of the bars correspond to the coefficients of the kets. Here are some examples of common typos:
 ```
 sa: bar-chart[10] spell-check |heirarchy>
 ----------
@@ -386,7 +386,7 @@ shows : ||||||||
 
 ### Digit encoder
 
-The next encoder we are going to consider is the digit encoder. Just like the spelling encoder it is quite compact. The idea is that given a digit we will return a Gaussian around that digit. So nearby digits will be similar, but distant digits will have zero similarity. The only difficulty we face is how wide do we want the Gaussian to be? Too large and say 1 and 9 would be quite similar. Too small and neighbouring digits won't be considered similar at all. For now it seems 0.6 is close to the right choice. Here is `Gaussian[0.6]` applied to 5, again visualizing the coefficients using the bar-chart operator:
+The next encoder we are going to consider is the digit encoder. Just like the spelling encoder it is quite compact. The idea is that given a digit we will return a Gaussian around that digit. So nearby digits will be similar, but distant digits will have zero similarity. The only difficulty we face is how wide do we want the Gaussian to be? Too large and say 1 and 9 would be quite similar. Too small and neighbouring digits won't be considered similar at all. For now it seems 0.6 is close to the right choice. Here is [Gaussian[0.6]](http://semantic-db.org/docs/usage/function-operators/Gaussian.html) applied to 5, again visualizing the coefficients using the bar-chart operator:
 ```
 sa: bar-chart[10] Gaussian[0.6] |5>
 ----------
@@ -403,7 +403,7 @@ Before we define our full digit encoder we first need to learn what a digit is. 
 ```
   list-of |digits> => |0> + |1> + |2> + |3> + |4> + |5> + |6> + |7> + |8> + |9>
 ```
-Then we require the `is-digit` operator, which returns `|yes>` or `|no>` depending on whether the input ket is a member of the list of digits or not:
+Then we require the `is-digit` operator, which returns `|yes>` or `|no>` depending on whether the input ket is a member ([is-mbr](http://semantic-db.org/docs/usage/sequence-functions/is-mbr.html)) of the list of digits or not:
 ```
   is-digit |*> #=> is-mbr(|_self>, list-of |digits>)
 ```
@@ -411,7 +411,7 @@ So finally we can write down our digit encoder:
 ```
   digit-encoder |*> #=> if(is-digit |_self>, Gaussian[0.6] |_self>, |_self>)
 ```
-In words, if the input object is a digit return the `Gaussian[0.6]` of that object, otherwise return the object itself. All in all, very simple. Unlike our next section.
+In words, if the input object is a digit return the [Gaussian[0.6]](http://semantic-db.org/docs/usage/function-operators/Gaussian.html) of that object, otherwise return the object itself. All in all, very simple. Unlike our next section.
 
 
 ### Predicting and fuzzy predicting digits
@@ -424,7 +424,7 @@ Given a digit encoder we can in theory now predict the next few digits of a give
   string |e> => |2.71828182845904523>
   digits |e> => ssplit string |e>
 ```
-Once the [relevant code](sw-examples/identify-and-predict-sequence-fragments.swc "identify-and-predict-sequence-fragments.swc") is loaded into the console, we can ask:
+Once the [relevant code](http://semantic-db.org/docs/usage/sw-examples/identify-and-predict-sequence-fragments.swc "identify-and-predict-sequence-fragments.swc") is loaded into the console, we can ask:
 ```
   sa: predict-next |3.141>
   100 %      number: pi      pattern:     3 . 1 4 1      next-1:     5
@@ -475,13 +475,13 @@ The fuzzy-predict-next operator works similarly, but this time fuzzy matches dig
 
 ### Integer encoder
 
-Our final encoder is an integer encoder. Again, we use a Gaussian, but this time a little wider than for the digit encoder. `Gaussian[1]` seems to work well enough. The code is only a little more involved than the digit encoder, but still rather similar. The only difficulty is to define the `is-integer` operator.
+Our final encoder is an integer encoder. Again, we use a Gaussian, but this time a little wider than for the digit encoder. [Gaussian[1]](http://semantic-db.org/docs/usage/function-operators/Gaussian.html) seems to work well enough. The code is only a little more involved than the digit encoder, but still rather similar. The only difficulty is to define the `is-integer` operator.
 ```
   list-of |digits> => |0> + |1> + |2> + |3> + |4> + |5> + |6> + |7> + |8> + |9>
   is-integer |*> #=> is-subset(clean split[""] replace[", ", ""] |_self>, list-of |digits>)
   integer-encoder |*> #=> if(is-integer |_self>, Gaussian[1] |_self>, |_self>)
 ```
-In words, if the input ket is an integer apply `Gaussian[1]` to it, otherwise return the input ket. This is what `Gaussian[1]` applied to 5 looks like, ie, quite a bit wider than for the digit encoder, which is exactly what we want:
+In words, if the input ket is an integer apply [Gaussian[1]](http://semantic-db.org/docs/usage/function-operators/Gaussian.html) to it, otherwise return the input ket. This is what [Gaussian[1]](http://semantic-db.org/docs/usage/function-operators/Gaussian.html) applied to 5 looks like, ie, quite a bit wider than for the digit encoder, which is exactly what we want:
 ```
 sa: bar-chart[10] Gaussian[1] |5>
 ----------
@@ -525,7 +525,7 @@ In this final section we learn some integer sequences, then apply rather similar
   int-seq |fact> => fact sp2seq range(|1>, |15>)
   int-seq |primes> => such-that[is-prime] sp2seq range(|1>, |200>)
 ```
-Once the [relevant code](sw-examples/identify-and-predict-integer-sequence-fragments.swc "identify-and-predict-integer-sequence-fragments.swc") is loaded into the console, we can start making predictions.
+Once the [relevant code](http://semantic-db.org/docs/usage/sw-examples/identify-and-predict-integer-sequence-fragments.swc "identify-and-predict-integer-sequence-fragments.swc") is loaded into the console, we can start making predictions.
 ```
   sa: predict-next |1 2 3 4 5>
   100 %      integer sequence: counting      pattern:     1 2 3 4 5      next-1:     6
@@ -733,12 +733,11 @@ sa: fuzzy-predict-next |9 9 9>
 
 ## Conclusion
 
-The Semantic DB is an experimental language based on the idea of reducing everything to kets and operators with the hope of being a mathematical notation to describe neural circuits, or a component of the semantic web. The eventual goal of the project is to have a fast implementation (the current one is based on python 3 and the parsley parser), and numerous servers around the internet serving semantic db files (`.sw` and `.swc`) and interacting with each other adding some "understanding" to the data passed around the internet. The short term goal is to find collaboraters that are interested in the work, or help improve the project. It should be noted the above is only a summary, and there is much more of the project left undescribed.
+The Semantic DB is an experimental language based on the idea of reducing everything to kets and operators with the hope of being a mathematical notation to describe neural circuits, or a component of the semantic web. The eventual goal of the project is to have a fast implementation (the current one is based on python 3 and the parsley parser), and numerous servers around the internet serving [semantic db files](http://semantic-db.org/sw/) (`.sw` and `.swc`) and interacting with each other adding some "understanding" to the data passed around the internet. The short term goal is to find collaboraters that are interested in the work, or help improve the project. It should be noted the above is only a summary, and there is much more of the project left undescribed.
 
 
-The code is [available under a GPLv3 license](https://github.com/GarryMorrison/Semantic-DB)
+* The code is [available under a GPLv3 license](https://github.com/GarryMorrison/Semantic-DB) at github
+* [Operator usage information](http://semantic-db.org/docs/usage/)
+* Feel free to contact me at: garry -at- semantic-db.org
 
-[Operator usage information](http://semantic-db.org/docs/usage/)
-
-Feel free to contact me at: garry -at- semantic-db.org
 
