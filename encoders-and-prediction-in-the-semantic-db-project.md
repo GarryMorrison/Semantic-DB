@@ -161,7 +161,7 @@ Here is a very simple example, used to read a correspondingly simple sentence (w
 
 ### Smap
 
-Before we can proceed, we need to explain the [smap](http://semantic-db.org/docs/usage/sequence-functions/smap.html) operator (ie, the sequence-map operator). The general idea is you break a sequence into ngrams of the specified sizes, and then apply operators to those pieces. The motivation is to replicate a little what happens when a person reads a sentence, and indeed, that is the example we will get to shortly. First a sentence is split into a sequence, and at each step, you populate a small set of buffers which are ngrams of the last n words, and apply operators to those buffers. Let's work through a trivial example, the sequence `|a> . |b> . |c> . |d> . |e>`, and buffers of length 1, 2 and 3. 
+Before we can proceed, we need to explain the [smap](http://semantic-db.org/docs/usage/sequence-functions/smap.html) operator (ie, the sequence-map operator). The general idea is you break a sequence into [ngrams](https://en.wikipedia.org/wiki/N-gram) of the specified sizes, and then apply operators to those pieces. The motivation is to replicate a little what happens when a person reads a sentence, and indeed, that is the example we will get to shortly. First a sentence is split into a sequence, and at each step, you populate a small set of buffers which are ngrams of the last n words, and apply operators to those buffers. Let's work through a trivial example, the sequence `|a> . |b> . |c> . |d> . |e>`, and buffers of length 1, 2 and 3. 
 
 At step 1 the three buffers are:
 ```
