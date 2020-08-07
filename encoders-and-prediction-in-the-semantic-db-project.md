@@ -138,6 +138,155 @@ An aside about the empty ket `|>`. Anytime the system does not know the answer, 
     |no>
 ```
 
+### Comparison with RDF
+
+Before proceeding to the second part of this document, we will make a brief comparison of this work with [RDF](https://en.wikipedia.org/wiki/Resource_Description_Framework). For simple triples it is clear that our learn rules can be mapped to a RDF format, and likewise the reverse mapping. We will give a brief example shortly. But it is less clear that non-clean superpositions (ie, superpositions with coefficients other than 0 or 1), or sequences for that matter can be cleanly represented by RDF. The power of operators and operator sequences also seem to be missing from RDF descriptions of knowledge. Further, even though kets can sometimes be a bit ugly, the notation has the advantage of being uniform. In the sense that no matter what you are representing, the notation is the same.
+
+
+### RDF example
+
+It is instructive to provide a RDF vs `.sw` example. Here is an example from [wikipedia](https://en.wikipedia.org/wiki/Resource_Description_Framework#Example_1:_Description_of_a_person_named_Eric_Miller) in N-Triples format:
+```
+  <http://www.w3.org/People/EM/contact#me> <http://www.w3.org/2000/10/swap/pim/contact#fullName> "Eric Miller" .
+  <http://www.w3.org/People/EM/contact#me> <http://www.w3.org/2000/10/swap/pim/contact#mailbox> <mailto:e.miller123(at)example> .
+  <http://www.w3.org/People/EM/contact#me> <http://www.w3.org/2000/10/swap/pim/contact#personalTitle> "Dr." .
+  <http://www.w3.org/People/EM/contact#me> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/10/swap/pim/contact#Person> .
+```
+And in Turtle syntax:
+```
+  @prefix eric:    <http://www.w3.org/People/EM/contact#> .
+  @prefix contact: <http://www.w3.org/2000/10/swap/pim/contact#> .
+  @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+  eric:me contact:fullName "Eric Miller" .
+  eric:me contact:mailbox <mailto:e.miller123(at)example> .
+  eric:me contact:personalTitle "Dr." .
+  eric:me rdf:type contact:Person .
+```
+The equivalent in `.sw` is:
+```
+  fullName |Eric> => |Eric Miller>
+  mailbox |Eric> => |mailto:e.miller123(at)example>
+  personalTitle |Eric> => |Dr.>
+  type |Eric> => |Person>
+```
+
+### Mapping sw back to RDF
+
+With a little work we can write some code that maps the `.sw` back to something resembling the RDF. Though we can't do it exactly because ket strings can't contain `<` and `>` characters (maybe in a later version of the SDB they will be supported by way of escape characters). And to be blunt, our `to-RDF` code is somewhat ugly, but once it is defined then that is no longer a bother. In principle it only needs to be written once for each operator type, and then it can be downloaded from the relevant server as needed. The code is implemented in a way that we need a "global" variable that defines the current person of interest. Here we define that manually, but later our code does that for us.
+```
+  tmp |object> => |Eric>
+```
+Now learn some operators needed to convert back to RDF. Noting that `_` concatenates ket strings, and `__` concatenates ket strings with a space in the middle.
+```
+  prefix |people> => |http://www.w3.org/People/EM/contact#>
+  prefix |contact> => |http://www.w3.org/2000/10/swap/pim/contact#>
+  prefix |rdf> => |http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+  to-RDF |op: fullName> #=> prefix |people> _ tmp |object> __ prefix |contact> _ extract-value |_self> __ |"> _ fullName tmp |object> _ |">
+  to-RDF |op: mailbox> #=> prefix |people> _ tmp |object> __ prefix |contact> _ extract-value |_self> __ mailbox tmp |object>
+  to-RDF |op: personalTitle> #=> prefix |people> _ tmp |object> __ prefix |contact> _ extract-value |_self> __ |"> _ personalTitle tmp |object> _ |">
+  to-RDF |op: type> #=> prefix |people> _ tmp |object> __ prefix |rdf> _ extract-value |_self> __ prefix |contact> _ extract-value type tmp |object>
+```
+And finally, a wrapper function to print it all out. In this case noting that the SDB doesn't really have functions, instead it supports operators that are a "collection" of learn rules. Also, this time the code defines the required global (`tmp |object>`) for us.
+```
+  display-RDF |*> #=>  
+      tmp |object> => |__self>
+      print to-RDF supported-ops tmp |object>
+      | >
+```
+Then it is straightforward to invoke it:
+```
+  sa: display-RDF |Eric>
+  http://www.w3.org/People/EM/contact#Eric http://www.w3.org/2000/10/swap/pim/contact#fullName "Eric Miller"
+  http://www.w3.org/People/EM/contact#Eric http://www.w3.org/2000/10/swap/pim/contact#mailbox mailto:e.miller123(at)example
+  http://www.w3.org/People/EM/contact#Eric http://www.w3.org/2000/10/swap/pim/contact#personalTitle "Dr."
+  http://www.w3.org/People/EM/contact#Eric http://www.w3.org/1999/02/22-rdf-syntax-ns#type http://www.w3.org/2000/10/swap/pim/contact#Person
+  | >
+```
+
+### Supported-ops
+
+In the `display-RDF` code, we introduced, without explanation, a new operator `supported-ops`. Supported-ops is a literal operator of sorts, but of a special type. It is never defined by hand, and if you try to the code ignores your attempt. Supported ops is essentially a record of the literal operators defined for an object. One reason this is needed is that different objects usually do not share exactly the same collection of supported literal operators. It is fully dynamic, and you can add new operators at any time (note however that the current implementation does not support deleting operators from an object). Operators have corresponding kets, so if a literal operator is `s` then the correponding ket is `|op: s>`. So if we ask what are the supported operators for Eric we have:
+```
+  sa: supported-ops |Eric>
+  |op: fullName> + |op: mailbox> + |op: personalTitle> + |op: type>
+```
+Using `supported-ops` we have two obvious ways to compare similarity of objects. The first is the one we have just given, compare two objects based on what literal operators they support. The second is by way of the star operator:
+```
+  sa: star |*> #=> apply(supported-ops |_self>, |_self>)
+
+  sa: star |Eric>
+  |Eric Miller> + |mailto:e.miller123(at)example> + |Dr.> + |Person>
+```
+So while `supported-ops` returns all the operators defined for an object, `star` returns all the patterns defined for an object (added together into a superposition). Where recall, our learn rules are of form `(operator, object, pattern)`. More on object similarity later.
+
+
+### RDF example resumes
+
+Of course, now we have the backend code implemented, we can extend the RDF example by learning the contact details of say Fred, or as many people as we like:
+```
+  fullName |Fred> => |Fred Smith>
+  mailbox |Fred> => |mailto:e.freddie(at)example>
+  personalTitle |Fred> => |Mr.>
+  type |Fred> => |Person>
+```
+Without further work, we invoke it:
+```
+  sa: display-RDF |Fred>
+  http://www.w3.org/People/EM/contact#Fred http://www.w3.org/2000/10/swap/pim/contact#fullName "Fred Smith"
+  http://www.w3.org/People/EM/contact#Fred http://www.w3.org/2000/10/swap/pim/contact#mailbox mailto:e.freddie(at)example
+  http://www.w3.org/People/EM/contact#Fred http://www.w3.org/2000/10/swap/pim/contact#personalTitle "Mr."
+  http://www.w3.org/People/EM/contact#Fred http://www.w3.org/1999/02/22-rdf-syntax-ns#type http://www.w3.org/2000/10/swap/pim/contact#Person
+  | >
+```
+If new operator types are required too, in addition to the current set of `fullName`, `mailbox`, `personalTitle` and `type`, then it is a matter of defining, or loading from a server, the relevant `to-RDF` operator.
+
+
+### Mapping sw back to Turtle
+
+To complete the example, we define the code needed to map from `.sw` back to the turtle syntax. 
+```
+  display-prefix |*> #=> |@prefix> __ |_self> _ |:> __ prefix |_self>
+
+  to-turtle |op: fullName> #=> |people:> _ tmp |object> __ |contact:> _ extract-value |_self> __ |"> _ fullName tmp |object> _ |" .>
+  to-turtle |op: mailbox> #=> |people:> _ tmp |object> __ |contact:> _ extract-value |_self> __ mailbox tmp |object> __ |.>
+  to-turtle |op: personalTitle> #=> |people:> _ tmp |object> __ |contact:> _ extract-value |_self> __ |"> _ personalTitle tmp |object> _ |" .>
+  to-turtle |op: type> #=> |people:> _ tmp |object> __ |rdf:> _ extract-value |_self> __ |contact:> _ type tmp |object> __ |.>
+
+  display-turtle |*> #=>
+      print display-prefix rel-kets[prefix]
+      print
+      tmp |object> => |__self>
+      print to-turtle supported-ops tmp |object>
+      | >
+```
+Then invoke it:
+```
+  sa: display-turtle |Eric>
+  @prefix people: http://www.w3.org/People/EM/contact#
+  @prefix contact: http://www.w3.org/2000/10/swap/pim/contact#
+  @prefix rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+
+  people:Eric contact:fullName "Eric Miller" .
+  people:Eric contact:mailbox mailto:e.miller123(at)example .
+  people:Eric contact:personalTitle "Dr." .
+  people:Eric rdf:type contact:Person .
+  | >
+
+  sa: display-turtle |Fred>
+  @prefix people: http://www.w3.org/People/EM/contact#
+  @prefix contact: http://www.w3.org/2000/10/swap/pim/contact#
+  @prefix rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+
+  people:Fred contact:fullName "Fred Smith" .
+  people:Fred contact:mailbox mailto:e.freddie(at)example .
+  people:Fred contact:personalTitle "Mr." .
+  people:Fred rdf:type contact:Person .
+  | >
+```
+
+
 ### Similarity measure
 
 Above we briefly mentioned you can take the union or intersection of superpositions, even superpositions that are not "clean". Well, we also have a [similarity measure](http://semantic-db.org/docs/usage/sequence-functions/simm.html). This returns a value in the range 0 to 1 based on the "similarity" of two given superpositions. The similarity of any superposition with itself is always 1. The similarity of any superposition with another that has no kets in common is always 0. If the two superpositions share some kets in common, then the similarity is somewhere between 0 and 1. This measure allows us to compare superpositions in a useful way. If the superpositions are encoded in just the right way, then the similarity measure measures the semantic similarity of two objects. In theory this is very powerful, in practice it is hard work to find good encoders. It is for example easy to find encoders that encode the spelling similarity of words, or the similarity of a sequence of digits of say pi or e, or the similarity of integer sequences such as Fibonacci and factorial. It is much harder to find encoders that encode the semantic similarity of two words (see for example [Cortical IO's work](https://www.cortical.io/)), or that can be used for [MNIST digit recognition](http://yann.lecun.com/exdb/mnist/), or the even harder problem of face or object recognition. So finding good [encoders](https://arxiv.org/abs/1602.05925), in the general case, remains an open but important problem.
