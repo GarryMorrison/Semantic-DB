@@ -329,9 +329,32 @@ function_operators_usage['smerge'] = """
             c
             
             d>
-       
+        
+        -- we can define pack-seq and unpack-seq operators using smerge and smap:
+        merge-plus (*) #=> smerge[" + "] |_self>
+        merge-sp (*) #=> smap(|1>, |1>, |op: merge-plus>) |_self>
+        pack-seq (*) #=> smerge[" . "] merge-sp push-float |_self>
+        
+        split-sp |*> #=> split[" + "] |_self>
+        unpack-seq |*> #=> pop-float split-sp ssplit[" . "] |_self>
+        
+        -- Now a couple of examples:
+        pack-seq (|a> + |b> + |c> . |d> + |e>)
+            |a: 1 + b: 1 + c: 1 . d: 1 + e: 1>
+
+        unpack-seq |a: 1 + b: 1 + c: 1 . d: 1 + e: 1>
+            |a> + |b> + |c> . |d> + |e>
+            
+        the |seq> => |f> . 2|r> + |f> . 3|i> + 2|r> + |f> . 3|e> + 2|i> + |r> . 3|n> + 2|e> + |i> . 3|d> + 2|n> + |e>
+        pack-seq the |seq>
+            |f: 1 . r: 2 + f: 1 . i: 3 + r: 2 + f: 1 . e: 3 + i: 2 + r: 1 . n: 3 + e: 2 + i: 1 . d: 3 + n: 2 + e: 1>
+            
+        unpack-seq |f: 1 . r: 2 + f: 1 . i: 3 + r: 2 + f: 1 . e: 3 + i: 2 + r: 1 . n: 3 + e: 2 + i: 1 . d: 3 + n: 2 + e: 1>
+            |f> . 2|r> + |f> . 3|i> + 2|r> + |f> . 3|e> + 2|i> + |r> . 3|n> + 2|e> + |i> . 3|d> + 2|n> + |e>
+            
+        
     see also:
-        ssplit
+        ssplit, smap
         
 """
 # one is a sequence
