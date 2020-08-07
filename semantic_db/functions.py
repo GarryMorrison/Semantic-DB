@@ -8018,6 +8018,21 @@ function_operators_usage['sleep'] = """
         sleep[2] (|a> + |b> . |c>)
             |a> + |b> . |c>
 
+        -- use sleep[] to slowly read out a sentence:
+        print-sleep |*> #=>
+            print |__self>
+            sleep[1]
+            |__self>
+            
+        print-sleep (|The> . |frog> . |sat> . |on> . |a> . |rock.>)
+            The
+            frog
+            sat
+            on
+            a
+            rock.
+            |The> . |frog> . |sat> . |on> . |a> . |rock.>
+
     see also:
 
 """
