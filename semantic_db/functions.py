@@ -11154,3 +11154,36 @@ def sfor_3(input_seq, context, one, two, three, operators):
                     seq.data[k] += result.to_sp()
                     k += 1
     return seq
+
+
+
+# set invoke method:
+compound_table['random-int'] = ['apply_fn', 'random_int', '']
+# set usage info:
+function_operators_usage['random-int'] = """
+    description:
+        random-int[digits]
+        returns a random integer with max of 'digits' size
+        NB: not cryptographically secure.
+        
+    examples:
+        -- return a random integer with at most 3 digits:
+        random-int[3]
+            |827>
+        
+        -- return a random integer with at most 6 digits:            
+        random-int[6]
+            |298193>
+
+    see also:
+        
+"""
+import random
+def random_int(one, digits):
+    try:
+        digits = int(digits)
+        value = random.randrange(0, 10**digits)
+        return ket(str(value))
+    except Exception as e:
+        print("random-int exception reason:", e)
+        return ket()
