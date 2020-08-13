@@ -10711,14 +10711,15 @@ def smap(input_seq, context, min_size, max_size, operators):
         for op in ops:
             k = 0
             for patch in generate_ngrams(input_seq.data, N):
-                seq_patch = sequence(patch)
-                # op_patch = seq_patch.apply_op(context, op)  # this is broken
-                op_patch = context.seq_fn_recall(op, [ket(), seq_patch], active=True)
-                seq.data[k] += op_patch.to_sp()
-                # print('seq_patch:', seq_patch)
-                # print('op_patch:', op_patch)
-                # print('op_patch.to_sp():', op_patch.to_sp())
-                k += 1
+                if len(patch) > 0:
+                    seq_patch = sequence(patch)
+                    # op_patch = seq_patch.apply_op(context, op)  # this is broken
+                    op_patch = context.seq_fn_recall(op, [ket(), seq_patch], active=True)
+                    seq.data[k] += op_patch.to_sp()
+                    # print('seq_patch:', seq_patch)
+                    # print('op_patch:', op_patch)
+                    # print('op_patch.to_sp():', op_patch.to_sp())
+                    k += 1
     return seq
 
 
