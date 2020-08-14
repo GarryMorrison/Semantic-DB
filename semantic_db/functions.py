@@ -10712,6 +10712,7 @@ def smap(input_seq, context, min_size, max_size, operators):
             k = 0
             for patch in generate_ngrams(input_seq.data, N):
                 if len(patch) > 0:
+                    context.learn("the", "smap pos", str(k+1))
                     seq_patch = sequence(patch)
                     # op_patch = seq_patch.apply_op(context, op)  # this is broken
                     op_patch = context.seq_fn_recall(op, [ket(), seq_patch], active=True)
@@ -10719,7 +10720,7 @@ def smap(input_seq, context, min_size, max_size, operators):
                     # print('seq_patch:', seq_patch)
                     # print('op_patch:', op_patch)
                     # print('op_patch.to_sp():', op_patch.to_sp())
-                    k += 1
+                k += 1
     return seq
 
 
