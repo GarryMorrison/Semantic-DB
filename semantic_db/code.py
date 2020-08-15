@@ -2671,6 +2671,9 @@ def process_operators(context, ops, seq, self_object=None):
                     if fnk in whitelist_table_1:
                         # python_code = "%s(*seq_list)" % whitelist_table_1[fnk]
                         our_fn = globals()[whitelist_table_1[fnk]]
+                    elif fnk in context_whitelist_table_1:
+                        seq_list = [context] + seq_list
+                        our_fn = globals()[context_whitelist_table_1[fnk]]
                     elif False:  # is this branch still correct? How test?
                         # the_seq = compile_compound_sequence(context, data[0], self_object)
                         the_seq = seq_list[0]
