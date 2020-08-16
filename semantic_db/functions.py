@@ -479,9 +479,9 @@ def flatten_with_operators(input_seq, context, operators):
                     sequences.append([x])
             else:
                 new_sequences = []
-                for x in sequences:
+                for elt in sequences:
                     for y in sp:
-                        seq = x + [y]
+                        seq = elt + [y]
                         new_sequences.append(seq)
                 sequences = new_sequences
         actual_sequences = []
@@ -492,9 +492,12 @@ def flatten_with_operators(input_seq, context, operators):
         return actual_sequences
     op = ops[0]
     final_seq = sequence([])
+    final_seq.data = []  # Not sure if this is needed or not.
     for seq in generate_permutations(input_seq):
         op_patch = context.seq_fn_recall(op, [ket(), seq], active=True)
-        final_seq.data.append(op_patch.to_sp())
+        # print('seq:', seq)
+        # print('op_patch:', op_patch)
+        final_seq.data.append(op_patch.to_sp())  # NB: the to_sp() here.
     if len(ops) > 1:
         for k, seq in enumerate(generate_permutations(input_seq)):
             for op in ops[1:]:
