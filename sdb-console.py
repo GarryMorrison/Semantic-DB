@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 
+#!/usr/bin/env python3
 
 #######################################################################
 # the semantic-db console
@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 27/6/2020
+# Update: 16/8/2020
 # Copyright: GPLv3
 #
 # Usage: ./sdb-console.py [--debug | --info] [-q] [-i] [-d] [--version] [file1.sw ... filen.sw]
@@ -212,7 +212,7 @@ if len(files_to_run) == 0:
 
 
 if interactive:
-    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 27 June, 2020")
+    print("Welcome to version 2.0 of the Semantic DB!\nLast updated 16 August, 2020")
     print("\nTo load remote sw files, run:\n\n  web-files http://semantic-db.org/sw/\n")
     print("To see usage docs, visit:\n\n  http://semantic-db.org/docs/usage/\n")
 
@@ -523,7 +523,7 @@ while True:
 
     elif line.startswith("dump "):
         var = line[5:]
-        print("var: %s\n" % var)
+        # print("var: %s\n" % var)
         try:
             seq = extract_compound_sequence(context, var)
             print(context.dump_multiple_ket_rules(seq))
