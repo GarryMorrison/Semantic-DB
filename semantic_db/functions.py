@@ -74,6 +74,9 @@ whitelist_table_3 = {}
 # functions of form: fn(input-seq, seq, seq, seq, seq):
 whitelist_table_4 = {}
 
+# functions of form: fn(input-seq, context, seq):
+context_whitelist_table_1 = {}
+
 # functions of form: fn(input-seq, context, seq, seq):
 context_whitelist_table_2 = {}
 
@@ -437,6 +440,67 @@ def flatten_seq(input_seq, merge_str):
             r = new_r
     return r
 
+
+# set invoke method:
+context_whitelist_table_1['flatten'] = 'flatten_with_operators'
+# set usage info:
+sequence_functions_usage['flatten'] = """
+    description:
+        flatten(operators) input-seq
+        the flatten operator
+
+    examples:
+        merge-seq (*) #=> smerge[" . "] |_self>
+        flatten(|op: merge-seq>) (|a> + |b> . |c> + |d> . |e> + |f>)
+            |a . c . e> . |a . c . f> . |a . d . e> . |a . d . f> . |b . c . e> . |b . c . f> . |b . d . e> . |b . d . f>
+            
+        merge-underline (*) #=> smerge[" _ "] |_self>
+        flatten(|op: merge-seq> + |op: merge-underline>) (|a> + |b> . |c> + |d>)
+            |a . c> + |a _ c> . |a . d> + |a _ d> . |b . c> + |b _ c> . |b . d> + |b _ d>
+            
+    see also:
+        flatten-seq
+"""
+def flatten_with_operators(input_seq, context, operators):
+    try:
+        ops = []
+        for x in operators.to_sp():
+            s = x.label[4:]
+            ops.append(s)
+        # print('ops:', ops)
+    except Exception as e:
+        print('flatten exception reason:', e)
+        return ket()
+    def generate_permutations(input_seq):
+        sequences = []
+        for sp in input_seq:
+            if len(sequences) == 0:
+                for x in sp:
+                    sequences.append([x])
+            else:
+                new_sequences = []
+                for x in sequences:
+                    for y in sp:
+                        seq = x + [y]
+                        new_sequences.append(seq)
+                sequences = new_sequences
+        actual_sequences = []
+        for x in sequences:
+            seq = sequence([])
+            seq.data = x
+            actual_sequences.append(seq)
+        return actual_sequences
+    op = ops[0]
+    final_seq = sequence([])
+    for seq in generate_permutations(input_seq):
+        op_patch = context.seq_fn_recall(op, [ket(), seq], active=True)
+        final_seq.data.append(op_patch.to_sp())
+    if len(ops) > 1:
+        for k, seq in enumerate(generate_permutations(input_seq)):
+            for op in ops[1:]:
+                op_patch = context.seq_fn_recall(op, [ket(), seq], active=True)
+                final_seq.data[k] += op_patch.to_sp()
+    return final_seq
 
 
 # set invoke method:
