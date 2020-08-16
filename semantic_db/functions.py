@@ -10763,6 +10763,7 @@ def smap(input_seq, context, min_size, max_size, operators):
             ops.append(s)
         min_k = int(min_size.to_ket().label)
         max_k = int(max_size.to_ket().label)
+        max_k = min(max_k, len(input_seq))
         # print('ops:', ops)
         # print('min_k:', min_k)
         # print('max_k:', max_k)
