@@ -10546,10 +10546,12 @@ def swrite_range(input_seq, start_idx, finish_idx, write_seq):
 
 
 # set invoke method:
+compound_table['smap'] = ['apply_seq_fn', 'smap_constant', 'context']
 context_whitelist_table_3['smap'] = 'smap'
 # set usage info:
 sequence_functions_usage['smap'] = """
     description:
+        smap[min_size, max_size, operators] input-seq
         smap(min_size, max_size, operators) input-seq
         the sequence map operator
         The input sequence is broken into pieces/ngrams of len min_size to max_size
@@ -10790,6 +10792,40 @@ def smap(input_seq, context, min_size, max_size, operators):
                     # print('op_patch.to_sp():', op_patch.to_sp())
                 k += 1
     return seq
+
+def smap_constant(input_seq, context, min_size, max_size, *ops):
+    try:
+        min_k = int(min_size)
+        max_k = int(max_size)
+        max_k = min(max_k, len(input_seq))
+        # print('ops:', ops)
+        # print('min_k:', min_k)
+        # print('max_k:', max_k)
+    except Exception as e:
+        print('smap exception reason:', e)
+        return ket()
+    def generate_ngrams(data, N):
+        for i in range(1, len(data) + 1):
+            yield data[i-N:i]
+    seq = sequence([])
+    seq.data = [superposition()] * len(input_seq)
+    for N in range(min_k, max_k + 1):
+        for op in ops:
+            k = 0
+            for patch in generate_ngrams(input_seq.data, N):
+                if len(patch) > 0:
+                    context.learn("the", "smap pos", str(k+1))
+                    seq_patch = sequence(patch)
+                    # op_patch = seq_patch.apply_op(context, op)  # this is broken
+                    op_patch = context.seq_fn_recall(op, [ket(), seq_patch], active=True)
+                    seq.data[k] += op_patch.to_sp()
+                    # print('seq_patch:', seq_patch)
+                    # print('op_patch:', op_patch)
+                    # print('op_patch.to_sp():', op_patch.to_sp())
+                k += 1
+    return seq
+
+
 
 
 # set invoke method:
