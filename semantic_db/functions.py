@@ -796,6 +796,30 @@ def add_learn_sp(input_seq, context, one, two, three):
 
 
 # set invoke method:
+context_whitelist_table_3['seq-learn'] = 'seq_learn_sp'
+# set usage info:
+sequence_functions_usage['seq-learn'] = """
+    description:
+        seq-learn(sp, sp, seq)
+        wrapper around a seq-learn rule, so we can use it in operators
+
+    examples:
+        seq-learn(|op: friends>, |Fred>, |Sam>)
+        implements: friends |Fred> .=> |Sam>
+
+    see also:
+        learn, apply, add-learn
+"""
+def seq_learn_sp(input_seq, context, one, two, three):
+    for op in one.to_sp():
+        if op.label.startswith('op: '):
+            str_op = op.label[4:]
+            for object in two.to_sp():
+                context.seq_learn(str_op, object.label, three)
+    return three
+
+
+# set invoke method:
 context_whitelist_table_2['apply'] = 'apply_sp'
 # set usage info:
 sequence_functions_usage['apply'] = """
