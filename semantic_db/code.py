@@ -1949,7 +1949,15 @@ class NewContext(object):
     def dump_multiple_ket_rules(self, seq, exact=False):  # Used in the console.
         if type(seq) is str:
             seq = ket(seq)
-        return "\n\n".join(self.dump_ket_rules(x, exact) for x in seq.to_sp())
+        # return "\n\n".join(self.dump_ket_rules(x, exact) for x in seq.to_sp())
+        s = ""
+        for x in seq.to_sp():
+            rules = self.dump_ket_rules(x, exact)
+            if len(rules) > 0:
+                s += rules + '\n\n'
+        if s.endswith('\n\n'):
+            s = s[:-2]
+        return s
 
     # dump everything we know about the current context:
     def dump_universe(self, exact=False, show_context_header=True):  # I think this is right, but need to test it.
