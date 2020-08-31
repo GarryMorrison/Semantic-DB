@@ -6,7 +6,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2014
-# Update: 6/3/2020
+# Update: 31/8/2020
 # Copyright: GPLv3
 #
 # A collection of functions that apply to kets, superpositions and sequences.
@@ -11317,3 +11317,84 @@ def random_int(one, digits):
     except Exception as e:
         print("random-int exception reason:", e)
         return ket()
+
+
+# set invoke method:
+context_whitelist_table_2['filter'] = 'filter'
+# set usage info:
+sequence_functions_usage['filter'] = """
+    description:
+        filter(operators, conditions) input-seq
+        filters the input sequence to only those elements that satisfy the operator/condition pair 
+
+    examples:
+        -- filter all known kets to those that are human, are Americans, and are politicians:
+        filter(|op: occupation>, |politician>) filter(|op: is-american>, |yes>) filter(|op: is-human>, |yes>) rel-kets[*]
+    
+        -- learn some knowledge:
+        is-food |bread> => |yes>
+        is-food |cheese> => |yes>
+        is-food |steak> => |yes>
+        
+        is-furniture |chair> => |yes>
+        is-furniture |table> => |yes>
+        is-furniture |stool> => |yes>
+        is-furniture |lounge> => |yes>
+        
+        is-day-of-week |monday> => |yes>
+        is-day-of-week |tuesday> => |yes>
+        is-day-of-week |wednesday> => |yes>
+        is-day-of-week |thursday> => |yes>
+        is-day-of-week |friday> => |yes>
+        is-day-of-week |saturday> => |yes>
+        is-day-of-week |sunday> => |yes>
+        
+        is-week-day |monday> => |yes>
+        is-week-day |tuesday> => |yes>
+        is-week-day |wednesday> => |yes>
+        is-week-day |thursday> => |yes>
+        is-week-day |friday> => |yes>
+        
+        is-weekend |saturday> => |yes>
+        is-weekend |sunday> => |yes>
+        
+        -- now try some filters:
+        filter(|op: is-furniture>, |yes>) shuffle rel-kets[*]
+            |lounge> + |stool> + |chair> + |table>
+            
+        filter(|op: is-food>, |yes>) shuffle rel-kets[*]
+            |bread> + |cheese> + |steak>
+        
+        filter(|op: is-weekend>, |yes>) shuffle rel-kets[*]
+            |saturday> + |sunday>
+
+    see also:
+        such-that
+
+"""
+def filter(input_seq, context, operators, conditions):
+    # print('input-seq:', input_seq)
+    # print('operators:', operators)
+    # print('conditions:', conditions)
+    ops = []
+    for op_sp in operators.to_sp():
+        if op_sp.label.startswith('op: '):
+            ops.append(op_sp.label[4:])
+    # print('ops:', ops)
+    op = ops[0]                     # for now only consider one operator
+    condition = conditions.to_ket() # for now only consider one condition
+    def member(elt, sp):
+        for x in sp:
+            if elt.label == x.label:
+                return True
+        return False
+
+    seq = sequence([])
+    for sp in input_seq:
+        r = superposition()
+        for x in sp:
+            rule_value = x.apply_op(context, op).to_sp()
+            if member(condition, rule_value):
+                r.add_sp(x)
+        seq.data.append(r)
+    return seq
