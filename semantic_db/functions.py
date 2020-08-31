@@ -11325,7 +11325,8 @@ context_whitelist_table_2['filter'] = 'filter'
 sequence_functions_usage['filter'] = """
     description:
         filter(operators, conditions) input-seq
-        filters the input sequence to only those elements that satisfy the operator/condition pair 
+        filters the input sequence to only those elements that satisfy the operator/condition pair
+        It is more powerful than the such-that[] operator, which was always a little clunky.
 
     examples:
         -- filter all known kets to those that are human, are Americans, and are politicians:
@@ -11368,6 +11369,23 @@ sequence_functions_usage['filter'] = """
         filter(|op: is-weekend>, |yes>) shuffle rel-kets[*]
             |saturday> + |sunday>
 
+
+        -- an "indirect" filter example:
+        father |John> => |Fred>
+        occupation |Fred> => |politician>
+        father |Sam> => |Robert>
+        occupation |Robert> => |doctor>
+        father |Emma> => |Jack>
+        occupation |Jack> => |nurse>
+        
+        -- find people that have a father with occupation nurse:
+        filter(|op: occupation father>, |nurse>) rel-kets[*]
+            |Emma>
+        
+        -- find people that have a father with occupation doctor:
+        filter(|op: occupation father>, |doctor>) rel-kets[*]
+            |Sam>
+        
     see also:
         such-that
 
@@ -11383,6 +11401,9 @@ def filter(input_seq, context, operators, conditions):
     # print('ops:', ops)
     op = ops[0]                     # for now only consider one operator
     condition = conditions.to_ket() # for now only consider one condition
+    split_op = op.split(" ")
+    split_op.reverse()
+    # print('split_op:', split_op)
     def member(elt, sp):
         for x in sp:
             if elt.label == x.label:
@@ -11393,7 +11414,10 @@ def filter(input_seq, context, operators, conditions):
     for sp in input_seq:
         r = superposition()
         for x in sp:
-            rule_value = x.apply_op(context, op).to_sp()
+            tmp = x
+            for op in split_op:
+                tmp = tmp.apply_op(context, op)
+            rule_value = tmp.to_sp()
             if member(condition, rule_value):
                 r.add_sp(x)
         seq.data.append(r)
