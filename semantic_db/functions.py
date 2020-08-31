@@ -913,6 +913,7 @@ function_operators_usage['such-that'] = """
             |Monday> + |Tuesday> + |Wednesday> + |Thursday> + |Friday> + |Saturday> + |Sunday>
     
     see also:
+        filter, not-filter
 
     TODO:
         fix quirk so we don't need literal operator wrappers around function operators.
@@ -11413,6 +11414,65 @@ def filter(input_seq, context, operators, conditions):
         for x in sp:
             rule_value = x.apply_ops(context, op).to_sp()
             if member(condition, rule_value):
+                r.add_sp(x)
+        seq.data.append(r)
+    return seq
+
+
+# set invoke method:
+context_whitelist_table_2['not-filter'] = 'not_filter'
+# set usage info:
+sequence_functions_usage['not-filter'] = """
+    description:
+        not-filter(operators, conditions) input-seq
+        filters the input sequence to only those elements that do not satisfy the operator/condition pair
+        It is the brother to filter().
+
+    examples:
+        -- an "indirect" not-filter example:
+        father |John> => |Fred>
+        occupation |Fred> => |politician>
+        father |Sam> => |Robert>
+        occupation |Robert> => |doctor>
+        father |Emma> => |Jack>
+        occupation |Jack> => |nurse>
+
+        -- find objects that do not have a father with occupation of doctor:
+        not-filter(|op: occupation father>, |doctor>) rel-kets[*]
+            |context> + |John> + |Fred> + |Robert> + |Emma> + |Jack>
+            
+        -- find people that have a father, but the father is not a politician:
+        not-filter(|op: occupation father>, |politician>) rel-kets[father]
+            |Sam> + |Emma>
+
+    see also:
+        filter, such-that
+
+"""
+def not_filter(input_seq, context, operators, conditions):
+    # print('input-seq:', input_seq)
+    # print('operators:', operators)
+    # print('conditions:', conditions)
+    ops = []
+    for op_sp in operators.to_sp():
+        if op_sp.label.startswith('op: '):
+            ops.append(op_sp.label[4:])
+    # print('ops:', ops)
+    op = ops[0]  # for now only consider one operator
+    condition = conditions.to_ket()  # for now only consider one condition
+
+    def member(elt, sp):
+        for x in sp:
+            if elt.label == x.label:
+                return True
+        return False
+
+    seq = sequence([])
+    for sp in input_seq:
+        r = superposition()
+        for x in sp:
+            rule_value = x.apply_ops(context, op).to_sp()
+            if not member(condition, rule_value):
                 r.add_sp(x)
         seq.data.append(r)
     return seq
