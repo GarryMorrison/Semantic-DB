@@ -11387,6 +11387,11 @@ sequence_functions_usage['filter'] = """
         filter(|op: occupation father>, |doctor>) rel-kets[*]
             |Sam>
         
+        -- find people that have the father operator defined:
+        -- which is very close in function to the rel-kets[father] operator.
+        filter(|op: father>, |*>) rel-kets[*]
+            |John> + |Sam> + |Emma> 
+        
     see also:
         such-that
 
@@ -11414,6 +11419,8 @@ def filter(input_seq, context, operators, conditions):
         for x in sp:
             rule_value = x.apply_ops(context, op).to_sp()
             if member(condition, rule_value):
+                r.add_sp(x)
+            elif len(rule_value) > 0 and condition.label == "*":
                 r.add_sp(x)
         seq.data.append(r)
     return seq
@@ -11445,6 +11452,10 @@ sequence_functions_usage['not-filter'] = """
         not-filter(|op: occupation father>, |politician>) rel-kets[father]
             |Sam> + |Emma>
 
+        -- find objects that do not have the father operator defined:
+        not-filter(|op: father>, |*>) rel-kets[*]
+            |context> + |Fred> + |Robert> + |Jack>
+
     see also:
         filter, such-that
 
@@ -11473,6 +11484,7 @@ def not_filter(input_seq, context, operators, conditions):
         for x in sp:
             rule_value = x.apply_ops(context, op).to_sp()
             if not member(condition, rule_value):
-                r.add_sp(x)
+                if not (len(rule_value) > 0 and condition.label == "*"):
+                    r.add_sp(x)
         seq.data.append(r)
     return seq
