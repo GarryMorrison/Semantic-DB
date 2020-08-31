@@ -4,7 +4,7 @@
 # Author: Garry Morrison
 # email: garry -at- semantic-db.org
 # Date: 2018
-# Update: 22/2/2020
+# Update: 31/8/2020
 # Copyright: GPLv3
 #
 # Usage: 
@@ -178,8 +178,16 @@ class ket(object):
 
     def apply_op(self, context, op):  # TODO? Maybe later, make it work with function operators too, rather than just literal operators?
         r = context.seq_fn_recall(op, [ket(), self], True)  # this is broken! Not sure why, yet. I think I fixed it.
-        if len(r) == 0:
+        if len(r) == 0:                         # We need a better test here. ie, not that the rule returns |>, instead that there is no rule defined
             r = context.recall(op, self, True)  # see much later in the code for definition of recall.
+        return r
+
+    def apply_ops(self, context, op):
+        split_ops = op.split(" ")
+        split_ops.reverse()
+        r = self
+        for op in split_ops:
+            r = r.apply_op(context, op)
         return r
 
     def select_elt(self, k):
@@ -978,6 +986,14 @@ class superposition(object):
                     r.add_seq(rule)
         return r
 
+    def apply_ops(self, context, op):
+        split_ops = op.split(" ")
+        split_ops.reverse()
+        r = self
+        for op in split_ops:
+            r = r.apply_op(context, op)
+        return r
+
     def apply_sigmoid(self, sigmoid, t1=None, t2=None):  # use *args notation. Fix!
         r = superposition()
         if t1 == None:
@@ -1367,6 +1383,14 @@ class sequence(object):
                     elif type(y) in [sequence]:
                         seq.data += y.data
         return seq
+
+    def apply_ops(self, context, op):
+        split_ops = op.split(" ")
+        split_ops.reverse()
+        r = self
+        for op in split_ops:
+            r = r.apply_op(context, op)
+        return r
 
     def apply_sigmoid(self, sigmoid, *args):
         if len(self) == 0:

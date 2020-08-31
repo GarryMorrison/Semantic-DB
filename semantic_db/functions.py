@@ -11401,9 +11401,6 @@ def filter(input_seq, context, operators, conditions):
     # print('ops:', ops)
     op = ops[0]                     # for now only consider one operator
     condition = conditions.to_ket() # for now only consider one condition
-    split_op = op.split(" ")
-    split_op.reverse()
-    # print('split_op:', split_op)
     def member(elt, sp):
         for x in sp:
             if elt.label == x.label:
@@ -11414,10 +11411,7 @@ def filter(input_seq, context, operators, conditions):
     for sp in input_seq:
         r = superposition()
         for x in sp:
-            tmp = x
-            for op in split_op:
-                tmp = tmp.apply_op(context, op)
-            rule_value = tmp.to_sp()
+            rule_value = x.apply_ops(context, op).to_sp()
             if member(condition, rule_value):
                 r.add_sp(x)
         seq.data.append(r)
