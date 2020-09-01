@@ -11390,10 +11390,14 @@ sequence_functions_usage['filter'] = """
         -- find people that have the father operator defined:
         -- which is very close in function to the rel-kets[father] operator.
         filter(|op: father>, |*>) rel-kets[*]
-            |John> + |Sam> + |Emma> 
+            |John> + |Sam> + |Emma>
+        
+        -- filter to people that have a father with occupation either doctor or nurse:
+        filter(|op: occupation father>, |doctor> + |nurse>) rel-kets[*]
+            |Sam> + |Emma>
         
     see also:
-        such-that
+        such-that, not-filter
 
 """
 def filter(input_seq, context, operators, conditions):
@@ -11406,7 +11410,7 @@ def filter(input_seq, context, operators, conditions):
             ops.append(op_sp.label[4:])
     # print('ops:', ops)
     op = ops[0]                     # for now only consider one operator
-    condition = conditions.to_ket() # for now only consider one condition
+    conditions = conditions.to_sp()
     def member(elt, sp):
         for x in sp:
             if elt.label == x.label:
@@ -11418,10 +11422,13 @@ def filter(input_seq, context, operators, conditions):
         r = superposition()
         for x in sp:
             rule_value = x.apply_ops(context, op).to_sp()
-            if member(condition, rule_value):
-                r.add_sp(x)
-            elif len(rule_value) > 0 and condition.label == "*":
-                r.add_sp(x)
+            for condition in conditions:
+                if member(condition, rule_value):
+                    r.add_sp(x)
+                    break
+                elif len(rule_value) > 0 and condition.label == "*":
+                    r.add_sp(x)
+                    break
         seq.data.append(r)
     return seq
 
