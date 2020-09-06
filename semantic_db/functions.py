@@ -11395,7 +11395,11 @@ sequence_functions_usage['filter'] = """
         -- filter to people that have a father with occupation either doctor or nurse:
         filter(|op: occupation father>, |doctor> + |nurse>) rel-kets[*]
             |Sam> + |Emma>
-        
+
+        -- filter to those that have a rule of any type that is doctor or nurse:
+        filter(|*>, |doctor> + |nurse>) rel-kets[*]
+            |Robert> + |Jack>
+ 
     see also:
         such-that, not-filter
 
@@ -11405,9 +11409,12 @@ def filter(input_seq, context, operators, conditions):
     # print('operators:', operators)
     # print('conditions:', conditions)
     ops = []
-    for op_sp in operators.to_sp():
-        if op_sp.label.startswith('op: '):
-            ops.append(op_sp.label[4:])
+    for op_ket in operators.to_sp():
+        if op_ket.label == "*":
+            ops = ["*"]
+            break
+        elif op_ket.label.startswith('op: '):
+            ops.append(op_ket.label[4:])
     # print('ops:', ops)
     op = ops[0]                     # for now only consider one operator
     conditions = conditions.to_sp()
@@ -11421,13 +11428,26 @@ def filter(input_seq, context, operators, conditions):
     for sp in input_seq:
         r = superposition()
         for x in sp:
-            rule_value = x.apply_ops(context, op).to_sp()
-            for condition in conditions:
-                if member(condition, rule_value):
-                    r.add_sp(x)
-                    break
-                elif len(rule_value) > 0 and condition.label == "*":
-                    r.add_sp(x)
+            if op == "*":
+                supported_operators = x.apply_op(context, "supported-ops")
+                for supported_op in supported_operators:
+                    supported_rule_value = x.apply_op(context, supported_op).to_sp()
+                    match = False
+                    for condition in conditions:
+                        if member(condition, supported_rule_value):
+                            r.add_sp(x)
+                            match = True
+                            break
+                    if match:
+                        break
+            else:
+                rule_value = x.apply_ops(context, op).to_sp()
+                for condition in conditions:
+                    if member(condition, rule_value):
+                        r.add_sp(x)
+                        break
+                    elif len(rule_value) > 0 and condition.label == "*":
+                        r.add_sp(x)
                     break
         seq.data.append(r)
     return seq
